@@ -10,9 +10,9 @@ It copies the Figma file "ForValue Mock-up".
 
 | Role | Email | Password | Opens on |
 |---|---|---|---|
-| Forest owner (Consorzio Val di Fiemme) | proprietario@forvalue.demo | demo2027 | Home (phone) |
-| Sawmill (Segheria Alpina) | segheria@forvalue.demo | demo2027 | Dashboard (desktop) |
-| Buyer (Arredi Bianchi Srl) | acquirente@forvalue.demo | demo2027 | Marketplace (desktop) |
+| Forest owner (Consorzio Val di Fiemme) | proprietario@forvalue.demo | demo2026 | Home (phone) |
+| Sawmill (Segheria Alpina) | segheria@forvalue.demo | demo2026 | Dashboard (desktop) |
+| Buyer (Arredi Bianchi Srl) | acquirente@forvalue.demo | demo2026 | Marketplace (desktop) |
 
 The demo values (names, P.IVA, towns, certificates) were approved on 20/10/2026 (`DATA-ANSWERS.md`). Use the same values in phpMyAdmin.
 
@@ -28,10 +28,10 @@ Every protected page reads these tokens: no token → login page; another role's
 
 1. On the phone, log in as the owner → **+ Nuovo lotto** → fill the volume → **Salva lotto**. The QR appears.
 2. **Vedi storico del lotto** opens the public QR page (no login needed). When you are logged in, its top bar shows **La mia home** instead of **Accedi**.
-3. **Esci**, log in as the sawmill → Dashboard → **Vendi** on FV-2027-00087 → **Pubblica offerta** (28 m³ at 310,00 €/m³), then **Pubblica scarti** (6 t at 95,00 €/t). They appear in **Le mie offerte**.
+3. **Esci**, log in as the sawmill → Dashboard → **Vendi** on FV-2026-00087 → **Pubblica offerta** (28 m³ at 310,00 €/m³), then **Pubblica scarti** (6 t at 95,00 €/t). They appear in **Le mie offerte**.
 4. **Esci**, log in as the buyer → Marketplace → tick **PEFC** → *Tavole di abete rosso* (310,00 €) → quantity 10 → **Ordina ora**.
 5. The confirmation shows 10 m³ · 3.100,00 €. **Vedi tracciabilità** shows the new step "Venduto ad Arredi Bianchi Srl".
-6. FV-2027-00087 is now **Venduto** everywhere (owner's list, sawmill's lists, QR page). Optional: as the sawmill, open **Ordini ricevuti** and press **Accetta** (or **Rifiuta**, which gives the quantity back).
+6. FV-2026-00087 is now **Venduto** everywhere (owner's list, sawmill's lists, QR page). Optional: as the sawmill, open **Ordini ricevuti** and press **Accetta** (or **Rifiuta**, which gives the quantity back).
 
 Before presenting, press **Ripristina dati demo** (phone: Altro; desktop: bottom of the sidebar) to start clean. It also logs you out.
 
@@ -58,9 +58,9 @@ database (`azienda`, `specie`, `utente`, `certificazione`, `particella`, `lotto`
 4. Raise `seed_version` at the top of the file by 1 and save. Every browser then replaces its saved copy with the new data by itself (and logs you out).
    Without changing `seed_version`, press **Ripristina dati demo** to load the new values.
 
-Order numbers are shown as **ORD-2027-0001** (year of the order + id with 4 digits). If the buyer does not pick a delivery date, it is the order date + 7 days.
+Order numbers are shown as **ORD-2026-0001** (year of the order + id with 4 digits). If the buyer does not pick a delivery date, it is the order date + 7 days.
 
-Orders placed live in the demo get the date **15/04/2027** (the sale date of the database sample), so the story stays in 2027.
+Orders placed live in the demo get the date **15/04/2026** (the sale date of the database sample), so the story stays in 2026.
 You can change it in `js/data.js` (`demo_data_ordine`).
 
 Things that are **not** columns in the database are worked out the same way the demo queries do:
@@ -107,7 +107,7 @@ Every page works on a phone and on a laptop: under 900 px wide you get the phone
 
 The QR link carries the batch data inside the address (`qr.html?d=…`, short JSON in base64url).
 So a teacher's phone that has never opened the site still shows the full history.
-If `d` is missing, `qr.html?c=FV-2027-00087` reads the batch from this browser's storage;
+If `d` is missing, `qr.html?c=FV-2026-00087` reads the batch from this browser's storage;
 if that fails too, the page says "Lotto non trovato".
 
 **Important:** the QR contains the address of the page that made it. Make the QR you print from the
@@ -119,7 +119,7 @@ if that fails too, the page says "Lotto non trovato".
 2. Click **uploading an existing file**, drag **everything inside this folder** (so `index.html` is at the top level, next to `css/` and `js/`), then **Commit changes**.
 3. Open **Settings → Pages**. Under *Build and deployment* choose **Deploy from a branch**, branch **main**, folder **/ (root)**, then **Save**.
 4. Wait 1–2 minutes. The address appears at the top of the Pages settings, like `https://<your-username>.github.io/forvalue/`.
-5. Open that address, log in as the owner, open the QR of FV-2027-00087 (Lotti → the batch, or create a new batch) and print that QR.
+5. Open that address, log in as the owner, open the QR of FV-2026-00087 (Lotti → the batch, or create a new batch) and print that QR.
 6. Test it with 2 phones **on mobile data** (not the school Wi-Fi).
 
 The empty `.nojekyll` file tells GitHub to publish the files exactly as they are.

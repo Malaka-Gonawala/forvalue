@@ -14,7 +14,7 @@
   function parseNum(str) { var r = String(str == null ? '' : str).trim(); if (!r) return null; var n = Number(r.indexOf(',') >= 0 ? r.replace(/\./g, '').replace(',', '.') : r); return isFinite(n) && n > 0 ? n : null; }
   function num1(n) { return nf1.format(n); }
   function euro(n) { return eur.format(n) + ' €'; }                // 3.100,00 €
-  function date(iso) { if (!iso) return ''; var p = iso.slice(0, 10).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }  // 12/03/2027
+  function date(iso) { if (!iso) return ''; var p = iso.slice(0, 10).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }  // 12/03/2026
   function gps(lat, lon) { return nf4.format(lat) + ' N · ' + nf4.format(lon) + ' E'; }   // 46,2906 N · 11,4594 E
   var MESI = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
 
@@ -216,7 +216,7 @@
   }
 
   /* ---------- order number and photos ---------- */
-  // ORD-2027-0001: year of the order + id with 4 digits
+  // ORD-2026-0001: year of the order + id with 4 digits
   function ordCode(o) { return 'ORD-' + String(o.data).slice(0, 4) + '-' + String(o.id).padStart(4, '0'); }
 
   // Real photos go in img/ (jpg, under 200 KB). Until a file exists the green tile under it shows:

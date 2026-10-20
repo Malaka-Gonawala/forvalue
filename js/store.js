@@ -41,7 +41,7 @@
 
   function lottoByCode(code) { return all('lotto').find(function (l) { return l.codice_qr === code; }) || null; }
 
-  // Next code after the highest one in storage: FV-2027-00087 → FV-2027-00088, …
+  // Next code after the highest one in storage: FV-2026-00087 → FV-2026-00088, …
   function nextLottoCode() {
     var max = 0, year = String(new Date().getFullYear());
     all('lotto').forEach(function (l) {
@@ -170,8 +170,8 @@
     return insert('offerta', { id_prodotto: idProdotto, id_azienda: idAzienda, titolo: p.descrizione, prezzo_unitario: prezzo, quantita_disponibile: quantita, attiva: 1 });
   }
 
-  // Orders placed live in the demo get the sale date of the database sample (15/04/2027),
-  // so the story stays in 2027 like the mock-up. Change it in data.js (demo_data_ordine).
+  // Orders placed live in the demo get the sale date of the database sample (15/04/2026),
+  // so the story stays in 2026 like the mock-up. Change it in data.js (demo_data_ordine).
   function demoDate() { return (window.FV_SEED && FV_SEED.demo_data_ordine) || todayISO(); }
 
   // D4/D5: place an order → lowers the offer, adds the sale step, batch becomes Venduto

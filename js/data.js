@@ -13,7 +13,7 @@
 
 window.FV_SEED = {
 
-  seed_version: 2,
+  seed_version: 3,
 
   /* Not a table: shown on the Aiuto page */
   contatti: { supporto: 'supporto@forvalue.demo' },
@@ -38,9 +38,9 @@ window.FV_SEED = {
   /* 3. utente – ruolo: proprietario | segheria | acquirente.
      Demo logins only: passwords in the browser are NOT real security. */
   utente: [
-    { id: 1, id_azienda: 1, nome: 'Marco', cognome: 'Delladio', email: 'proprietario@forvalue.demo', password: 'demo2027', ruolo: 'proprietario' },
-    { id: 2, id_azienda: 2, nome: 'Giulia', cognome: 'Zeni', email: 'segheria@forvalue.demo', password: 'demo2027', ruolo: 'segheria' },
-    { id: 3, id_azienda: 3, nome: 'Luca', cognome: 'Bianchi', email: 'acquirente@forvalue.demo', password: 'demo2027', ruolo: 'acquirente' }
+    { id: 1, id_azienda: 1, nome: 'Marco', cognome: 'Delladio', email: 'proprietario@forvalue.demo', password: 'demo2026', ruolo: 'proprietario' },
+    { id: 2, id_azienda: 2, nome: 'Giulia', cognome: 'Zeni', email: 'segheria@forvalue.demo', password: 'demo2026', ruolo: 'segheria' },
+    { id: 3, id_azienda: 3, nome: 'Luca', cognome: 'Bianchi', email: 'acquirente@forvalue.demo', password: 'demo2026', ruolo: 'acquirente' }
   ],
 
   /* 4. certificazione – schema: FSC | PEFC */
@@ -57,19 +57,19 @@ window.FV_SEED = {
 
   /* 6. lotto – certificato: 'PEFC' | 'FSC' | null. foto_url is optional (not in the DB). */
   lotto: [
-    { id: 1, codice_qr: 'FV-2027-00087', id_particella: 1, id_specie: 1, id_azienda: 1, volume_m3: 45, data_taglio: '2027-03-12', certificato: 'PEFC', foto_url: null },
-    { id: 2, codice_qr: 'FV-2027-00079', id_particella: 2, id_specie: 2, id_azienda: 1, volume_m3: 30, data_taglio: '2026-11-20', certificato: 'PEFC', foto_url: null },
-    { id: 3, codice_qr: 'FV-2027-00081', id_particella: 2, id_specie: 1, id_azienda: 1, volume_m3: 50, data_taglio: '2027-01-20', certificato: 'PEFC', foto_url: null },
-    { id: 4, codice_qr: 'FV-2027-00083', id_particella: 2, id_specie: 3, id_azienda: 1, volume_m3: 25, data_taglio: '2027-02-15', certificato: null, foto_url: null },
-    { id: 5, codice_qr: 'FV-2027-00085', id_particella: 1, id_specie: 4, id_azienda: 1, volume_m3: 20, data_taglio: '2027-03-01', certificato: 'PEFC', foto_url: null }
+    { id: 1, codice_qr: 'FV-2026-00087', id_particella: 1, id_specie: 1, id_azienda: 1, volume_m3: 45, data_taglio: '2026-03-12', certificato: 'PEFC', foto_url: null },
+    { id: 2, codice_qr: 'FV-2026-00079', id_particella: 2, id_specie: 2, id_azienda: 1, volume_m3: 30, data_taglio: '2025-11-20', certificato: 'PEFC', foto_url: null },
+    { id: 3, codice_qr: 'FV-2026-00081', id_particella: 2, id_specie: 1, id_azienda: 1, volume_m3: 50, data_taglio: '2026-01-20', certificato: 'PEFC', foto_url: null },
+    { id: 4, codice_qr: 'FV-2026-00083', id_particella: 2, id_specie: 3, id_azienda: 1, volume_m3: 25, data_taglio: '2026-02-15', certificato: null, foto_url: null },
+    { id: 5, codice_qr: 'FV-2026-00085', id_particella: 1, id_specie: 4, id_azienda: 1, volume_m3: 20, data_taglio: '2026-03-01', certificato: 'PEFC', foto_url: null }
   ],
 
   /* 7. lavorazione – tipo: segagione */
   lavorazione: [
-    { id: 1, id_lotto: 1, id_azienda: 2, data: '2027-04-02', tipo: 'segagione' },
-    { id: 2, id_lotto: 2, id_azienda: 2, data: '2026-12-05', tipo: 'segagione' },
-    { id: 3, id_lotto: 3, id_azienda: 2, data: '2027-02-03', tipo: 'segagione' },
-    { id: 4, id_lotto: 4, id_azienda: 2, data: '2027-03-01', tipo: 'segagione' }
+    { id: 1, id_lotto: 1, id_azienda: 2, data: '2026-04-02', tipo: 'segagione' },
+    { id: 2, id_lotto: 2, id_azienda: 2, data: '2025-12-05', tipo: 'segagione' },
+    { id: 3, id_lotto: 3, id_azienda: 2, data: '2026-02-03', tipo: 'segagione' },
+    { id: 4, id_lotto: 4, id_azienda: 2, data: '2026-03-01', tipo: 'segagione' }
   ],
 
   /* 8. prodotto – categoria: legname | sottoprodotto; unita: m3 | t */
@@ -83,7 +83,7 @@ window.FV_SEED = {
     { id: 7, id_lavorazione: 4, descrizione: 'Segatura di faggio', categoria: 'sottoprodotto', quantita: 3, unita: 't' }
   ],
 
-  /* 9. offerta – the offers for FV-2027-00087 (tavole 310,00 €/m³ and
+  /* 9. offerta – the offers for FV-2026-00087 (tavole 310,00 €/m³ and
      cippato 95,00 €/t) are created live in the demo by the sawmill (D2). */
   offerta: [
     { id: 1, id_prodotto: 3, id_azienda: 2, titolo: 'Tavole di larice', prezzo_unitario: 285, quantita_disponibile: 8, attiva: 1 },
@@ -93,7 +93,7 @@ window.FV_SEED = {
     { id: 5, id_prodotto: 7, id_azienda: 2, titolo: 'Segatura di faggio', prezzo_unitario: 60, quantita_disponibile: 3, attiva: 1 }
   ],
 
-  /* Prices the sawmill publishes live in the demo for FV-2027-00087 (D2 panel is pre-filled
+  /* Prices the sawmill publishes live in the demo for FV-2026-00087 (D2 panel is pre-filled
      with these): tavole 310,00 €/m³ and cippato 95,00 €/t, from the database sample. */
   demo_offerta: [
     { id_prodotto: 1, prezzo_unitario: 310 },
@@ -101,28 +101,28 @@ window.FV_SEED = {
   ],
 
   /* Date given to orders placed live in the demo (the sale date in the database sample). */
-  demo_data_ordine: '2027-04-15',
+  demo_data_ordine: '2026-04-15',
 
   /* 10. ordine – stato: inviato | accettato | consegnato | rifiutato | annullato.
-     Shown as ORD-2027-0001 (year of the order + id with 4 digits). data_consegna: the buyer picks it,
+     Shown as ORD-2026-0001 (year of the order + id with 4 digits). data_consegna: the buyer picks it,
      default = order date + 7 days.
      Spread over 4 months so the dashboard chart has bars. */
   ordine: [
-    { id: 1, id_offerta: 1, id_azienda: 5, data: '2027-01-18', quantita: 8, prezzo_totale: 2280, stato: 'consegnato', data_consegna: '2027-01-25' },
-    { id: 2, id_offerta: 2, id_azienda: 4, data: '2027-02-12', quantita: 3, prezzo_totale: 270, stato: 'consegnato', data_consegna: '2027-02-16' },
-    { id: 3, id_offerta: 1, id_azienda: 5, data: '2027-02-22', quantita: 4, prezzo_totale: 1140, stato: 'consegnato', data_consegna: '2027-03-01' },
-    { id: 4, id_offerta: 3, id_azienda: 3, data: '2027-03-10', quantita: 30, prezzo_totale: 9150, stato: 'accettato', data_consegna: '2027-03-24' },
-    { id: 5, id_offerta: 4, id_azienda: 5, data: '2027-04-08', quantita: 6, prezzo_totale: 2040, stato: 'inviato', data_consegna: '2027-04-15' }
+    { id: 1, id_offerta: 1, id_azienda: 5, data: '2026-01-18', quantita: 8, prezzo_totale: 2280, stato: 'consegnato', data_consegna: '2026-01-25' },
+    { id: 2, id_offerta: 2, id_azienda: 4, data: '2026-02-12', quantita: 3, prezzo_totale: 270, stato: 'consegnato', data_consegna: '2026-02-16' },
+    { id: 3, id_offerta: 1, id_azienda: 5, data: '2026-02-22', quantita: 4, prezzo_totale: 1140, stato: 'consegnato', data_consegna: '2026-03-01' },
+    { id: 4, id_offerta: 3, id_azienda: 3, data: '2026-03-10', quantita: 30, prezzo_totale: 9150, stato: 'accettato', data_consegna: '2026-03-24' },
+    { id: 5, id_offerta: 4, id_azienda: 5, data: '2026-04-08', quantita: 6, prezzo_totale: 2040, stato: 'inviato', data_consegna: '2026-04-15' }
   ],
 
   /* 11. passaggio – a batch moving from one company to another */
   passaggio: [
-    { id: 1, id_lotto: 1, id_azienda_da: 1, id_azienda_a: 2, id_ordine: null, data_ora: '2027-03-20 08:00', stato: 'consegnato' },
-    { id: 2, id_lotto: 2, id_azienda_da: 1, id_azienda_a: 2, id_ordine: null, data_ora: '2026-11-28 08:00', stato: 'consegnato' },
-    { id: 3, id_lotto: 3, id_azienda_da: 1, id_azienda_a: 2, id_ordine: null, data_ora: '2027-01-27 08:00', stato: 'consegnato' },
-    { id: 4, id_lotto: 4, id_azienda_da: 1, id_azienda_a: 2, id_ordine: null, data_ora: '2027-02-20 08:00', stato: 'consegnato' },
-    { id: 5, id_lotto: 5, id_azienda_da: 1, id_azienda_a: 2, id_ordine: null, data_ora: '2027-03-08 08:00', stato: 'consegnato' },
-    { id: 6, id_lotto: 2, id_azienda_da: 2, id_azienda_a: 5, id_ordine: 1, data_ora: '2027-01-18 10:00', stato: 'consegnato' },
-    { id: 7, id_lotto: 3, id_azienda_da: 2, id_azienda_a: 3, id_ordine: 4, data_ora: '2027-03-10 10:00', stato: 'accettato' }
+    { id: 1, id_lotto: 1, id_azienda_da: 1, id_azienda_a: 2, id_ordine: null, data_ora: '2026-03-20 08:00', stato: 'consegnato' },
+    { id: 2, id_lotto: 2, id_azienda_da: 1, id_azienda_a: 2, id_ordine: null, data_ora: '2025-11-28 08:00', stato: 'consegnato' },
+    { id: 3, id_lotto: 3, id_azienda_da: 1, id_azienda_a: 2, id_ordine: null, data_ora: '2026-01-27 08:00', stato: 'consegnato' },
+    { id: 4, id_lotto: 4, id_azienda_da: 1, id_azienda_a: 2, id_ordine: null, data_ora: '2026-02-20 08:00', stato: 'consegnato' },
+    { id: 5, id_lotto: 5, id_azienda_da: 1, id_azienda_a: 2, id_ordine: null, data_ora: '2026-03-08 08:00', stato: 'consegnato' },
+    { id: 6, id_lotto: 2, id_azienda_da: 2, id_azienda_a: 5, id_ordine: 1, data_ora: '2026-01-18 10:00', stato: 'consegnato' },
+    { id: 7, id_lotto: 3, id_azienda_da: 2, id_azienda_a: 3, id_ordine: 4, data_ora: '2026-03-10 10:00', stato: 'accettato' }
   ]
 };

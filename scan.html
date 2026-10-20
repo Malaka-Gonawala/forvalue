@@ -75,10 +75,10 @@
   <form id="codeForm" class="field" novalidate>
     <label for="code"><span class="ph-only">Inserisci codice lotto</span><span class="dk">Codice lotto</span></label>
     <div class="crow">
-      <div class="input" id="codeBox"><span class="ms" aria-hidden="true">tag</span><input id="code" placeholder="FV-2027-00087" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="codeHelp"></div>
+      <div class="input" id="codeBox"><span class="ms" aria-hidden="true">tag</span><input id="code" placeholder="FV-2026-00087" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="codeHelp"></div>
       <button class="btn pri" type="submit">Apri</button>
     </div>
-    <div class="xs muted" id="codeHelp">Il codice è scritto sotto il QR, ad esempio FV-2027-00087. Va bene anche un numero d'ordine (ORD-2027-0001).</div>
+    <div class="xs muted" id="codeHelp">Il codice è scritto sotto il QR, ad esempio FV-2026-00087. Va bene anche un numero d'ordine (ORD-2026-0001).</div>
   </form>
 
   <button class="btn sec" type="button" id="cancel">Annulla</button>
@@ -186,7 +186,7 @@
     var v = code.value.trim().toUpperCase();
     if (/^ORD-\d{4}-\d{4}$/.test(v) && !ordTarget(v)) { showErr('Ordine non trovato. Controlla il numero e riprova.'); codeBox.classList.add('err'); code.setAttribute('aria-invalid', 'true'); code.focus(); return; }
     if (!/^(FV-\d{4}-\d{5}|ORD-\d{4}-\d{4})$/.test(v)) {
-      showErr('Codice non valido. Scrivilo così: FV-2027-00087 (lotto) o ORD-2027-0001 (ordine).');
+      showErr('Codice non valido. Scrivilo così: FV-2026-00087 (lotto) o ORD-2026-0001 (ordine).');
       codeBox.classList.add('err'); code.setAttribute('aria-invalid', 'true'); code.focus(); return;
     }
     handle(v);
