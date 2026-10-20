@@ -30,13 +30,17 @@
     if (u) { setUser(u.id); location.href = HOME[ruolo]; }
   }
 
+  // Stops the page script while the browser moves to another page (no red error in the console)
+  window.addEventListener('error', function (e) { if (String(e.message).indexOf('fv-stop') >= 0) e.preventDefault(); });
+  function stop() { throw new Error('fv-stop'); }
+
   // Call at the top of every protected page: FV.auth.require(['segheria'])
   function require(roles) {
     var s = current();
-    if (!s || roles.indexOf(s.ruolo) < 0) { location.replace('index.html'); throw new Error('redirect'); }
+    if (!s || roles.indexOf(s.ruolo) < 0) { location.replace('index.html'); stop(); }
     return s;
   }
 
   window.FV = window.FV || {};
-  window.FV.auth = { current: current, login: login, logout: logout, switchTo: switchTo, require: require, home: function (r) { return HOME[r]; } };
+  window.FV.auth = { current: current, login: login, logout: logout, switchTo: switchTo, require: require, stop: stop, home: function (r) { return HOME[r]; } };
 })();

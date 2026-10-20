@@ -18,7 +18,7 @@
 <script>
   var ui = FV.ui, st = FV.store;
   var o = st.byId('offerta', ui.param('id'));
-  if (!o) { location.replace('marketplace.html'); throw new Error('no offer'); }
+  if (!o) { location.replace('marketplace.html'); FV.auth.stop(); }
   var p = st.byId('prodotto', o.id_prodotto), l = st.lottoOfOfferta(o), seller = st.byId('azienda', o.id_azienda);
   var sc = p.categoria === 'sottoprodotto', unit = st.unitOf(o), buyer = S.ruolo === 'acquirente';
   var back = 'marketplace.html' + (sc ? '?tab=scarti' : '');
@@ -50,6 +50,13 @@
                : '<div class="small muted">Solo un acquirente può ordinare. Stai guardando come ' + ui.esc(S.azienda.ragione_sociale) + '.</div>') +
       '</form></div>';
 
+  // Sold out: no order box, just say so
+  if (avail <= 0 || !o.attiva) {
+    document.getElementById('buy').innerHTML = '<div><span style="font-size:24px;font-weight:700" class="num">' + ui.euro(o.prezzo_unitario) + '</span> <span class="muted xs">/ ' + unit + '</span></div>' +
+      '<div class="pill p-st" style="align-self:flex-start"><span class="ms" aria-hidden="true">block</span>Esaurita</div>' +
+      '<div class="small muted">Questa offerta non è più disponibile.</div><a class="dbtn sec full" href="' + back + '">Torna al Marketplace</a>';
+  } else {
+
   var qty = document.getElementById('qty'), qErr = document.getElementById('qErr'), qBox = document.getElementById('qBox');
   document.getElementById('del').min = st.todayISO();
   function check() {
@@ -75,6 +82,7 @@
       st.setCart(cart);
       location.href = 'carrello.html';
     };
+  }
   }
 </script>
 </body>
