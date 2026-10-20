@@ -4,7 +4,9 @@
 body.desk { font-size: 15px; line-height: 22px; min-height: 100vh; display: grid; grid-template-columns: 240px 1fr; background: var(--bg); }
 
 /* Sidebar */
-.sb { background: var(--g900); color: #fff; padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+#sb { display: flex; }   /* page slot that holds the sidebar: lets it stretch to the full page height */
+.sb { flex: 1; background: var(--g900); color: #fff; min-height: 100vh; }
+.sb-in { padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .sb .logo { padding: 4px 12px 20px; }
 .sb nav { display: flex; flex-direction: column; gap: 4px; }
 .sb nav a { display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 8px; color: var(--g100); font-weight: 500; }
@@ -54,6 +56,7 @@ tbody tr.click:hover td { background: #FBFBF8; }
 /* Inputs */
 .dinput { min-height: 40px; border: 1.5px solid var(--field); border-radius: 8px; padding: 0 12px; display: flex; align-items: center; gap: 8px; background: #fff; }
 .dinput:focus-within { border-color: var(--g700); box-shadow: 0 0 0 3px var(--g100); }
+.dinput select { appearance: none; -webkit-appearance: none; cursor: pointer; }
 .dinput input, .dinput select { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; height: 36px; font-size: 15px; }
 .dinput .ms { color: var(--muted); font-size: 20px; }
 .dinput .unit { color: var(--muted); font-size: 13px; }
@@ -114,7 +117,8 @@ tbody tr.click:hover td { background: #FBFBF8; }
 }
 @media (max-width: 760px) {
   body.desk { grid-template-columns: 1fr; }
-  .sb { position: static; height: auto; }
+  .sb { min-height: 0; }
+  .sb-in { position: static; height: auto; }
 }
 .grid2 > *, .dfield { min-width: 0; }
 .dinput input { width: 100%; }

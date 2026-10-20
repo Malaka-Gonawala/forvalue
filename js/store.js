@@ -111,10 +111,9 @@
       var prods = all('prodotto').filter(function (p) { return p.id_lavorazione === lav.id; });
       ev.push({ tipo: 'L', data: lav.data, chi: name(lav.id_azienda), dett: prods.map(function (p) { return fmtNum(p.quantita) + ' ' + unitLabel(p.unita) + ' ' + shortName(p.descrizione); }).join(' + ') });
     });
-    // Story order: cut → transfers → sawing → sales (a live sale has today's date, which can be
-    // earlier than the 2027 sample dates), then by date inside each kind
+    // By date; on the same day: cut → transfer → sawing → sale
     var rank = { T: 0, P: 1, L: 2, V: 3 };
-    ev.sort(function (a, b) { return rank[a.tipo] - rank[b.tipo] || (a.data < b.data ? -1 : a.data > b.data ? 1 : 0); });
+    ev.sort(function (a, b) { return (a.data < b.data ? -1 : a.data > b.data ? 1 : 0) || rank[a.tipo] - rank[b.tipo]; });
     return ev;
   }
   // Turns a raw step into the text shown on screen. comune(name) gives a company's town.
@@ -160,11 +159,15 @@
     return insert('offerta', { id_prodotto: idProdotto, id_azienda: idAzienda, titolo: p.descrizione, prezzo_unitario: prezzo, quantita_disponibile: quantita, attiva: 1 });
   }
 
+  // Orders placed live in the demo get the sale date of the database sample (15/04/2027),
+  // so the story stays in 2027 like the mock-up. Change it in data.js (demo_data_ordine).
+  function demoDate() { return (window.FV_SEED && FV_SEED.demo_data_ordine) || todayISO(); }
+
   // D4/D5: place an order → lowers the offer, adds the sale step, batch becomes Venduto
   function placeOrdine(idOfferta, idAzienda, quantita, dataConsegna) {
     var off = byId('offerta', idOfferta);
     if (!off || quantita <= 0 || quantita > off.quantita_disponibile) return null;
-    var today = todayISO();
+    var today = demoDate();
     var o = insert('ordine', { id_offerta: off.id, id_azienda: idAzienda, data: today, quantita: quantita,
       prezzo_totale: Math.round(quantita * off.prezzo_unitario * 100) / 100, stato: 'inviato', data_consegna: dataConsegna || null });
     off.quantita_disponibile = Math.round((off.quantita_disponibile - quantita) * 1000) / 1000;
@@ -195,7 +198,7 @@
     lottoByCode: lottoByCode, nextLottoCode: nextLottoCode, prodottiOfLotto: prodottiOfLotto, offerteOfLotto: offerteOfLotto,
     ordiniOfLotto: ordiniOfLotto, storicoRaw: storicoRaw, stepText: stepText, comuneByName: comuneByName, lottoOfOfferta: lottoOfOfferta, statoLotto: statoLotto, eudrOk: eudrOk, holderOf: holderOf,
     lottiOfOwner: lottiOfOwner, lottiOfSawmill: lottiOfSawmill, transferDate: transferDate, storico: storico, unitOf: unitOf, unitLabel: unitLabel,
-    addLotto: addLotto, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
+    addLotto: addLotto, demoDate: demoDate, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
     getCart: getCart, setCart: setCart
   };
 })();

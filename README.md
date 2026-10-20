@@ -52,6 +52,9 @@ database (`azienda`, `specie`, `utente`, `certificazione`, `particella`, `lotto`
 3. If the row has a `_ph` mark (placeholder), remove the field name from `_ph` (or the whole `_ph`), so it stops showing in gold.
 4. Save, reload the site and press **Ripristina dati demo**. The browser keeps the old copy until you reset.
 
+Orders placed live in the demo get the date **15/04/2027** (the sale date of the database sample), so the story stays in 2027.
+You can change it in `js/data.js` (`demo_data_ordine`).
+
 Things that are **not** columns in the database are worked out the same way the demo queries do:
 - **Batch status**: Venduto if an order on it is *inviato* or *consegnato*, Riservato if *accettato*, otherwise Disponibile.
 - **EUDR verificato**: the parcel has GPS (lat/lon) and the batch has a cut date.

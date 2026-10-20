@@ -80,13 +80,13 @@
         ['ordini', 'ordini.html', 'receipt_long', 'Ordini'], ['carrello', 'carrello.html', 'shopping_cart', 'Carrello' + (n ? '<span class="count">' + n + '</span>' : '')]];
     }
     var hot = r === 'segheria' ? 'acquirente' : 'segheria';
-    return '<aside class="sb"><button type="button" class="logo" data-switch="' + hot + '" aria-label="ForValue">' + logoHTML().replace(/^<span class="logo">|<\/span>$/g, '') + '</button>' +
+    return '<aside class="sb"><div class="sb-in"><button type="button" class="logo" data-switch="' + hot + '" aria-label="ForValue">' + logoHTML().replace(/^<span class="logo">|<\/span>$/g, '') + '</button>' +
       '<nav aria-label="Menu">' + items.map(function (x) {
         return '<a href="' + x[1] + '"' + (x[0] === active ? ' aria-current="page"' : '') + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + '</a>';
       }).join('') + '</nav>' +
       '<div class="foot"><div class="who"><span class="ms" aria-hidden="true">account_circle</span>' + esc(session.azienda.ragione_sociale) + '</div>' +
       '<button type="button" class="lnk" data-reset><span class="ms" aria-hidden="true">restart_alt</span>Ripristina dati demo</button>' +
-      '<button type="button" class="lnk" data-logout><span class="ms" aria-hidden="true">logout</span>Esci</button>' + LANG + '</div></aside>';
+      '<button type="button" class="lnk" data-logout><span class="ms" aria-hidden="true">logout</span>Esci</button>' + LANG + '</div></div></aside>';
   }
 
   /* ---------- QR ---------- */

@@ -17,17 +17,16 @@
 <div class="hero" style="padding:4px 16px 56px"><div class="sub">I tuoi lotti</div></div>
 <main class="over" style="margin-top:-40px;padding-bottom:24px"><div class="box lift" id="list"></div></main>
 <script>
-  var ui = FV.ui, st = FV.store, today = st.todayISO();
+  var ui = FV.ui, st = FV.store;
   document.getElementById('bar').innerHTML = ui.backBar('Notifiche', 'altro.html');
   // Every step after the cut is news for the owner
   var ev = [];
   st.lottiOfOwner(S.azienda.id).forEach(function (l) {
     st.storico(l.id).forEach(function (e) { if (e.tipo !== 'T') ev.push({ e: e, l: l }); });
   });
-  // Newest first; a live sale (today's date) always on top
-  ev.sort(function (a, b) {
-    return ((b.e.data === today) - (a.e.data === today)) || (b.e.data > a.e.data ? 1 : b.e.data < a.e.data ? -1 : 0);
-  });
+  // Newest first
+  var rank = { P: 1, L: 2, V: 3 };
+  ev.sort(function (a, b) { return (b.e.data > a.e.data ? 1 : b.e.data < a.e.data ? -1 : 0) || rank[b.e.tipo] - rank[a.e.tipo]; });
   document.getElementById('list').innerHTML = ev.slice(0, 20).map(function (x, i) {
     var e = x.e;
     var title = e.tipo === 'L' ? 'Segato in tavole e scarti' : e.titolo;
