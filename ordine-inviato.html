@@ -3,11 +3,13 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2E6B3F">
 <title>Ordine inviato · ForValue</title>
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/desk.css">
+<link rel="stylesheet" href="css/shell.css">
 </head>
 <body class="desk">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
@@ -19,7 +21,7 @@
 </main>
 <script>
   var ui = FV.ui, st = FV.store;
-  document.getElementById('sb').innerHTML = ui.sidebar('ordini', S);
+  ui.shell('ordini');
   var ords = String(ui.param('id') || '').split(',').map(function (id) { return st.byId('ordine', id); })
     .filter(function (o) { return o && o.id_azienda === S.azienda.id; });
   if (!ords.length) location.replace('ordini.html');

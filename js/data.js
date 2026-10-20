@@ -94,7 +94,7 @@ window.FV_SEED = {
   /* Date given to orders placed live in the demo (the sale date in the database sample). */
   demo_data_ordine: '2027-04-15',
 
-  /* 10. ordine – stato: inviato | accettato | consegnato | annullato.
+  /* 10. ordine – stato: inviato | accettato | consegnato | rifiutato | annullato.
      Spread over 4 months so the dashboard chart has bars. */
   ordine: [
     { id: 1, id_offerta: 1, id_azienda: 5, data: '2027-01-18', quantita: 8, prezzo_totale: 2280, stato: 'consegnato', data_consegna: '2027-01-25', _ph: true },

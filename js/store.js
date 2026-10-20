@@ -61,12 +61,13 @@
     return lav ? byId('lotto', lav.id_lotto) : null;
   }
 
-  // Status: Venduto if an order is inviato or consegnato, Riservato if accettato, else Disponibile
+  // An order still counts unless the sawmill refused it (rifiutato) or it was cancelled (annullato)
+  function ordineValido(o) { return o.stato !== 'annullato' && o.stato !== 'rifiutato'; }
+
+  // Status: Venduto if an order is inviato, accettato or consegnato, else Disponibile
+  // (accepting the order in "Ordini ricevuti" keeps the batch Venduto; refusing it frees the batch again)
   function statoLotto(idLotto) {
-    var ords = ordiniOfLotto(idLotto).filter(function (o) { return o.stato !== 'annullato'; });
-    if (ords.some(function (o) { return o.stato === 'inviato' || o.stato === 'consegnato'; })) return 'Venduto';
-    if (ords.some(function (o) { return o.stato === 'accettato'; })) return 'Riservato';
-    return 'Disponibile';
+    return ordiniOfLotto(idLotto).some(ordineValido) ? 'Venduto' : 'Disponibile';
   }
 
   // EUDR verificato: the parcel has GPS (lat/lon) and the batch has a cut date
@@ -100,6 +101,7 @@
     var name = function (id) { return byId('azienda', id).ragione_sociale; };
     var ev = [{ tipo: 'T', data: l.data_taglio, chi: name(l.id_azienda), dove: byId('particella', l.id_particella).nome }];
     where('passaggio', 'id_lotto', idLotto).forEach(function (p) {
+      if (p.id_ordine) { var ord = byId('ordine', p.id_ordine); if (ord && !ordineValido(ord)) return; }
       var e = { tipo: p.id_ordine ? 'V' : 'P', data: p.data_ora.slice(0, 10), da: name(p.id_azienda_da), a: name(p.id_azienda_a) };
       if (p.id_ordine) {
         var o = byId('ordine', p.id_ordine), off = o && byId('offerta', o.id_offerta);
@@ -178,6 +180,20 @@
     return o;
   }
 
+  // Ordini ricevuti: the sawmill accepts or refuses an order. Refusing gives the quantity back to the offer.
+  function setStatoOrdine(idOrdine, stato) {
+    var o = byId('ordine', idOrdine);
+    if (!o || o.stato !== 'inviato' || (stato !== 'accettato' && stato !== 'rifiutato')) return null;
+    o.stato = stato;
+    if (stato === 'rifiutato') {
+      var off = byId('offerta', o.id_offerta);
+      if (off) { off.quantita_disponibile = Math.round((off.quantita_disponibile + o.quantita) * 1000) / 1000; off.attiva = 1; }
+    }
+    where('passaggio', 'id_ordine', o.id).forEach(function (p) { p.stato = stato; });
+    save(db);
+    return o;
+  }
+
   function todayISO() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function nowTime() { var d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
 
@@ -198,7 +214,7 @@
     lottoByCode: lottoByCode, nextLottoCode: nextLottoCode, prodottiOfLotto: prodottiOfLotto, offerteOfLotto: offerteOfLotto,
     ordiniOfLotto: ordiniOfLotto, storicoRaw: storicoRaw, stepText: stepText, comuneByName: comuneByName, lottoOfOfferta: lottoOfOfferta, statoLotto: statoLotto, eudrOk: eudrOk, holderOf: holderOf,
     lottiOfOwner: lottiOfOwner, lottiOfSawmill: lottiOfSawmill, transferDate: transferDate, storico: storico, unitOf: unitOf, unitLabel: unitLabel,
-    addLotto: addLotto, demoDate: demoDate, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
+    addLotto: addLotto, demoDate: demoDate, setStatoOrdine: setStatoOrdine, ordineValido: ordineValido, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
     getCart: getCart, setCart: setCart
   };
 })();

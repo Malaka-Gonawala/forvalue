@@ -1,0 +1,115 @@
+<!doctype html>
+<!-- S-D9 · Le mie offerte (sawmill). Every offer of this sawmill: product, origin batch, quantity, price,
+     category and status, with Modifica (quantity + price). ?cat=scarti = Circolarità (by-products only). -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2E6B3F">
+<title>Le mie offerte · ForValue</title>
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/desk.css">
+<link rel="stylesheet" href="css/shell.css">
+</head>
+<body class="desk">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['segheria']);</script>
+<div id="sb"></div>
+<main class="main">
+  <div class="pg" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px">
+    <div><div class="crumb" id="crumb"></div><h1 class="h1" id="title"></h1><div class="small muted" id="intro" hidden></div></div>
+    <a class="dbtn pri" id="nuova"><span class="ms" aria-hidden="true">add</span>Nuova offerta</a>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px" id="kpis" hidden></div>
+  <section class="box">
+    <table class="rt"><thead><tr><th>Prodotto</th><th>Lotto di origine</th><th>Disponibile</th><th>Prezzo</th><th>Categoria</th><th>Stato</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+  </section>
+</main>
+<div id="panelWrap" hidden>
+  <div class="scrim" data-close></div>
+  <aside class="panel" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h2 class="h2" id="pTitle" style="font-size:20px">Modifica offerta</h2>
+      <button type="button" class="backbtn" data-close aria-label="Chiudi" style="border:0"><span class="ms" aria-hidden="true">close</span></button></div>
+    <form class="box prow" id="ef" novalidate></form>
+  </aside>
+</div>
+<script>
+  var ui = FV.ui, st = FV.store, me = S.azienda.id, scarti = ui.param('cat') === 'scarti';
+  ui.shell(scarti ? 'circolarita' : 'offerte');
+  var title = scarti ? 'Circolarità' : 'Le mie offerte';
+  document.title = title + ' · ForValue';
+  document.getElementById('title').textContent = title;
+  document.getElementById('crumb').innerHTML = ui.esc(S.azienda.ragione_sociale) + ' <span class="ms" aria-hidden="true">chevron_right</span> ' + title;
+  document.getElementById('nuova').href = ui.vendiHref();
+
+  // Quantity of a product already ordered (orders not refused or cancelled)
+  function sold(idProdotto) {
+    var offs = st.all('offerta').filter(function (o) { return o.id_prodotto === idProdotto; }).map(function (o) { return o.id; });
+    return st.all('ordine').filter(function (o) { return offs.indexOf(o.id_offerta) >= 0 && st.ordineValido(o); }).reduce(function (s, o) { return s + o.quantita; }, 0);
+  }
+  function mine() {
+    return st.all('offerta').filter(function (o) {
+      var p = st.byId('prodotto', o.id_prodotto);
+      return o.id_azienda === me && p && (!scarti || p.categoria === 'sottoprodotto');
+    }).sort(function (a, b) { return b.id - a.id; });
+  }
+
+  if (scarti) {
+    // Circolarità: by-products put back on the market instead of being thrown away
+    var intro = document.getElementById('intro'); intro.hidden = false;
+    intro.textContent = 'Gli scarti di segheria (cippato, segatura) rimessi in circolo invece di essere buttati.';
+    var offs = mine(), u = 't';
+    var offered = offs.reduce(function (s, o) { return s + o.quantita_disponibile; }, 0);
+    var sold_t = offs.reduce(function (s, o) { return s + sold(o.id_prodotto); }, 0);
+    var k = document.getElementById('kpis'); k.hidden = false;
+    k.innerHTML = '<div class="box kpi"><small>Offerte di scarti</small><b>' + offs.length + '</b></div>' +
+      '<div class="box kpi"><small>Ancora disponibili</small><b>' + ui.num(offered) + ' <small>' + u + '</small></b></div>' +
+      '<div class="box kpi hl"><small>Scarti venduti</small><b>' + ui.num(sold_t) + ' <small>' + u + '</small></b></div>';
+  }
+
+  function draw() {
+    document.getElementById('rows').innerHTML = mine().map(function (o) {
+      var p = st.byId('prodotto', o.id_prodotto), l = st.lottoOfOfferta(o), sc = p.categoria === 'sottoprodotto', u = st.unitOf(o);
+      var live = o.attiva && o.quantita_disponibile > 0;
+      return '<tr><td style="font-weight:600">' + ui.v(o, 'titolo') + '</td><td>' + (l ? ui.v(l, 'codice_qr') : '–') + '</td>' +
+        '<td class="num">' + ui.num(o.quantita_disponibile) + ' ' + u + '</td><td class="num">' + ui.euro(o.prezzo_unitario).replace(' €', '') + ' €/' + u + '</td>' +
+        '<td>' + (sc ? ui.scartiPill() : '<span class="pill p-cert"><span class="ms" aria-hidden="true">forest</span>Legname</span>') + '</td>' +
+        '<td>' + (live ? '<span class="pill p-st"><span class="ms" aria-hidden="true">visibility</span>Pubblicata</span>' : '<span class="pill p-st"><span class="ms" aria-hidden="true">block</span>Esaurita</span>') + '</td>' +
+        '<td style="text-align:right"><button type="button" class="dbtn sec" data-edit="' + o.id + '">Modifica</button></td></tr>';
+    }).join('') || '<tr><td colspan="7"><div class="empty" style="padding:24px"><span class="ms" aria-hidden="true">' + (scarti ? 'recycling' : 'sell') + '</span>' +
+      (scarti ? 'Nessuno scarto in vendita.' : 'Nessuna offerta pubblicata.') + '<a class="dbtn pri" href="' + ui.vendiHref() + '">Metti in vendita un lotto</a></div></td></tr>';
+  }
+  draw();
+
+  // ---- Modifica: quantity and price ----
+  var wrap = document.getElementById('panelWrap'), form = document.getElementById('ef'), cur = null;
+  document.getElementById('rows').onclick = function (e) {
+    var b = e.target.closest('[data-edit]'); if (!b) return;
+    cur = st.byId('offerta', b.getAttribute('data-edit'));
+    var p = st.byId('prodotto', cur.id_prodotto), u = st.unitOf(cur), sc = p.categoria === 'sottoprodotto';
+    var max = Math.max(0, p.quantita - sold(p.id));
+    form.className = 'box prow' + (sc ? ' scarti' : '');
+    form.setAttribute('data-max', max);
+    form.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center"><b>' + ui.esc(cur.titolo) + '</b>' + (sc ? ui.scartiPill() : '') + '</div>' +
+      '<div class="grid2"><div class="dfield"><label for="eq">Quantità</label><div class="dinput"><input id="eq" inputmode="decimal" value="' + ui.num(cur.quantita_disponibile) + '"><span class="unit">' + u + '</span></div></div>' +
+      '<div class="dfield"><label for="ep">Prezzo</label><div class="dinput"><input id="ep" inputmode="decimal" value="' + ui.euro(cur.prezzo_unitario).replace(' €', '') + '"><span class="unit">€/' + u + '</span></div></div></div>' +
+      '<div class="derr" hidden></div><div class="xs muted">Massimo ' + ui.num(max) + ' ' + u + ' (prodotto meno già ordinato)</div>' +
+      '<button class="dbtn pri full" type="submit">Salva modifiche</button>';
+    wrap.hidden = false; form.querySelector('input').focus();
+  };
+  function closePanel() { wrap.hidden = true; }
+  wrap.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closePanel(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !wrap.hidden) closePanel(); });
+  form.onsubmit = function (e) {
+    e.preventDefault();
+    var max = Number(form.getAttribute('data-max')), q = ui.parseNum(form.querySelector('#eq').value), pr = ui.parseNum(form.querySelector('#ep').value), err = form.querySelector('.derr');
+    var msg = !q ? 'Inserisci una quantità maggiore di zero.' : q > max ? 'Massimo ' + ui.num(max) + ' ' + st.unitOf(cur) + '.' : !pr ? 'Inserisci un prezzo maggiore di zero.' : '';
+    form.querySelectorAll('.dinput').forEach(function (d) { d.classList.remove('err'); });
+    if (msg) { err.textContent = msg; err.hidden = false; form.querySelector(!q || q > max ? '#eq' : '#ep').parentNode.classList.add('err'); return; }
+    st.publishOfferta(cur.id_prodotto, me, q, pr);
+    closePanel(); draw(); ui.toast('Offerta aggiornata');
+  };
+</script>
+</body>
+</html>

@@ -3,23 +3,6 @@
 
 body.desk { font-size: 15px; line-height: 22px; min-height: 100vh; display: grid; grid-template-columns: 240px 1fr; background: var(--bg); }
 
-/* Sidebar */
-#sb { display: flex; }   /* page slot that holds the sidebar: lets it stretch to the full page height */
-.sb { flex: 1; background: var(--g900); color: #fff; min-height: 100vh; }
-.sb-in { padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
-.sb .logo { padding: 4px 12px 20px; }
-.sb nav { display: flex; flex-direction: column; gap: 4px; }
-.sb nav a { display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 8px; color: var(--g100); font-weight: 500; }
-.sb nav a:hover { background: rgba(255,255,255,.06); }
-.sb nav a[aria-current="page"] { background: var(--g700); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--au500); }
-.sb .ms { font-size: 22px; }
-.sb .count { margin-left: auto; background: var(--au500); color: var(--ink); font-size: 12px; font-weight: 700; border-radius: 999px; padding: 0 7px; line-height: 20px; }
-.sb .foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px; border-top: 1px solid rgba(255,255,255,.12); }
-.sb .foot .who { display: flex; gap: 10px; align-items: center; font-weight: 600; }
-.sb .foot .lnk { display: flex; gap: 8px; align-items: center; color: var(--g100); font-size: 13px; font-weight: 600; min-height: 32px; text-align: left; }
-.sb .foot .lnk:hover { color: #fff; }
-.sb .foot .lnk .ms { font-size: 18px; }
-
 /* Main column */
 .main { padding: 24px 32px 40px; display: flex; flex-direction: column; gap: 20px; min-width: 0; position: relative; }
 .crumb { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -114,35 +97,6 @@ tbody tr.click:hover td { background: #FBFBF8; }
 @media (max-width: 1100px) {
   body.desk { grid-template-columns: 200px 1fr; }
   .main { padding: 20px; }
-}
-/* Phone / small tablet (≤ 760 px): sidebar becomes a green top bar with a menu button */
-.sb-toggle { display: none; }
-@media (max-width: 760px) {
-  body.desk { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
-  th, td { white-space: nowrap; padding: 10px 12px; }
-  .sb { min-height: 0; }
-  .sb-in { position: static; height: auto; padding: 8px 12px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0; }
-  .sb .logo { padding: 8px 4px; }
-  .sb-toggle { display: grid; place-items: center; width: 44px; height: 44px; color: #fff; border-radius: 8px; }
-  .sb nav, .sb .foot { display: none; grid-column: 1 / -1; }
-  .sb.open nav, .sb.open .foot { display: flex; }
-  .sb.open nav { padding-top: 8px; }
-  .main { padding: 16px; gap: 16px; }
-  .main [style*="grid-template-columns"] { grid-template-columns: minmax(0, 1fr) !important; }
-  .main #kpis[style] { grid-template-columns: 1fr 1fr !important; }
-  .main [style*="justify-content:space-between"] { flex-wrap: wrap; }
-  .main .dinput[style*="width"] { width: 100% !important; }
-  .main > div[style*="justify-content:space-between"] > div { width: 100%; }
-  .box:has(> table), .box:has(#chart) { overflow-x: auto; }
-  #chart { min-width: 320px; gap: 12px !important; }
-  #lines > div { flex-wrap: wrap; }
-  .head .dbtn { width: 100%; }
-  .head { flex-wrap: wrap; }
-  .panel { width: 100%; }
-  .ocard .ph-img { height: 110px; }
-}
-@media (max-width: 400px) {
-  .main #kpis[style] { grid-template-columns: minmax(0, 1fr) !important; }
 }
 .grid2 > *, .dfield { min-width: 0; }
 .dinput input { width: 100%; }

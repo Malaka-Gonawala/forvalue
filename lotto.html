@@ -4,11 +4,13 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2E6B3F">
 <title>Lotto · ForValue</title>
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/desk.css">
+<link rel="stylesheet" href="css/shell.css">
 </head>
 <body class="desk">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script><script src="js/lib/qrcode.js"></script>
@@ -27,7 +29,7 @@
 
 <script>
   var ui = FV.ui, st = FV.store, me = S.azienda.id;
-  document.getElementById('sb').innerHTML = ui.sidebar('lotti', S);
+  ui.shell('lotti');
   var l = st.lottoByCode(ui.param('c') || '');
   if (!l) { location.replace('dashboard.html'); FV.auth.stop(); }
   document.title = l.codice_qr + ' · ForValue';
@@ -39,8 +41,8 @@
   function fact(k, v) { return '<div><div class="muted xs">' + k + '</div><div style="font-weight:600">' + v + '</div></div>'; }
   var url = ui.qrUrl(l);
   document.getElementById('main').innerHTML =
-    '<div class="head"><a class="backbtn" href="dashboard.html" aria-label="Indietro"><span class="ms" aria-hidden="true">arrow_back</span></a>' +
-      '<div class="grow"><div class="crumb"><a href="dashboard.html">Dashboard</a> <span class="ms" aria-hidden="true">chevron_right</span> <a href="segheria-lotti.html">Lotti</a> <span class="ms" aria-hidden="true">chevron_right</span> ' + ui.esc(l.codice_qr) + '</div>' +
+    '<div class="head pg"><a class="backbtn" href="dashboard.html" aria-label="Indietro"><span class="ms" aria-hidden="true">arrow_back</span></a>' +
+      '<div class="grow"><div class="crumb"><a href="dashboard.html">Dashboard</a> <span class="ms" aria-hidden="true">chevron_right</span> <a href="segheria-lotti.html">Lotti ricevuti</a> <span class="ms" aria-hidden="true">chevron_right</span> ' + ui.esc(l.codice_qr) + '</div>' +
       '<h1 class="h1">' + ui.v(l, 'codice_qr') + '</h1></div>' +
       (prodotti.length && stato !== 'Venduto' ? '<button type="button" class="dbtn pri" id="sell"><span class="ms" aria-hidden="true">sell</span>Metti in vendita</button>' : '') + '</div>' +
     '<div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px">' +
@@ -65,7 +67,7 @@
   var wrap = document.getElementById('panelWrap');
   function sold(idProdotto) {
     var offs = st.all('offerta').filter(function (o) { return o.id_prodotto === idProdotto; }).map(function (o) { return o.id; });
-    return st.all('ordine').filter(function (o) { return offs.indexOf(o.id_offerta) >= 0 && o.stato !== 'annullato'; }).reduce(function (s, o) { return s + o.quantita; }, 0);
+    return st.all('ordine').filter(function (o) { return offs.indexOf(o.id_offerta) >= 0 && st.ordineValido(o); }).reduce(function (s, o) { return s + o.quantita; }, 0);
   }
   function openPanel() {
     document.getElementById('pSub').textContent = 'Dal lotto ' + l.codice_qr;
@@ -97,7 +99,7 @@
     st.publishOfferta(id, me, q, pr);
     var sc = p.categoria === 'sottoprodotto';
     ui.flash(sc ? 'Scarti pubblicati' : 'Offerta pubblicata');
-    location.href = 'marketplace.html' + (sc ? '?tab=scarti' : '');
+    location.href = 'offerte.html' + (sc ? '?cat=scarti' : '');
   });
   var btn = document.getElementById('sell');
   if (btn) btn.onclick = openPanel;

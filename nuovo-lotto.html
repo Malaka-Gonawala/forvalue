@@ -9,20 +9,26 @@
 <meta name="theme-color" content="#2E6B3F">
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/desk.css">
 <link rel="stylesheet" href="css/phone.css">
+<link rel="stylesheet" href="css/shell.css">
+<style>
+  /* Desktop: form on the left, map + GPS panel on the right (Figma "OD2 Nuovo lotto") */
+  @media (min-width: 900px) { .nl { display: grid !important; grid-template-columns: minmax(0, 1fr) 340px; align-items: start; } }
+</style>
 </head>
 <body class="phone has-sticky">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
 <script>var S = FV.auth.require(['proprietario']);</script>
 
 <div id="bar"></div>
-<div class="hero" style="padding-bottom:64px;padding-top:8px">
+<div class="hero only-p" style="padding-bottom:64px;padding-top:8px">
   <button type="button" class="gpill" id="rileva" title="Rileva posizione"><span class="ms" aria-hidden="true">my_location</span><span id="gps"></span><span class="sr">· Rileva posizione</span></button>
   <div class="small sub"><span id="gpsNote"></span><br><button type="button" id="rileva2" style="color:#fff;text-decoration:underline;font-weight:600;min-height:32px">Rileva posizione</button></div>
 </div>
 
 <form id="f" novalidate>
-<main class="over" style="margin-top:-48px;padding-bottom:16px">
+<main class="over nl" style="margin-top:-48px;padding-bottom:16px">
   <div class="box lift" style="padding:16px;display:flex;flex-direction:column;gap:16px">
     <div class="field">
       <label for="specie">Specie</label>
@@ -47,17 +53,26 @@
     </div>
     <div class="field">
       <label for="foto">Foto <span class="muted" style="font-weight:400">(facoltativa)</span></label>
-      <label class="photo" for="foto" id="photoBox"><span class="ms" aria-hidden="true">photo_camera</span>Scatta una foto</label>
+      <label class="photo" for="foto" id="photoBox"><span class="ms" aria-hidden="true">photo_camera</span><span class="only-p">Scatta una foto</span><span class="only-d">Carica una foto</span></label>
       <input id="foto" type="file" accept="image/*" capture="environment" hidden>
     </div>
   </div>
+  <aside class="box only-d" style="overflow:hidden">
+    <div class="map" style="height:200px;border-radius:0"><span class="ms" style="font-size:40px;color:var(--g900)" aria-hidden="true">location_on</span><span class="tag">Mappa segnaposto</span></div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+      <span class="gpill" style="font-size:14px"><span class="ms" aria-hidden="true">my_location</span><span id="gpsD"></span></span>
+      <div class="small">Particella: <b id="partD"></b></div>
+      <button type="button" class="dbtn sec" id="rileva3"><span class="ms" aria-hidden="true">refresh</span>Rileva di nuovo</button>
+    </div>
+  </aside>
 </main>
-<div class="sticky"><button class="btn pri" type="submit">Salva lotto</button></div>
+<div class="sticky"><a class="btn sec only-d flex" href="home.html">Annulla</a><button class="btn pri" type="submit">Salva lotto</button></div>
 </form>
 
 <script>
   var ui = FV.ui, st = FV.store;
   document.getElementById('bar').innerHTML = ui.backBar('Nuovo lotto', 'home.html');
+  ui.shell('nuovo', { title: 'Nuovo lotto', crumb: '<a href="lotti.html">I miei lotti</a>', noTabs: true });
 
   // Fields
   var sel = document.getElementById('specie');
@@ -80,6 +95,8 @@
   function paintGps() {
     if (pos) { document.getElementById('gps').textContent = ui.gps(pos.lat, pos.lon); document.getElementById('gpsNote').textContent = 'Posizione rilevata dal telefono'; }
     else { document.getElementById('gps').textContent = ui.gps(parcel.lat, parcel.lon); document.getElementById('gpsNote').textContent = 'Posizione rilevata · ' + parcel.nome; }
+    document.getElementById('gpsD').textContent = document.getElementById('gps').textContent;
+    document.getElementById('partD').textContent = pos ? 'Posizione rilevata' : parcel.nome;
   }
   function detect(btn) {
     if (!navigator.geolocation) { if (btn) ui.toast('GPS non disponibile: uso la particella ' + parcel.nome); return; }
@@ -91,6 +108,7 @@
   }
   document.getElementById('rileva').onclick = function () { detect(this); };
   document.getElementById('rileva2').onclick = function () { detect(this); };
+  document.getElementById('rileva3').onclick = function () { detect(this); };
   // Use the phone silently only if the permission was already given
   if (navigator.permissions) navigator.permissions.query({ name: 'geolocation' }).then(function (r) { if (r.state === 'granted') detect(); }).catch(function () {});
   paintGps();

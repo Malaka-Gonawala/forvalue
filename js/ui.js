@@ -37,7 +37,7 @@
   function badges(lotto, short) {
     return certPill(lotto.certificato) + eudrPill(S().eudrOk(lotto), short) + statoPill(S().statoLotto(lotto.id));
   }
-  var ORD = { inviato: ['Inviato', 'send', 'p-eudr'], accettato: ['Accettato', 'thumb_up', 'p-cert'], consegnato: ['Consegnato', 'check', 'p-st'], annullato: ['Annullato', 'close', 'p-st'] };
+  var ORD = { inviato: ['Inviato', 'send', 'p-eudr'], accettato: ['Accettato', 'thumb_up', 'p-cert'], consegnato: ['Consegnato', 'check', 'p-st'], rifiutato: ['Rifiutato', 'block', 'p-st'], annullato: ['Annullato', 'close', 'p-st'] };
   function ordinePill(stato) { var o = ORD[stato]; return '<span class="pill ' + o[2] + '"><span class="ms" aria-hidden="true">' + o[1] + '</span>' + o[0] + '</span>'; }
   function scartiPill() { return '<span class="pill p-scarti"><span class="ms" aria-hidden="true">recycling</span>Scarti</span>'; }
 
@@ -59,36 +59,98 @@
   function backBar(title, href) {
     return '<header class="bar"><div class="title"><a class="back" href="' + href + '" aria-label="Indietro"><span class="ms" aria-hidden="true">arrow_back</span></a><h1 class="h2">' + esc(title) + '</h1></div></header>';
   }
-  function tabbar(active) {
-    var tabs = [['home', 'home.html', 'home', 'Home'], ['lotti', 'lotti.html', 'inventory_2', 'Lotti'], ['nuovo', 'nuovo-lotto.html', 'add', 'Nuovo lotto'], ['profilo', 'profilo.html', 'person', 'Profilo'], ['altro', 'altro.html', 'menu', 'Altro']];
-    return '<nav class="tabbar" aria-label="Menu">' + tabs.map(function (x) {
+  /* ---------- menus: each role sees only its own functions ---------- */
+  // [key, href, icon, label]. Phone tab 3 (index 2) is the gold centre button.
+  var NAV = {
+    proprietario: {
+      tabs: [['home', 'home.html', 'home', 'Home'], ['lotti', 'lotti.html', 'inventory_2', 'Lotti'], ['nuovo', 'nuovo-lotto.html', 'add', 'Nuovo lotto'], ['profilo', 'profilo.html', 'person', 'Profilo'], ['altro', 'altro.html', 'menu', 'Altro']],
+      side: [['home', 'home.html', 'home', 'Home'], ['lotti', 'lotti.html', 'inventory_2', 'I miei lotti'], ['nuovo', 'nuovo-lotto.html', 'add_box', 'Nuovo lotto'],
+        ['certificati', 'certificati.html', 'workspace_premium', 'Certificati'], ['notifiche', 'notifiche.html', 'notifications', 'Notifiche'], ['profilo', 'profilo.html', 'person', 'Profilo']]
+    },
+    segheria: {
+      tabs: [['dashboard', 'dashboard.html', 'space_dashboard', 'Home'], ['lotti', 'segheria-lotti.html', 'inventory_2', 'Lotti'], ['vendi', '#vendi', 'sell', 'Vendi'], ['ordini', 'ordini-ricevuti.html', 'receipt_long', 'Ordini'], ['altro', 'altro.html', 'menu', 'Altro']],
+      side: [['dashboard', 'dashboard.html', 'space_dashboard', 'Dashboard'], ['lotti', 'segheria-lotti.html', 'inventory_2', 'Lotti ricevuti'], ['offerte', 'offerte.html', 'sell', 'Le mie offerte'],
+        ['circolarita', 'offerte.html?cat=scarti', 'recycling', 'Circolarità'], ['ordini', 'ordini-ricevuti.html', 'move_to_inbox', 'Ordini ricevuti']]
+    },
+    acquirente: {
+      tabs: [['marketplace', 'marketplace.html', 'storefront', 'Mercato'], ['circolarita', 'marketplace.html?tab=scarti', 'recycling', 'Scarti'], ['carrello', 'carrello.html', 'shopping_cart', 'Carrello'], ['ordini', 'ordini.html', 'receipt_long', 'Ordini'], ['altro', 'altro.html', 'menu', 'Altro']],
+      side: [['marketplace', 'marketplace.html', 'storefront', 'Marketplace'], ['circolarita', 'marketplace.html?tab=scarti', 'recycling', 'Circolarità'], ['carrello', 'carrello.html', 'shopping_cart', 'Carrello'], ['ordini', 'ordini.html', 'receipt_long', 'I miei ordini']]
+    }
+  };
+  // Hidden demo shortcut on the logo: owner → sawmill → buyer → sawmill
+  var HOT = { proprietario: 'segheria', segheria: 'acquirente', acquirente: 'segheria' };
+
+  // Sawmill "Vendi": the first received batch that is sawn and not sold (no offer yet first), else Le mie offerte
+  function vendiHref() {
+    var s = FV.auth.current(), st = S();
+    var ok = st.lottiOfSawmill(s.azienda.id).filter(function (l) { return st.prodottiOfLotto(l.id).length && st.statoLotto(l.id) !== 'Venduto'; });
+    ok.sort(function (a, b) { return st.offerteOfLotto(a.id).length - st.offerteOfLotto(b.id).length || (a.codice_qr < b.codice_qr ? 1 : -1); });
+    return ok.length ? 'lotto.html?c=' + encodeURIComponent(ok[0].codice_qr) + '&vendi=1' : 'offerte.html';
+  }
+  function navHref(x) { return x[1] === '#vendi' ? vendiHref() : x[1]; }
+  function cartCount() { var n = S().getCart().length; return n ? '<span class="count">' + n + '</span>' : ''; }
+
+  function tabbar(role, active) {
+    return '<nav class="tabbar" aria-label="Menu">' + NAV[role].tabs.map(function (x, i) {
       var cur = x[0] === active ? ' aria-current="page"' : '';
-      if (x[0] === 'nuovo') return '<a class="plus" href="' + x[1] + '"' + cur + '><i><span class="ms" aria-hidden="true">' + x[2] + '</span></i>' + x[3] + '</a>';
-      return '<a href="' + x[1] + '"' + cur + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + '</a>';
+      var badge = x[0] === 'carrello' ? cartCount() : '';
+      if (i === 2) return '<a class="plus" href="' + navHref(x) + '"' + cur + '><i><span class="ms" aria-hidden="true">' + x[2] + '</span>' + badge + '</i>' + x[3] + '</a>';
+      return '<a href="' + navHref(x) + '"' + cur + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + '</a>';
     }).join('') + '</nav>';
   }
 
   /* ---------- desktop sidebar ---------- */
-  function sidebar(active, session) {
-    var r = session.ruolo, items;
-    if (r === 'segheria') {
-      items = [['dashboard', 'dashboard.html', 'space_dashboard', 'Dashboard'], ['lotti', 'segheria-lotti.html', 'inventory_2', 'Lotti'],
-        ['marketplace', 'marketplace.html', 'storefront', 'Marketplace'], ['circolarita', 'marketplace.html?tab=scarti', 'recycling', 'Circolarità'], ['ordini', 'ordini.html', 'receipt_long', 'Ordini']];
-    } else {
-      var n = S().getCart().length;
-      items = [['marketplace', 'marketplace.html', 'storefront', 'Marketplace'], ['circolarita', 'marketplace.html?tab=scarti', 'recycling', 'Circolarità'],
-        ['ordini', 'ordini.html', 'receipt_long', 'Ordini'], ['carrello', 'carrello.html', 'shopping_cart', 'Carrello' + (n ? '<span class="count">' + n + '</span>' : '')]];
-    }
-    var hot = r === 'segheria' ? 'acquirente' : 'segheria';
-    return '<aside class="sb"><div class="sb-in"><button type="button" class="logo" data-switch="' + hot + '" aria-label="ForValue">' + logoHTML().replace(/^<span class="logo">|<\/span>$/g, '') + '</button>' +
-      '<button type="button" class="sb-toggle" aria-expanded="false" aria-label="Apri menu" data-sbtoggle><span class="ms" aria-hidden="true">menu</span></button>' +
-      '<nav aria-label="Menu">' + items.map(function (x) {
-        return '<a href="' + x[1] + '"' + (x[0] === active ? ' aria-current="page"' : '') + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + '</a>';
+  function sidebar(role, active) {
+    var session = FV.auth.current();
+    return '<aside class="sb"><div class="sb-in"><button type="button" class="logo" data-switch="' + HOT[role] + '" aria-label="ForValue">' + logoHTML().replace(/^<span class="logo">|<\/span>$/g, '') + '</button>' +
+      '<nav aria-label="Menu">' + NAV[role].side.map(function (x) {
+        return '<a href="' + navHref(x) + '"' + (x[0] === active ? ' aria-current="page"' : '') + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + (x[0] === 'carrello' ? cartCount() : '') + '</a>';
       }).join('') + '</nav>' +
       '<div class="foot"><div class="who"><span class="ms" aria-hidden="true">account_circle</span>' + esc(session.azienda.ragione_sociale) + '</div>' +
       '<button type="button" class="lnk" data-reset><span class="ms" aria-hidden="true">restart_alt</span>Ripristina dati demo</button>' +
       '<button type="button" class="lnk" data-logout><span class="ms" aria-hidden="true">logout</span>Esci</button>' + LANG + '</div></div></aside>';
   }
+
+  /* Page shell for every logged-in page: desktop sidebar (≥ 900 px) + phone tab bar (< 900 px).
+     Desktop pages also get the phone top bar; phone pages get a desktop title (crumb + h1).
+     opts: { title, crumb, action } – the desktop title for phone pages; noTabs – no phone tab bar */
+  function shell(active, opts) {
+    opts = opts || {};
+    var s = FV.auth.current(), role = s.ruolo, b = document.body;
+    b.classList.add('app');
+    var slot = document.getElementById('sb');
+    if (!slot) { slot = document.createElement('div'); slot.id = 'sb'; b.insertBefore(slot, b.firstChild); }
+    slot.innerHTML = sidebar(role, active);
+    if (!opts.noTabs) {   // sub-pages with a ← bar (and Nuovo lotto, with its Salva bar) have no tab bar on the phone
+      var tabs = document.getElementById('tbar');
+      if (!tabs) { tabs = document.createElement('div'); tabs.id = 'tbar'; b.appendChild(tabs); }
+      tabs.innerHTML = tabbar(role, active);
+      b.classList.add('has-tabs');
+    }
+    if (b.classList.contains('desk') && !document.getElementById('pbar')) {
+      var pb = document.createElement('div'); pb.id = 'pbar'; pb.innerHTML = phoneBar({ hotspot: HOT[role] });
+      slot.insertAdjacentElement('afterend', pb);
+    }
+    if (opts.title && !document.getElementById('dhead')) {
+      var dh = document.createElement('div'); dh.id = 'dhead'; dh.className = 'dhead';
+      dh.innerHTML = '<div class="grow"><div class="crumb">' + esc(s.azienda.ragione_sociale) + (opts.crumb ? ' <span class="ms" aria-hidden="true">chevron_right</span> ' + opts.crumb : '') + '</div><h1 class="h1">' + esc(opts.title) + '</h1></div>' + (opts.action || '');
+      var bar = document.getElementById('bar');
+      (bar || slot).insertAdjacentElement('afterend', dh);
+    }
+    return role;
+  }
+  // Owner news (P8 Notifiche, owner desktop Home): every step after the cut, newest first
+  function ownerNews(idAzienda) {
+    var st = S(), ev = [], rank = { P: 1, L: 2, V: 3 };
+    st.lottiOfOwner(idAzienda).forEach(function (l) { st.storico(l.id).forEach(function (e) { if (e.tipo !== 'T') ev.push({ e: e, l: l }); }); });
+    ev.sort(function (a, b) { return (b.e.data > a.e.data ? 1 : b.e.data < a.e.data ? -1 : 0) || rank[b.e.tipo] - rank[a.e.tipo]; });
+    return ev.map(function (x) {
+      var e = x.e;
+      return { l: x.l, icon: e.icon, data: e.data, title: e.tipo === 'L' ? 'Segato in tavole e scarti' : e.titolo,
+        detail: e.tipo === 'L' ? e.titolo.replace('Segato: ', '') : e.tipo === 'V' ? (e.raw.dett || '') : '' };
+    });
+  }
+  function hotspot() { var s = FV.auth.current(); return s ? HOT[s.ruolo] : null; }
 
   /* ---------- QR ---------- */
   function b64url(str) {
@@ -163,8 +225,6 @@
   document.addEventListener('click', function (e) {
     var sw = e.target.closest('[data-switch]'); if (sw) { FV.auth.switchTo(sw.getAttribute('data-switch')); return; }
     if (e.target.closest('[data-logout]')) { FV.auth.logout(); return; }
-    var tg = e.target.closest('[data-sbtoggle]');
-    if (tg) { var open = tg.closest('.sb').classList.toggle('open'); tg.setAttribute('aria-expanded', open); tg.setAttribute('aria-label', open ? 'Chiudi menu' : 'Apri menu'); tg.firstChild.textContent = open ? 'close' : 'menu'; return; }
     if (e.target.closest('[data-reset]')) {
       if (confirm('Ripristinare i dati demo? Lotti, offerte e ordini creati verranno cancellati.')) {
         FV.store.reset(); var s = FV.auth.current(); location.href = s ? FV.auth.home(s.ruolo) : 'index.html';
@@ -177,7 +237,7 @@
   window.FV.ui = {
     num: num, num1: num1, parseNum: parseNum, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
     certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
-    phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, logoHTML: logoHTML, LANG: LANG,
+    phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, hotspot: hotspot, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, logoHTML: logoHTML, LANG: LANG,
     qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
   };
 })();

@@ -1,5 +1,6 @@
 <!doctype html>
 <!-- P1 · Owner home (Figma "P1 Owner home v5"). Big + Nuovo lotto, then the owner's latest batches.
+     Desktop (≥ 900 px, Figma "OD1 Owner home"): 4 KPIs, I miei lotti table, Ultime notifiche.
      Hidden demo shortcut: the ForValue logo switches to the sawmill (D1). -->
 <html lang="it">
 <head>
@@ -9,7 +10,9 @@
 <meta name="theme-color" content="#2E6B3F">
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/desk.css">
 <link rel="stylesheet" href="css/phone.css">
+<link rel="stylesheet" href="css/shell.css">
 </head>
 <body class="phone has-tabs">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
@@ -17,20 +20,34 @@
 
 <div id="bar"></div>
 <div class="hero" style="padding:8px 16px 28px"></div>
-<main class="over" style="margin-top:-28px">
+<main class="over only-p" style="margin-top:-28px">
   <a class="btn gold lift" href="nuovo-lotto.html"><span class="ms" aria-hidden="true">add</span>Nuovo lotto</a>
   <h2 class="h2" style="margin-top:8px">I miei lotti</h2>
   <div id="list" style="display:flex;flex-direction:column;gap:12px"></div>
 </main>
-<div id="tabs"></div>
+<!-- Desktop home -->
+<section class="only-d flex" style="flex-direction:column;gap:20px;padding:20px 32px 0">
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px" id="kpis"></div>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start">
+    <section class="box" style="overflow-x:auto">
+      <div style="padding:16px 16px 4px;display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:15px">I miei lotti</h2><a class="xs" href="lotti.html" style="color:var(--g700);font-weight:600">Tutti i lotti</a></div>
+      <table><thead><tr><th>Lotto</th><th>Specie</th><th>Volume</th><th>Particella</th><th>Badge</th><th>Stato</th><th></th></tr></thead><tbody id="drows" style="white-space:nowrap"></tbody></table>
+    </section>
+    <section class="box">
+      <div style="padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:15px">Ultime notifiche</h2><a class="xs" href="notifiche.html" style="color:var(--g700);font-weight:600">Tutte</a></div>
+      <div id="news"></div>
+    </section>
+  </div>
+</section>
 
 <script>
   var ui = FV.ui, st = FV.store;
-  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: 'segheria' });
-  document.getElementById('tabs').innerHTML = ui.tabbar('home');
+  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: ui.hotspot() });
+  ui.shell('home', { title: 'Home', action: '<a class="dbtn" href="nuovo-lotto.html" style="background:var(--au500);color:var(--ink)"><span class="ms" aria-hidden="true">add</span>Nuovo lotto</a>' });
 
-  // Newest code first; the home shows the 3 most recent
-  var lotti = st.lottiOfOwner(S.azienda.id).sort(function (a, b) { return a.codice_qr < b.codice_qr ? 1 : -1; }).slice(0, 3);
+  // Newest code first; the phone home shows the 3 most recent
+  var tutti = st.lottiOfOwner(S.azienda.id).sort(function (a, b) { return a.codice_qr < b.codice_qr ? 1 : -1; });
+  var lotti = tutti.slice(0, 3);
   var list = document.getElementById('list');
   if (!lotti.length) {
     list.innerHTML = '<div class="box empty"><span class="ms" aria-hidden="true">forest</span><div>Non hai ancora lotti.</div><a class="btn pri" href="nuovo-lotto.html">Registra il primo lotto</a></div>';
@@ -42,6 +59,27 @@
         '<div class="pills">' + ui.badges(l) + '</div></a>';
     }).join('');
   }
+
+  // ---- Desktop: KPIs from the owner's batches ----
+  var vol = tutti.reduce(function (t, l) { return t + l.volume_m3; }, 0);
+  var cert = tutti.filter(function (l) { return l.certificato; }).length;
+  var co2 = tutti.reduce(function (t, l) { return t + l.volume_m3 * st.byId('specie', l.id_specie).fattore_co2; }, 0);
+  function kpi(label, value, unit, hl) { return '<div class="box kpi' + (hl ? ' hl' : '') + '"><small>' + label + '</small><b>' + value + ' <small>' + unit + '</small></b></div>'; }
+  document.getElementById('kpis').innerHTML =
+    kpi('Lotti registrati', tutti.length, 'lotti') + kpi('Volume registrato', ui.num(vol), 'm³') +
+    kpi('% certificato PEFC / FSC', tutti.length ? ui.num(Math.round(cert / tutti.length * 100)) : '–', '%', true) +
+    kpi('CO₂ stoccata', new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(co2), 't');
+  document.getElementById('drows').innerHTML = tutti.map(function (l) {
+    var part = st.byId('particella', l.id_particella);
+    return '<tr><td style="font-weight:600">' + ui.v(l, 'codice_qr') + '</td><td>' + ui.esc(ui.specieName(l)) + '</td><td class="num">' + ui.num(l.volume_m3) + ' m³</td>' +
+      '<td>' + ui.v(part, 'nome') + '</td><td><div class="pills" style="flex-wrap:nowrap">' + ui.certPill(l.certificato) + ui.eudrPill(st.eudrOk(l), true) + '</div></td>' +
+      '<td>' + ui.statoPill(st.statoLotto(l.id)) + '</td>' +
+      '<td style="text-align:right"><a class="dbtn sec" href="' + ui.esc(ui.qrUrl(l)) + '"><span class="ms" aria-hidden="true">qr_code_2</span>QR</a></td></tr>';
+  }).join('') || '<tr><td colspan="7" class="muted">Non hai ancora lotti.</td></tr>';
+  document.getElementById('news').innerHTML = ui.ownerNews(S.azienda.id).slice(0, 5).map(function (x) {
+    return '<a class="row" href="' + ui.esc(ui.qrUrl(x.l)) + '" style="min-height:0;padding:10px 16px"><span class="tile" style="width:32px;height:32px;border-radius:8px"><span class="ms" style="font-size:20px" aria-hidden="true">' + x.icon + '</span></span>' +
+      '<span class="grow"><b style="font-weight:600;font-size:14px">' + ui.t(x.title) + '</b><div class="xs muted">' + ui.v(x.l, 'codice_qr') + ' · ' + ui.date(x.data) + '</div></span></a>';
+  }).join('') || '<div class="muted small" style="padding:0 16px 16px">Nessuna notifica.</div>';
 </script>
 </body>
 </html>

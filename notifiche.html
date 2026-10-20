@@ -9,6 +9,7 @@
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/phone.css">
+<link rel="stylesheet" href="css/shell.css">
 </head>
 <body class="phone">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
@@ -19,20 +20,10 @@
 <script>
   var ui = FV.ui, st = FV.store;
   document.getElementById('bar').innerHTML = ui.backBar('Notifiche', 'altro.html');
-  // Every step after the cut is news for the owner
-  var ev = [];
-  st.lottiOfOwner(S.azienda.id).forEach(function (l) {
-    st.storico(l.id).forEach(function (e) { if (e.tipo !== 'T') ev.push({ e: e, l: l }); });
-  });
-  // Newest first
-  var rank = { P: 1, L: 2, V: 3 };
-  ev.sort(function (a, b) { return (b.e.data > a.e.data ? 1 : b.e.data < a.e.data ? -1 : 0) || rank[b.e.tipo] - rank[a.e.tipo]; });
-  document.getElementById('list').innerHTML = ev.slice(0, 20).map(function (x, i) {
-    var e = x.e;
-    var title = e.tipo === 'L' ? 'Segato in tavole e scarti' : e.titolo;
-    var detail = e.tipo === 'L' ? e.titolo.replace('Segato: ', '') : e.tipo === 'V' ? (e.raw.dett || '') : '';
-    return '<a class="row" href="' + ui.esc(ui.qrUrl(x.l)) + '"><span class="tile"><span class="ms" aria-hidden="true">' + e.icon + '</span></span>' +
-      '<span class="grow"><b style="font-weight:600">' + ui.t(title) + '</b><div class="small muted">' + ui.v(x.l, 'codice_qr') + ' · ' + (detail ? ui.esc(detail) + ' · ' : '') + ui.date(e.data) + '</div></span>' +
+  ui.shell('notifiche', { title: 'Notifiche', noTabs: true });
+  document.getElementById('list').innerHTML = ui.ownerNews(S.azienda.id).slice(0, 20).map(function (x, i) {
+    return '<a class="row" href="' + ui.esc(ui.qrUrl(x.l)) + '"><span class="tile"><span class="ms" aria-hidden="true">' + x.icon + '</span></span>' +
+      '<span class="grow"><b style="font-weight:600">' + ui.t(x.title) + '</b><div class="small muted">' + ui.v(x.l, 'codice_qr') + ' · ' + (x.detail ? ui.esc(x.detail) + ' · ' : '') + ui.date(x.data) + '</div></span>' +
       (i === 0 ? '<span style="width:10px;height:10px;border-radius:99px;background:var(--au500);flex:none" role="img" aria-label="Nuova"></span>' : '') + '</a>';
   }).join('') || '<div class="empty"><span class="ms" aria-hidden="true">notifications</span>Nessuna notifica.</div>';
 </script>

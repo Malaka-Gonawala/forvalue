@@ -1,5 +1,6 @@
 <!doctype html>
-<!-- P4 · Altro (Figma "P4 Altro"). Certificati, Notifiche, Aiuto, Ripristina dati demo, Esci. -->
+<!-- P4 · Altro (Figma "P4 Altro"), for every role. Owner: Certificati, Notifiche, Aiuto. Sawmill: Le mie offerte,
+     Circolarità, Aiuto. Buyer: Circolarità, Aiuto. Then Ripristina dati demo and Esci. -->
 <html lang="it">
 <head>
 <meta charset="utf-8">
@@ -9,18 +10,15 @@
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/phone.css">
+<link rel="stylesheet" href="css/shell.css">
 </head>
 <body class="phone has-tabs">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
-<script>var S = FV.auth.require(['proprietario']);</script>
+<script>var S = FV.auth.require(['proprietario', 'segheria', 'acquirente']);</script>
 <div id="bar"></div>
 <div class="hero" style="padding:4px 16px 56px"><h1 class="h1">Altro</h1><div class="sub" id="who"></div></div>
 <main class="over" style="margin-top:-40px">
-  <nav class="box lift" aria-label="Altro">
-    <a class="row" href="certificati.html"><span class="tile"><span class="ms" aria-hidden="true">workspace_premium</span></span><span class="grow"><b style="font-weight:600">Certificati</b><div class="small muted" id="certLine"></div></span><span class="ms chev" aria-hidden="true">chevron_right</span></a>
-    <a class="row" href="notifiche.html"><span class="tile"><span class="ms" aria-hidden="true">notifications</span></span><span class="grow" style="font-weight:600">Notifiche</span><span class="ms chev" aria-hidden="true">chevron_right</span></a>
-    <a class="row" href="aiuto.html"><span class="tile"><span class="ms" aria-hidden="true">help</span></span><span class="grow" style="font-weight:600">Aiuto</span><span class="ms chev" aria-hidden="true">chevron_right</span></a>
-  </nav>
+  <nav class="box lift" aria-label="Altro" id="links"></nav>
   <div class="box">
     <button type="button" class="row" data-reset><span class="tile"><span class="ms" aria-hidden="true">restart_alt</span></span><span class="grow"><b style="font-weight:600">Ripristina dati demo</b><div class="small muted">Riporta lotti, offerte e ordini ai dati iniziali</div></span></button>
   </div>
@@ -28,14 +26,23 @@
     <button type="button" class="row" data-logout style="color:var(--err)"><span class="tile" style="background:#FBE9E7;color:var(--err)"><span class="ms" aria-hidden="true">logout</span></span><span class="grow" style="font-weight:600">Esci</span></button>
   </div>
 </main>
-<div id="tabs"></div>
 <script>
   var ui = FV.ui, st = FV.store;
-  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: 'segheria' });
-  document.getElementById('tabs').innerHTML = ui.tabbar('altro');
+  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: ui.hotspot() });
+  ui.shell('altro', { title: 'Altro' });
   document.getElementById('who').textContent = S.azienda.ragione_sociale;
   var c = st.all('certificazione').find(function (x) { return x.id_azienda === S.azienda.id; });
-  document.getElementById('certLine').textContent = c ? c.schema + ' · valido fino al ' + c.data_scadenza.slice(0, 4) : 'Nessun certificato';
+  var certLine = c ? c.schema + ' · valido fino al ' + c.data_scadenza.slice(0, 4) : 'Nessun certificato';
+  // [href, icon, label, second line]
+  var LINKS = {
+    proprietario: [['certificati.html', 'workspace_premium', 'Certificati', certLine], ['notifiche.html', 'notifications', 'Notifiche'], ['aiuto.html', 'help', 'Aiuto']],
+    segheria: [['offerte.html', 'sell', 'Le mie offerte'], ['offerte.html?cat=scarti', 'recycling', 'Circolarità', 'Scarti rimessi in circolo'], ['aiuto.html', 'help', 'Aiuto']],
+    acquirente: [['marketplace.html?tab=scarti', 'recycling', 'Circolarità', 'Scarti di segheria in vendita'], ['aiuto.html', 'help', 'Aiuto']]
+  };
+  document.getElementById('links').innerHTML = LINKS[S.ruolo].map(function (x) {
+    return '<a class="row" href="' + x[0] + '"><span class="tile"><span class="ms" aria-hidden="true">' + x[1] + '</span></span><span class="grow"><b style="font-weight:600">' + x[2] + '</b>' +
+      (x[3] ? '<div class="small muted">' + ui.esc(x[3]) + '</div>' : '') + '</span><span class="ms chev" aria-hidden="true">chevron_right</span></a>';
+  }).join('');
 </script>
 </body>
 </html>

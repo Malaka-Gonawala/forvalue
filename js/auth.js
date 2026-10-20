@@ -37,7 +37,9 @@
   // Call at the top of every protected page: FV.auth.require(['segheria'])
   function require(roles) {
     var s = current();
-    if (!s || roles.indexOf(s.ruolo) < 0) { location.replace('index.html'); stop(); }
+    if (!s) { location.replace('index.html'); stop(); }
+    // Another role's page: back to your own home
+    if (roles.indexOf(s.ruolo) < 0) { location.replace(HOME[s.ruolo]); stop(); }
     return s;
   }
 

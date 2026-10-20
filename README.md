@@ -23,10 +23,10 @@ click the logo in the sawmill's sidebar to become the buyer (and the buyer's log
 
 1. On the phone, log in as the owner → **+ Nuovo lotto** → fill the volume → **Salva lotto**. The QR appears.
 2. **Vedi storico del lotto** opens the public QR page (no login).
-3. Tap the logo → sawmill Dashboard → **Vendi** on FV-2027-00087 → **Pubblica offerta** (28 m³ at 310,00 €/m³), then **Pubblica scarti** (6 t at 95,00 €/t).
+3. Tap the logo → sawmill Dashboard → **Vendi** on FV-2027-00087 → **Pubblica offerta** (28 m³ at 310,00 €/m³), then **Pubblica scarti** (6 t at 95,00 €/t). They appear in **Le mie offerte**.
 4. Click the logo → buyer Marketplace → tick **PEFC** → *Tavole di abete rosso* (310,00 €) → quantity 10 → **Ordina ora**.
 5. The confirmation shows 10 m³ · 3.100,00 €. **Vedi tracciabilità** shows the new step "Venduto ad Arredi Bianchi Srl".
-6. FV-2027-00087 is now **Venduto** everywhere (owner's list, sawmill's lists, QR page).
+6. FV-2027-00087 is now **Venduto** everywhere (owner's list, sawmill's lists, QR page). Optional: as the sawmill, open **Ordini ricevuti** and press **Accetta** (or **Rifiuta**, which gives the quantity back).
 
 Before presenting, press **Ripristina dati demo** (phone: Altro; desktop: bottom of the sidebar) to start clean.
 
@@ -56,7 +56,7 @@ Orders placed live in the demo get the date **15/04/2027** (the sale date of the
 You can change it in `js/data.js` (`demo_data_ordine`).
 
 Things that are **not** columns in the database are worked out the same way the demo queries do:
-- **Batch status**: Venduto if an order on it is *inviato* or *consegnato*, Riservato if *accettato*, otherwise Disponibile.
+- **Batch status**: Venduto if an order on it is *inviato*, *accettato* or *consegnato*, otherwise Disponibile. A *rifiutato* (refused) or *annullato* order does not count.
 - **EUDR verificato**: the parcel has GPS (lat/lon) and the batch has a cut date.
 - **CO₂**: volume × `fattore_co2` of the species (45 m³ × 0,7 = 31,5 t).
 
@@ -68,17 +68,30 @@ Things that are **not** columns in the database are worked out the same way the 
 | `home.html`, `nuovo-lotto.html`, `lotto-salvato.html` | P1 Home, P2 New batch, P3 Batch saved + QR |
 | `altro.html`, `lotti.html`, `profilo.html`, `certificati.html`, `notifiche.html`, `aiuto.html` | P4–P9 phone menu pages |
 | `qr.html` | Q1 public QR page |
-| `dashboard.html`, `lotto.html`, `segheria-lotti.html` | D1 Dashboard, D2 Batch detail + sell panel, D7 Sawmill batches |
-| `marketplace.html`, `offerta.html`, `carrello.html`, `ordine-inviato.html`, `ordini.html` | D3 Marketplace, D4 Offer, D5 Cart, D6 Order sent, D8 Orders |
-| `css/` | `base.css` (colours, badges), `phone.css`, `desk.css`, fonts (Inter, Material Symbols) |
+| `dashboard.html`, `lotto.html`, `segheria-lotti.html` | D1 Dashboard, D2 Batch detail + sell panel, D7 Lotti ricevuti |
+| `offerte.html`, `ordini-ricevuti.html` | Sawmill: Le mie offerte (`?cat=scarti` = Circolarità), Ordini ricevuti (Accetta / Rifiuta) |
+| `marketplace.html`, `offerta.html`, `carrello.html`, `ordine-inviato.html`, `ordini.html` | Buyer: D3 Marketplace, D4 Offer, D5 Cart, D6 Order sent, D8 I miei ordini |
+| `css/` | `base.css` (colours, badges, bars), `phone.css`, `desk.css`, `shell.css` (sidebar, tab bar, phone/laptop switch), fonts |
 | `js/data.js` | Seed data (same tables as the database) |
 | `js/store.js` | Every read and write to localStorage |
 | `js/auth.js` | Login, logout, role checks |
-| `js/ui.js` | Italian number/date format, badges, menus, QR link |
+| `js/ui.js` | Italian number/date format, badges, menus per role, QR link |
 | `js/lib/qrcode.js` | QR generator (qrcode-generator, MIT), works offline |
 | `DATA-NEEDED.md` | Values still missing from the database |
 
 Each page starts with a comment saying which Figma screen it is.
+
+### Menus and screen sizes
+
+Each user sees only their own functions (the menus are in `js/ui.js`, `NAV`). Opening another user's page sends you back to your own home.
+
+| User | Phone tab bar (centre = gold) | Laptop sidebar |
+|---|---|---|
+| Owner | Home, Lotti, + Nuovo lotto, Profilo, Altro | Home, I miei lotti, Nuovo lotto, Certificati, Notifiche, Profilo |
+| Sawmill | Home, Lotti, + Vendi, Ordini, Altro | Dashboard, Lotti ricevuti, Le mie offerte, Circolarità, Ordini ricevuti |
+| Buyer | Mercato, Scarti, Carrello, Ordini, Altro | Marketplace, Circolarità, Carrello, I miei ordini |
+
+Every page works on a phone and on a laptop: under 900 px wide you get the phone look (green bar and tab bar), from 900 px the laptop look (green sidebar). The QR page stays phone-shaped because people open it by scanning.
 
 ## How the QR works
 

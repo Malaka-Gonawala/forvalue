@@ -9,10 +9,11 @@
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/phone.css">
+<link rel="stylesheet" href="css/shell.css">
 </head>
 <body class="phone">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
-<script>var S = FV.auth.require(['proprietario']);</script>
+<script>var S = FV.auth.require(['proprietario', 'segheria', 'acquirente']);</script>
 <div id="bar"></div>
 <div class="hero" style="padding:4px 16px 56px"><div class="sub">Domande frequenti</div></div>
 <main class="over" style="margin-top:-40px;padding-bottom:24px">
@@ -26,6 +27,7 @@
     <span class="tile" style="background:var(--au500);color:var(--ink)"><span class="ms" aria-hidden="true">support_agent</span></span>
     <div><div style="font-weight:600">Serve altro aiuto?</div><div class="small"><span class="ph">[email supporto]</span></div></div></div>
 </main>
-<script>document.getElementById('bar').innerHTML = FV.ui.backBar('Aiuto', 'altro.html');</script>
+<script>document.getElementById('bar').innerHTML = FV.ui.backBar('Aiuto', 'altro.html');
+  FV.ui.shell('altro', { title: 'Aiuto', crumb: '<a href="altro.html">Altro</a>', noTabs: true });</script>
 </body>
 </html>

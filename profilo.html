@@ -9,6 +9,7 @@
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/phone.css">
+<link rel="stylesheet" href="css/shell.css">
 </head>
 <body class="phone has-tabs">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
@@ -18,11 +19,10 @@
   <div style="width:64px;height:64px;border-radius:999px;background:var(--au500);color:var(--g900);display:grid;place-items:center;flex:none"><span class="ms" style="font-size:36px" aria-hidden="true">forest</span></div>
   <div><h1 class="h2" id="name"></h1><div style="color:var(--au300);font-weight:600">Proprietario forestale</div></div></div>
 <main class="over" style="margin-top:-40px;padding-bottom:16px"><div class="box lift" id="rows"></div></main>
-<div id="tabs"></div>
 <script>
   var ui = FV.ui, st = FV.store, u = S.utente;
-  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: 'segheria' });
-  document.getElementById('tabs').innerHTML = ui.tabbar('profilo');
+  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: ui.hotspot() });
+  ui.shell('profilo', { title: 'Profilo' });
   document.getElementById('name').textContent = S.azienda.ragione_sociale;
   var p = st.all('particella').find(function (x) { return x.id_azienda === S.azienda.id; });
   var c = st.all('certificazione').find(function (x) { return x.id_azienda === S.azienda.id; });

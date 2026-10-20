@@ -9,6 +9,7 @@
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/phone.css">
+<link rel="stylesheet" href="css/shell.css">
 </head>
 <body class="phone has-tabs">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
@@ -18,11 +19,10 @@
   <div class="fchips" role="group" aria-label="Filtra i lotti" id="chips" style="margin-top:4px">
     <button type="button" class="fchip" data-f="">Tutti</button><button type="button" class="fchip" data-f="Disponibile">Disponibili</button><button type="button" class="fchip" data-f="Venduto">Venduti</button></div></div>
 <main class="over" style="padding-top:16px;padding-bottom:16px"><div id="list" style="display:flex;flex-direction:column;gap:12px"></div></main>
-<div id="tabs"></div>
 <script>
   var ui = FV.ui, st = FV.store, filter = '';
-  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: 'segheria' });
-  document.getElementById('tabs').innerHTML = ui.tabbar('lotti');
+  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: ui.hotspot() });
+  ui.shell('lotti', { title: 'I miei lotti' });
   document.getElementById('who').textContent = S.azienda.ragione_sociale;
   var lotti = st.lottiOfOwner(S.azienda.id).sort(function (a, b) { return a.codice_qr < b.codice_qr ? 1 : -1; });
   function draw() {

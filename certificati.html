@@ -9,6 +9,7 @@
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/phone.css">
+<link rel="stylesheet" href="css/shell.css">
 </head>
 <body class="phone">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
@@ -23,6 +24,7 @@
 <script>
   var ui = FV.ui, st = FV.store;
   document.getElementById('bar').innerHTML = ui.backBar('Certificati', 'altro.html');
+  ui.shell('certificati', { title: 'Certificati', noTabs: true });
   document.getElementById('who').textContent = S.azienda.ragione_sociale;
   var NAME = { PEFC: 'Gestione forestale sostenibile', FSC: 'Forest Stewardship Council' };
   var certs = st.all('certificazione').filter(function (c) { return c.id_azienda === S.azienda.id; });

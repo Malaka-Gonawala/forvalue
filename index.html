@@ -1,5 +1,6 @@
 <!doctype html>
-<!-- P0 · Login (Figma "P0 Login"). Checks email + password, sends each role to its home. -->
+<!-- P0 · Login (Figma "P0 Login"). Checks email + password, sends each role to its home.
+     Desktop (≥ 900 px, "D-login"): split screen, green brand panel with the 3 role tiles + login card. -->
 <html lang="it">
 <head>
 <meta charset="utf-8">
@@ -9,11 +10,45 @@
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/phone.css">
+<style>
+  .brand, .rlang, .dk { display: none; }
+  @media (min-width: 900px) {
+    body.login { max-width: none; display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; font-size: 15px; line-height: 22px; }
+    body.login #bar, body.login .hero { display: none; }
+    .brand { display: flex; flex-direction: column; gap: 24px; background: var(--g700); color: #fff; padding: 48px 64px; grid-column: 1; grid-row: 1; }
+    .brand .logo { font-size: 22px; }
+    .brand .logo .mk { width: 36px; height: 36px; }
+    .brand h2 { font-size: clamp(32px, 3.2vw, 44px); line-height: 1.18; font-weight: 700; margin-top: 72px; }
+    .brand .tiles { display: flex; flex-direction: column; gap: 12px; max-width: 440px; }
+    .brand .rt { display: flex; gap: 14px; align-items: center; background: rgba(255,255,255,.08); border-radius: 8px; padding: 14px 16px; color: #fff; text-align: left; width: 100%; }
+    .brand .rt:hover, .brand .rt[aria-pressed="true"] { background: rgba(255,255,255,.16); }
+    .brand .rt .tile { background: var(--au500); color: var(--g900); }
+    .brand .rt small { display: block; color: var(--g100); font-size: 14px; }
+    .dk { display: block; }
+    body.login #f { padding: 32px !important; }
+    .rlang { display: block; position: absolute; top: 24px; right: 32px; }
+    body.login main.over { grid-column: 2; grid-row: 1; align-self: center; justify-self: center; width: min(420px, 100% - 64px); margin: 0 !important; padding: 0; }
+    body.login .btn, body.login .input { min-height: 48px; border-radius: 8px; }
+    body.login .input input { height: 44px; }
+    body.login .lift { box-shadow: 0 8px 24px rgba(31,77,44,.10); }
+  }
+</style>
 </head>
-<body class="phone">
+<body class="phone login">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
 
 <div id="bar"></div>
+<aside class="brand" aria-label="ForValue">
+  <span class="logo"><span class="mk"><span class="ms" aria-hidden="true">forest</span></span>ForValue</span>
+  <h2>Ogni lotto,<br>dal bosco al cliente.</h2>
+  <div style="color:var(--g100);margin-top:-12px">Una piattaforma per tre ruoli della filiera del legno.</div>
+  <div class="tiles" id="tiles">
+    <button type="button" class="rt" data-role="proprietario"><span class="tile"><span class="ms" aria-hidden="true">forest</span></span><span><b>Proprietario forestale</b><small>Registra i lotti e crea il QR</small></span></button>
+    <button type="button" class="rt" data-role="segheria"><span class="tile"><span class="ms" aria-hidden="true">carpenter</span></span><span><b>Segheria</b><small>Lavora i lotti e vende legname e scarti</small></span></button>
+    <button type="button" class="rt" data-role="acquirente"><span class="tile"><span class="ms" aria-hidden="true">storefront</span></span><span><b>Acquirente</b><small>Compra con origine certificata</small></span></button>
+  </div>
+</aside>
+<div class="rlang"></div>
 <div class="hero" style="padding-bottom:96px">
   <h1 class="h1" style="margin-top:12px">Accedi</h1>
   <div class="sub">Ogni lotto, dal bosco al cliente.</div>
@@ -21,6 +56,7 @@
 
 <main class="over" style="margin-top:-72px">
   <form id="f" class="box lift" style="padding:20px 16px;display:flex;flex-direction:column;gap:16px" novalidate>
+    <h2 class="h1 dk">Accedi</h2>
     <div class="field">
       <label for="email">Email</label>
       <div class="input" id="emailBox"><span class="ms" aria-hidden="true">mail</span><input id="email" type="email" autocomplete="username" inputmode="email" required></div>
@@ -51,6 +87,15 @@
   var owner = FV.store.all('utente').find(function (u) { return u.ruolo === 'proprietario'; });
   var email = document.getElementById('email'), pw = document.getElementById('pw'), err = document.getElementById('err');
   email.value = owner ? owner.email : '';
+  document.querySelector('.rlang').innerHTML = FV.ui.LANG.replace('class="lang"', 'class="lang" style="background:var(--g700)"');
+
+  // Desktop role tiles: fill in that role's demo email
+  document.getElementById('tiles').onclick = function (e) {
+    var t = e.target.closest('[data-role]'); if (!t) return;
+    var u = FV.store.all('utente').find(function (x) { return x.ruolo === t.getAttribute('data-role'); });
+    if (u) { email.value = u.email; pw.focus(); }
+    this.querySelectorAll('[data-role]').forEach(function (b) { b.setAttribute('aria-pressed', b === t); });
+  };
 
   document.getElementById('eye').onclick = function () {
     var show = pw.type === 'password'; pw.type = show ? 'text' : 'password';
