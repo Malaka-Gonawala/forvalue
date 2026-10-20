@@ -113,6 +113,9 @@ img { max-width: 100%; display: block; }
 .tabbar .ic .count { top: -4px; right: -10px; }
 .tabbar .count { position: absolute; top: -6px; right: -8px; background: var(--g700); color: #fff; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 0 6px; line-height: 18px; font-family: Inter, system-ui, sans-serif; }
 
+/* Real photo over its green placeholder tile (ui.photo) */
+.photo-x { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; }
+
 /* Toast */
 .toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); background: var(--g900); color: #fff; padding: 12px 18px; border-radius: 10px; font-weight: 600; display: flex; gap: 8px; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 100; }
 .toast .ms { color: var(--au500); }

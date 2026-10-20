@@ -14,7 +14,7 @@ It copies the Figma file "ForValue Mock-up".
 | Sawmill (Segheria Alpina) | segheria@forvalue.demo | demo2027 | Dashboard (desktop) |
 | Buyer (Arredi Bianchi Srl) | acquirente@forvalue.demo | demo2027 | Marketplace (desktop) |
 
-These are placeholders until the real `utente` rows are in the database (see `DATA-NEEDED.md`).
+The demo values (names, P.IVA, towns, certificates) were approved on 20/10/2026 (`DATA-ANSWERS.md`). Use the same values in phpMyAdmin.
 
 **Changing user:** press **Esci** (phone: Altro; laptop: bottom of the sidebar), then log in with another account.
 The ForValue logo always takes you to your own home (or to the login page when nobody is logged in).
@@ -55,7 +55,10 @@ database (`azienda`, `specie`, `utente`, `certificazione`, `particella`, `lotto`
 1. Open `js/data.js` in any text editor.
 2. Change the value, for example the owner's email in the `utente` table.
 3. If the row has a `_ph` mark (placeholder), remove the field name from `_ph` (or the whole `_ph`), so it stops showing in gold.
-4. Save, reload the site and press **Ripristina dati demo**. The browser keeps the old copy until you reset.
+4. Raise `seed_version` at the top of the file by 1 and save. Every browser then replaces its saved copy with the new data by itself (and logs you out).
+   Without changing `seed_version`, press **Ripristina dati demo** to load the new values.
+
+Order numbers are shown as **ORD-2027-0001** (year of the order + id with 4 digits). If the buyer does not pick a delivery date, it is the order date + 7 days.
 
 Orders placed live in the demo get the date **15/04/2027** (the sale date of the database sample), so the story stays in 2027.
 You can change it in `js/data.js` (`demo_data_ordine`).
@@ -123,4 +126,4 @@ The empty `.nojekyll` file tells GitHub to publish the files exactly as they are
 
 - The IT · EN switch is shown but only Italian exists.
 - Data lives in one browser: the phone and the laptop each have their own copy. The QR page is the exception, because its data is in the link.
-- Photos are made small and saved in the browser; maps are placeholders with a link to OpenStreetMap.
+- Photos of new batches are made small and saved in the browser. Product photos and the map come from files in `img/` (names in `DATA-NEEDED.md`); until a file is there the green tile shows.

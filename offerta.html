@@ -36,7 +36,7 @@
       '<div style="display:flex;flex-direction:column;gap:16px">' +
         '<div class="map" style="height:300px;background:' + (sc ? 'var(--au100)' : 'var(--g100)') + '">' +
           (l && l.foto_url ? '<img src="' + l.foto_url + '" alt="Foto del lotto" style="width:100%;height:100%;object-fit:cover">'
-            : '<span class="ms" style="font-size:56px;color:' + (sc ? 'var(--au800)' : 'var(--g500)') + '" aria-hidden="true">' + (sc ? 'recycling' : 'forest') + '</span><span class="tag">Foto da inserire</span>') + '</div>' +
+            : '<span class="ms" style="font-size:56px;color:' + (sc ? 'var(--au800)' : 'var(--g500)') + '" aria-hidden="true">' + (sc ? 'recycling' : 'forest') + '</span><span class="tag">Foto da inserire</span>' + ui.photo(ui.photoKey(p), o.titolo)) + '</div>' +
         '<section class="box" style="padding:16px 20px;display:flex;flex-direction:column;gap:12px"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">' +
           fact('Venditore', ui.esc(seller.ragione_sociale)) + fact('Specie', l ? ui.esc(ui.specieName(l)) : '–') + fact('Disponibile', ui.num(avail) + ' ' + unit) + '</div>' +
           '<div class="pills">' + ui.certPill(l && l.certificato) + (l ? ui.eudrPill(st.eudrOk(l)) : '') + (sc ? ui.scartiPill() : '') + '</div>' +
@@ -60,7 +60,9 @@
   } else {
 
   var qty = document.getElementById('qty'), qErr = document.getElementById('qErr'), qBox = document.getElementById('qBox');
-  document.getElementById('del').min = st.todayISO();
+  // Delivery date: optional, starts at order date + 7 days
+  document.getElementById('del').min = st.demoDate();
+  document.getElementById('del').value = st.addDays(st.demoDate(), 7);
   function check() {
     var q = ui.parseNum(qty.value);
     var msg = !q ? 'Inserisci una quantità maggiore di zero.' : q > avail ? 'Puoi ordinare al massimo ' + ui.num(avail) + ' ' + unit + '.' : '';

@@ -1,23 +1,30 @@
-# Data still needed from the database
+# Data still needed
 
-The website works now, but some values are not in the database sample yet.
-They are shown on screen in **gold, in [brackets]** (or with a gold background).
-To fix one: open `js/data.js`, find the row, put the real value, remove its `_ph` mark,
-then press **Ripristina dati demo** in the site.
+Almost everything is filled in now. On 20/10/2026 Malaka approved the demo values in `DATA-ANSWERS.md`,
+and they are in `js/data.js`. Put **the same values in phpMyAdmin**, so the screens match the database.
 
-| Table | What is missing | Why it is needed | Placeholder used now | Where it shows |
-|---|---|---|---|---|
-| utente | Email + password of the 3 demo users (owner, sawmill, buyer) | To log in as each of the 3 roles | proprietario@forvalue.demo, segheria@forvalue.demo, acquirente@forvalue.demo · password `demo2027` | P0 Login, P6 Profilo |
-| utente | First name + surname of the 3 users | Profile page "Referente" | [nome] [cognome] | P6 Profilo |
-| azienda | P.IVA, address, town (comune) of all 5 companies | Profile, history steps ("Segheria Alpina · [comune]") | [P.IVA], [indirizzo], [comune] | Q1, D2, P6 |
-| azienda | Region of each company | Marketplace "Regione" filter | Trentino-Alto Adige (owner + sawmill), [regione] (buyers) | D3 filter |
-| certificazione | Certificate numbers + exact expiry date | Certificati page | [n. certificato], 31/12/2028 | P7, Q1 |
-| particella | Town + hectares of Bosco Val Fiemme; a 2nd parcel (name, GPS) | Profile, history, extra batches | [comune], [Particella 2] at 46,30 N 11,47 E | P6, Q1 of extra batches |
-| lotto | 4 more batches (code, species, m³, cut date, cert) | Owner list (P1/P5), sawmill table "Ultimi 5 lotti" (D1/D7), % certified KPI | FV-2027-00079 Larice 30 m³ · 00081 Abete rosso 50 m³ · 00083 Faggio 25 m³ (no cert) · 00085 Pino silvestre 20 m³ | P1, P5, D1, D7 |
-| lavorazione + prodotto | Sawing of the extra batches and what it produced | So the extra offers have an origin batch | tavole/cippato/segatura rows marked `_ph` | D2, D3 |
-| offerta | 3–4 more offers, at least 1 certified planks offer under 300 €/m³ (demo query 2) | Marketplace has more than 2 cards; query 2 returns a row | Tavole di larice 285,00 €/m³ · Cippato di larice 90,00 €/t · Tavole di abete rosso 305,00 €/m³ · Tavole di faggio 340,00 €/m³ · Segatura di faggio 60,00 €/t | D3, D4 |
-| ordine | Past orders spread over Jan–Apr 2027 (the guide's 12 t chips order is more than the 6 t produced) | Dashboard KPIs + monthly chart | 5 orders, Jan–Apr 2027, on the extra offers only (FV-2027-00087 has no order until the live demo) | D1, D8 |
-| ordine | Order number format | Confirmation page + orders list | the row id (e.g. "Ordine n. 6") | D6, D8 |
-| ordine | Delivery date | Offer page asks for it | the buyer picks it (optional) | D4, D8 |
-| — | Offer photos, map image | Cards and maps look real | green tile with a tree icon, "Mappa segnaposto" | D3, D4, D2, Q1 |
-| — | Support email | Help page | [email supporto] | P9 |
+## Still missing: photos (you add the files)
+
+Put these files in the `img/` folder (JPG, under 200 KB each, exactly these names).
+Until a file is there, the site shows the green tile with "Foto da inserire" / "Mappa segnaposto".
+As soon as the file exists, the photo appears by itself. Nothing else to change.
+
+| File | What it shows | Where it shows |
+|---|---|---|
+| `img/tavole.jpg` | Sawn planks (tavole) | Marketplace cards and offer page for every "Tavole di …" offer |
+| `img/cippato.jpg` | Wood chips (cippato) | Cards and offer page for "Cippato di …" |
+| `img/segatura.jpg` | Sawdust (segatura) | Cards and offer page for "Segatura di …" |
+| `img/tronchi.jpg` | Logs (tronchi) | Any other product |
+| `img/mappa.jpg` | Map screenshot of Val di Fiemme | QR page, batch detail (D2), Nuovo lotto on the laptop |
+
+## Done (20/10/2026)
+
+| Table | What | Value now in `js/data.js` |
+|---|---|---|
+| utente | Names of the 3 demo users | Marco Delladio (owner), Giulia Zeni (sawmill), Luca Bianchi (buyer). Logins unchanged, password `demo2027` |
+| azienda | P.IVA, address, town, region of the 5 companies | e.g. Consorzio Val di Fiemme · 02487310225 · Via Roma 12 · Cavalese (TN) · Trentino-Alto Adige |
+| certificazione | Certificate numbers | PEFC/18-22-117 (Consorzio), FSC-C148205 (Segheria), both to 31/12/2028 |
+| particella | Town + hectares; 2nd parcel | Bosco Val Fiemme, Cavalese, 38,5 ha · Bosco Latemar, Tesero, 22 ha, 46,2870 N 11,5120 E |
+| lotto, lavorazione, prodotto, offerta | 4 extra batches, their sawing, products, offers | Kept as they were (approved) |
+| ordine | Past orders, order number, delivery date | 5 orders Jan–Apr 2027; shown as ORD-2027-0001 …; delivery = buyer's choice, default order date + 7 days |
+| — | Support email | supporto@forvalue.demo (Aiuto page) |

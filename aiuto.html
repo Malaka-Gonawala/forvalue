@@ -25,9 +25,10 @@
   </div>
   <div class="box" style="background:var(--au100);border-color:var(--au300);padding:16px;display:flex;gap:12px;align-items:center">
     <span class="tile" style="background:var(--au500);color:var(--ink)"><span class="ms" aria-hidden="true">support_agent</span></span>
-    <div><div style="font-weight:600">Serve altro aiuto?</div><div class="small"><span class="ph">[email supporto]</span></div></div></div>
+    <div><div style="font-weight:600">Serve altro aiuto?</div><div class="small"><a id="mail" style="display:inline-block;padding:12px 0;margin:-12px 0;color:var(--g700);font-weight:600;text-decoration:underline"></a></div></div></div>
 </main>
 <script>document.getElementById('bar').innerHTML = FV.ui.backBar('Aiuto', 'altro.html');
-  FV.ui.shell('altro', { title: 'Aiuto', crumb: '<a href="altro.html">Altro</a>', noTabs: true });</script>
+  FV.ui.shell('altro', { title: 'Aiuto', crumb: '<a href="altro.html">Altro</a>', noTabs: true });
+  var mail = FV.store.all('contatti').supporto || '', a = document.getElementById('mail'); a.textContent = mail; a.href = 'mailto:' + mail;</script>
 </body>
 </html>

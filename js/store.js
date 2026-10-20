@@ -5,13 +5,22 @@
 
 (function () {
   var KEY = 'fv_db_v1';
+  var CART = 'fv_cart_v1';
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
   function load() {
     var raw = null;
     try { raw = localStorage.getItem(KEY); } catch (e) {}
-    if (raw) { try { return JSON.parse(raw); } catch (e) {} }
+    if (raw) {
+      try {
+        var old = JSON.parse(raw);
+        // Same seed version as data.js: keep the saved data (batches, offers, orders made in the demo)
+        if (old && old.seed_version === window.FV_SEED.seed_version) return old;
+      } catch (e) {}
+      // data.js changed (new seed_version): start again from the new data, logged out, empty cart
+      try { localStorage.removeItem(CART); localStorage.removeItem('fv_tokens_v1'); localStorage.removeItem('fv_session_v1'); } catch (e) {}
+    }
     var db = clone(window.FV_SEED);
     save(db);
     return db;
@@ -171,7 +180,7 @@
     if (!off || quantita <= 0 || quantita > off.quantita_disponibile) return null;
     var today = demoDate();
     var o = insert('ordine', { id_offerta: off.id, id_azienda: idAzienda, data: today, quantita: quantita,
-      prezzo_totale: Math.round(quantita * off.prezzo_unitario * 100) / 100, stato: 'inviato', data_consegna: dataConsegna || null });
+      prezzo_totale: Math.round(quantita * off.prezzo_unitario * 100) / 100, stato: 'inviato', data_consegna: dataConsegna || addDays(today, 7) });
     off.quantita_disponibile = Math.round((off.quantita_disponibile - quantita) * 1000) / 1000;
     if (off.quantita_disponibile <= 0) { off.quantita_disponibile = 0; off.attiva = 0; }
     var lotto = lottoOfOfferta(off);
@@ -194,11 +203,13 @@
     return o;
   }
 
+  // Delivery date when the buyer does not pick one: order date + 7 days
+  function addDays(iso, n) { var d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+
   function todayISO() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function nowTime() { var d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
 
   /* ---------- cart (D5) ---------- */
-  var CART = 'fv_cart_v1';
   function getCart() { try { return JSON.parse(localStorage.getItem(CART)) || []; } catch (e) { return []; } }
   function setCart(c) { try { localStorage.setItem(CART, JSON.stringify(c)); } catch (e) {} }
 
@@ -214,7 +225,7 @@
     lottoByCode: lottoByCode, nextLottoCode: nextLottoCode, prodottiOfLotto: prodottiOfLotto, offerteOfLotto: offerteOfLotto,
     ordiniOfLotto: ordiniOfLotto, storicoRaw: storicoRaw, stepText: stepText, comuneByName: comuneByName, lottoOfOfferta: lottoOfOfferta, statoLotto: statoLotto, eudrOk: eudrOk, holderOf: holderOf,
     lottiOfOwner: lottiOfOwner, lottiOfSawmill: lottiOfSawmill, transferDate: transferDate, storico: storico, unitOf: unitOf, unitLabel: unitLabel,
-    addLotto: addLotto, demoDate: demoDate, setStatoOrdine: setStatoOrdine, ordineValido: ordineValido, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
+    addLotto: addLotto, demoDate: demoDate, addDays: addDays, setStatoOrdine: setStatoOrdine, ordineValido: ordineValido, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
     getCart: getCart, setCart: setCart
   };
 })();

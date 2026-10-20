@@ -75,7 +75,7 @@
   function card(x) {
     var sc = x.p.categoria === 'sottoprodotto';
     var img = x.l && x.l.foto_url ? '<img src="' + x.l.foto_url + '" alt="" style="width:100%;height:100%;object-fit:cover">'
-      : '<span class="ms" aria-hidden="true">' + (sc ? 'recycling' : 'forest') + '</span><span class="tag">Foto da inserire</span>';
+      : '<span class="ms" aria-hidden="true">' + (sc ? 'recycling' : 'forest') + '</span><span class="tag">Foto da inserire</span>' + ui.photo(ui.photoKey(x.p), x.o.titolo);
     return '<a class="box ocard' + (sc ? ' scarti' : '') + '" href="offerta.html?id=' + x.o.id + '">' +
       '<div class="ph-img">' + img + '</div><div class="bd">' +
       '<b>' + ui.v(x.o, 'titolo') + '</b>' +

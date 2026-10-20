@@ -44,11 +44,11 @@
     document.querySelectorAll('#tabs [role=tab]').forEach(function (t) { t.setAttribute('aria-selected', t.getAttribute('data-f') === filter); });
     var rows = ords.filter(function (o) {
       var off = st.byId('offerta', o.id_offerta);
-      return (!filter || o.stato === filter) && (!q || (String(o.id) + ' ' + off.titolo).toLowerCase().indexOf(q) >= 0);
+      return (!filter || o.stato === filter) && (!q || (ui.ordCode(o) + ' ' + off.titolo).toLowerCase().indexOf(q) >= 0);
     });
     document.getElementById('rows').innerHTML = rows.map(function (o) {
       var off = st.byId('offerta', o.id_offerta), l = st.lottoOfOfferta(off), other = st.byId('azienda', buyer ? off.id_azienda : o.id_azienda);
-      return '<tr><td data-pre="Ordine n. ">' + ui.v(o, 'id') + '</td><td>' + ui.v(o, 'data', ui.date(o.data)) + '</td><td>' + ui.esc(other.ragione_sociale) + '</td><td style="font-weight:600">' + ui.esc(off.titolo) + '</td>' +
+      return '<tr><td class="num" style="white-space:nowrap">' + ui.esc(ui.ordCode(o)) + '</td><td>' + ui.v(o, 'data', ui.date(o.data)) + '</td><td>' + ui.esc(other.ragione_sociale) + '</td><td style="font-weight:600">' + ui.esc(off.titolo) + '</td>' +
         '<td class="num">' + ui.num(o.quantita) + ' ' + st.unitOf(off) + '</td><td class="num" style="font-weight:600">' + ui.euro(o.prezzo_totale) + '</td><td>' + ui.ordinePill(o.stato) + '</td>' +
         '<td style="text-align:right">' + (l ? '<a class="dbtn sec" href="' + ui.esc(ui.qrUrl(l)) + '"><span class="ms" aria-hidden="true">qr_code_2</span>Tracciabilità</a>' : '') + '</td></tr>';
     }).join('') || '<tr><td colspan="8"><div class="empty" style="padding:24px"><span class="ms" aria-hidden="true">receipt_long</span>Nessun ordine.</div></td></tr>';
