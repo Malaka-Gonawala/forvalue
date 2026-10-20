@@ -28,6 +28,7 @@
     <div class="pills" id="pills" style="justify-content:center"></div>
     <div class="xs muted" style="text-align:center">Stampa questo QR sul lotto: chiunque lo inquadra vede la storia.</div>
   </div>
+  <div id="trk"></div>
   <a class="btn pri" id="storico"><span class="ms" aria-hidden="true">history</span>Vedi storico del lotto</a>
   <a class="btn sec" href="home.html">Torna alla home</a>
 </main>
@@ -47,6 +48,7 @@
     document.getElementById('cut').textContent = 'Taglio ' + ui.date(l.data_taglio);
     document.getElementById('pills').innerHTML = ui.certPill(l.certificato) + ui.eudrPill(st.eudrOk(l));
     document.getElementById('storico').href = url;
+    document.getElementById('trk').innerHTML = ui.tracker(st.trasporto(l));
   }
 </script>
 </body>

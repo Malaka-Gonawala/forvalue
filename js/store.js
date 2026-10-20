@@ -26,10 +26,21 @@
     return db;
   }
   function save(db) {
-    try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {}
+    try { var raw = JSON.stringify(db); localStorage.setItem(KEY, raw); lastRaw = raw; } catch (e) {}
   }
 
   var db = load();
+  var lastRaw = null;
+  try { lastRaw = localStorage.getItem(KEY); } catch (e) {}
+
+  // Another tab (or another page) may have written: pick up its data before checking the transport
+  function reloadDb() {
+    var raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) {}
+    if (!raw || raw === lastRaw) return;
+    try { var d = JSON.parse(raw); if (d && d.seed_version === window.FV_SEED.seed_version) db = d; } catch (e) {}
+    lastRaw = raw;
+  }
 
   function all(table) { return db[table] || []; }
   function byId(table, id) { id = Number(id); return all(table).find(function (r) { return r.id === id; }) || null; }
@@ -146,13 +157,44 @@
   function unitOf(offerta) { var p = byId('prodotto', offerta.id_prodotto); return unitLabel(p ? p.unita : 'm3'); }
   function fmtNum(n) { return new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2 }).format(n); }
 
+  /* ---------- demo transport: a new batch reaches the sawmill by itself ---------- */
+  // Seed batches have no creato_ts, so they are never moved.
+  function trasportoMs() { return ((window.FV_SEED && FV_SEED.DEMO_TRASPORTO_S) || 60) * 1000; }
+  function sawmillId() { return (window.FV_SEED && FV_SEED.demo_segheria) || 2; }
+  function arrivo(idLotto) { return where('passaggio', 'id_lotto', idLotto).find(function (p) { return !p.id_ordine; }) || null; }
+  // { ts: created, arrivo: arrival time (ms), arrivato } or null for seed batches
+  function trasporto(lotto) {
+    if (!lotto || !lotto.creato_ts) return null;
+    return { ts: lotto.creato_ts, arrivo: lotto.creato_ts + trasportoMs(), arrivato: !!arrivo(lotto.id) };
+  }
+  function nTransfers() { return all('passaggio').filter(function (p) { return !p.id_ordine; }).length; }
+  var lastTransfers = null;
+  // Runs on every page load and every few seconds (ui.js). Adds the "Trasferito" step for batches
+  // whose time is up. True when a batch arrived since the last call (here or in another tab).
+  function tick() {
+    reloadDb();
+    var now = Date.now(), n = 0;
+    all('lotto').forEach(function (l) {
+      if (!l.creato_ts || now - l.creato_ts < trasportoMs() || arrivo(l.id)) return;
+      var d = new Date(l.creato_ts + trasportoMs());
+      db.passaggio.push({ id: nextId('passaggio'), id_lotto: l.id, id_azienda_da: l.id_azienda, id_azienda_a: sawmillId(), id_ordine: null,
+        data_ora: isoOf(d) + ' ' + hm(d), stato: 'consegnato' });
+      n++;
+    });
+    if (n) save(db);
+    var c = nTransfers(), changed = lastTransfers !== null && c !== lastTransfers;
+    lastTransfers = c;
+    return changed;
+  }
+
   /* ---------- writes ---------- */
 
   // P2: new batch + its "Taglio" (the cut is the lotto row itself)
   function addLotto(f) {
     var l = insert('lotto', {
       codice_qr: nextLottoCode(), id_particella: f.id_particella, id_specie: f.id_specie, id_azienda: f.id_azienda,
-      volume_m3: f.volume_m3, data_taglio: f.data_taglio, certificato: f.certificato || null, foto_url: f.foto_url || null
+      volume_m3: f.volume_m3, data_taglio: f.data_taglio, certificato: f.certificato || null, foto_url: f.foto_url || null,
+      creato_ts: Date.now()
     });
     if (f.lat != null && f.id_particella) {
       var p = byId('particella', f.id_particella);
@@ -206,8 +248,10 @@
   // Delivery date when the buyer does not pick one: order date + 7 days
   function addDays(iso, n) { var d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
 
-  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
-  function nowTime() { var d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  function isoOf(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function hm(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  function todayISO() { return isoOf(new Date()); }
+  function nowTime() { return hm(new Date()); }
 
   /* ---------- cart (D5) ---------- */
   function getCart() { try { return JSON.parse(localStorage.getItem(CART)) || []; } catch (e) { return []; } }
@@ -216,7 +260,7 @@
   // "Ripristina dati demo": back to the seed
   function reset() {
     try { localStorage.removeItem(KEY); localStorage.removeItem(CART); } catch (e) {}
-    db = clone(window.FV_SEED); save(db);
+    db = clone(window.FV_SEED); save(db); lastTransfers = null;
   }
 
   window.FV = window.FV || {};
@@ -226,6 +270,7 @@
     ordiniOfLotto: ordiniOfLotto, storicoRaw: storicoRaw, stepText: stepText, comuneByName: comuneByName, lottoOfOfferta: lottoOfOfferta, statoLotto: statoLotto, eudrOk: eudrOk, holderOf: holderOf,
     lottiOfOwner: lottiOfOwner, lottiOfSawmill: lottiOfSawmill, transferDate: transferDate, storico: storico, unitOf: unitOf, unitLabel: unitLabel,
     addLotto: addLotto, demoDate: demoDate, addDays: addDays, setStatoOrdine: setStatoOrdine, ordineValido: ordineValido, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
-    getCart: getCart, setCart: setCart
+    getCart: getCart, setCart: setCart, trasporto: trasporto, tick: tick, trasportoMs: trasportoMs, sawmillId: sawmillId
   };
+  window.FV.store.tick();
 })();

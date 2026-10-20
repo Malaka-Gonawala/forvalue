@@ -97,7 +97,7 @@
         '<div class="qleft">' + map.replace('class="box"', 'class="box qmap"') +
         '<div class="qco2 qd-co2" style="background:var(--au100);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:center"><span class="ms" style="font-size:32px;color:var(--au800)" aria-hidden="true">eco</span>' +
           '<div><div class="small" style="color:var(--au800);font-weight:600">CO₂ stoccata in questo lotto</div><div class="h1">' + co2 + ' t</div></div></div></div>' +
-        '<section style="display:flex;flex-direction:column;gap:24px"><h2 class="h2">Storico del lotto</h2>' +
+        '<section style="display:flex;flex-direction:column;gap:24px">' + ui.tracker(view.trasporto) + '<h2 class="h2">Storico del lotto</h2>' +
         '<ol class="tl" style="list-style:none">' + view.steps.map(function (e) {
           return '<li class="st"><div class="d">' + ui.date(e.data) + '</div><div style="font-weight:600">' + ui.t(e.titolo) + '</div><div class="small muted">' + ui.t(e.sotto) + '</div></li>';
         }).join('') + '</ol></section>' +

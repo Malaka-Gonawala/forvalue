@@ -82,7 +82,7 @@
     var part = st.byId('particella', l.id_particella);
     return '<tr><td style="font-weight:600">' + ui.v(l, 'codice_qr') + '</td><td class="cs">' + ui.esc(ui.specieName(l)) + '</td><td class="num">' + ui.num(l.volume_m3) + ' m³</td>' +
       '<td class="cp">' + ui.v(part, 'nome') + '</td><td><div class="pills" style="flex-wrap:nowrap">' + ui.certPill(l.certificato) + ui.eudrPill(st.eudrOk(l), true) + '</div></td>' +
-      '<td>' + ui.statoPill(st.statoLotto(l.id)) + '</td>' +
+      '<td><div class="pills" style="flex-direction:column;align-items:flex-start;gap:4px">' + ui.statoPill(st.statoLotto(l.id)) + ui.travelPill(l) + '</div></td>' +
       '<td class="qr" style="text-align:right"><a class="dbtn sec" href="' + ui.esc(ui.qrUrl(l)) + '" aria-label="QR di ' + ui.esc(l.codice_qr) + '"><span class="ms" aria-hidden="true">qr_code_2</span>QR</a></td></tr>';
   }).join('') || '<tr><td colspan="7" class="muted">Non hai ancora lotti.</td></tr>';
   document.getElementById('news').innerHTML = ui.ownerNews(S.azienda.id).slice(0, 5).map(function (x) {

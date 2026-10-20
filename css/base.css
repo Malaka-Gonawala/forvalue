@@ -124,3 +124,21 @@ img { max-width: 100%; display: block; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 @media (max-width: 380px) { .tabbar a { font-size: 12px; white-space: nowrap; letter-spacing: -.1px; } }
+
+/* Demo transport tracker (new batch → sawmill) */
+.trk { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.trk-steps { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; font-size: 14px; line-height: 18px; font-weight: 600; color: var(--muted); }
+.trk-steps li { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; }
+.trk-steps .ms { font-size: 28px; color: var(--n300, #C8CCC4); }
+.trk-steps .ok { color: var(--ink); }
+.trk-steps .ok .ms { color: var(--g700); }
+.trk-steps .cur { color: var(--au800); }
+.trk-steps .cur .ms { color: var(--au800); animation: trk-move 1.2s ease-in-out infinite alternate; }
+@keyframes trk-move { from { transform: translateX(-3px); } to { transform: translateX(3px); } }
+@media (prefers-reduced-motion: reduce) { .trk-steps .cur .ms { animation: none; } }
+.trk-bar { height: 8px; border-radius: 99px; background: var(--g100); overflow: hidden; }
+.trk-bar i { display: block; height: 100%; background: var(--au500); border-radius: 99px; transition: width 1s linear; }
+.trk.done .trk-bar i { background: var(--g700); }
+.trk-txt { text-align: center; color: var(--muted); }
+.trk-txt b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.p-trk { background: var(--au100); color: var(--au800); font-variant-numeric: tabular-nums; }

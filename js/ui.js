@@ -35,8 +35,50 @@
   var ST_ICON = { Disponibile: 'storefront', Riservato: 'lock_clock', Venduto: 'sell' };
   function statoPill(stato) { return '<span class="pill p-st"><span class="ms" aria-hidden="true">' + ST_ICON[stato] + '</span>' + stato + '</span>'; }
   function badges(lotto, short) {
-    return certPill(lotto.certificato) + eudrPill(S().eudrOk(lotto), short) + statoPill(S().statoLotto(lotto.id));
+    return certPill(lotto.certificato) + eudrPill(S().eudrOk(lotto), short) + statoPill(S().statoLotto(lotto.id)) + travelPill(lotto);
   }
+
+  /* ---------- demo transport (DEMO_TRASPORTO_S in data.js) ---------- */
+  function sawmillName() { var a = (window.FV_SEED.azienda || []).find(function (x) { return x.id === S().sawmillId(); }); return a ? a.ragione_sociale : 'Segheria'; }
+  function mmss(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+  // Small chip for list rows while the batch is on its way
+  function travelPill(lotto) {
+    var t = S().trasporto(lotto);
+    if (!t || t.arrivato) return '';
+    return '<span class="pill p-trk" data-trk-arr="' + t.arrivo + '"><span class="ms" aria-hidden="true">local_shipping</span>In viaggio · <span data-trk-left>' + mmss(t.arrivo - Date.now()) + '</span></span>';
+  }
+  // 3-step tracker: Taglio ✓ → In viaggio → Arrivato in segheria. t = { ts, arrivo, arrivato }
+  function tracker(t) {
+    if (!t) return '';
+    var dur = t.arrivo - t.ts, done = t.arrivato || Date.now() >= t.arrivo, name = sawmillName();
+    var pct = done ? 100 : Math.min(100, Math.max(0, (Date.now() - t.ts) / dur * 100));
+    return '<div class="trk box' + (done ? ' done' : '') + '" role="group" aria-label="Viaggio del lotto verso la segheria"' + (done ? '' : ' data-trk-arr="' + t.arrivo + '" data-trk-dur="' + dur + '"') + '>' +
+      '<ol class="trk-steps">' +
+        '<li class="ok"><span class="ms" aria-hidden="true">check_circle</span>Taglio</li>' +
+        '<li class="' + (done ? 'ok' : 'cur') + '"><span class="ms" aria-hidden="true">' + (done ? 'check_circle' : 'local_shipping') + '</span>In viaggio</li>' +
+        '<li class="' + (done ? 'ok' : '') + '"><span class="ms" aria-hidden="true">' + (done ? 'check_circle' : 'warehouse') + '</span>Arrivato in ' + esc(name) + '</li></ol>' +
+      '<div class="trk-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(pct) + '" aria-label="Viaggio"><i style="width:' + pct.toFixed(1) + '%"></i></div>' +
+      '<div class="trk-txt small">' + (done ? 'Arrivato in ' + esc(name) + '.' : 'Arrivo in segheria tra <b data-trk-left>' + mmss(t.arrivo - Date.now()) + '</b>') + '</div></div>';
+  }
+  // Live: countdowns every second; every 5 s (and when a countdown ends) check for arrivals.
+  // On arrival the page redraws itself (kept simple: a quick reload, unless you are typing).
+  (function live() {
+    var ended = false;
+    function typing() { var a = document.activeElement; return a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName); }
+    function arrived() { if (!typing()) location.reload(); }
+    setInterval(function () {
+      var now = Date.now(), hit = false;
+      document.querySelectorAll('[data-trk-arr]').forEach(function (el) {
+        var arr = Number(el.getAttribute('data-trk-arr')), left = arr - now;
+        el.querySelectorAll('[data-trk-left]').forEach(function (x) { x.textContent = mmss(left); });
+        var dur = Number(el.getAttribute('data-trk-dur')), bar = el.querySelector('.trk-bar');
+        if (dur && bar) { var p = Math.min(100, Math.max(0, 100 - left / dur * 100)); bar.firstChild.style.width = p.toFixed(1) + '%'; bar.setAttribute('aria-valuenow', Math.round(p)); }
+        if (left <= 0) hit = true;
+      });
+      if (hit && !ended) { ended = true; S().tick(); arrived(); }
+    }, 1000);
+    setInterval(function () { if (S().tick()) arrived(); }, 5000);
+  })();
   var ORD = { inviato: ['Inviato', 'send', 'p-eudr'], accettato: ['Accettato', 'thumb_up', 'p-cert'], consegnato: ['Consegnato', 'check', 'p-st'], rifiutato: ['Rifiutato', 'block', 'p-st'], annullato: ['Annullato', 'close', 'p-st'] };
   function ordinePill(stato) { var o = ORD[stato]; return '<span class="pill ' + o[2] + '"><span class="ms" aria-hidden="true">' + o[1] + '</span>' + o[0] + '</span>'; }
   function scartiPill() { return '<span class="pill p-scarti"><span class="ms" aria-hidden="true">recycling</span>Scarti</span>'; }
@@ -178,7 +220,7 @@
     return { code: lotto.codice_qr, species: sp.nome_comune, vol: lotto.volume_m3, cut: lotto.data_taglio, parcel: part.nome,
       lat: part.lat, lon: part.lon, cert: lotto.certificato, certYear: cert ? cert.data_scadenza.slice(0, 4) : null,
       owner: own.ragione_sociale, factor: sp.fattore_co2, eudr: st.eudrOk(lotto), stato: st.statoLotto(lotto.id),
-      steps: st.storico(lotto.id) };
+      steps: st.storico(lotto.id), trasporto: st.trasporto(lotto) };
   }
   function qrPayload(lotto) {
     var st = S(), raw = st.storicoRaw(lotto.id), view = lottoView(lotto), names = [view.owner];
@@ -193,6 +235,7 @@
     if (view.lat != null) o.g = [view.lat, view.lon];
     if (view.cert) { o.ce = view.cert; o.cx = view.certYear; }
     if (view.factor !== 0.7) o.f = view.factor;
+    if (lotto.creato_ts) o.k = lotto.creato_ts;   // demo transport: the QR page works it out on any phone
     return o;
   }
   // Rebuilds the same view from the link, with no storage at all
@@ -204,10 +247,23 @@
       if (x[0] === 'L') return { tipo: 'L', data: iso(x[1]), chi: o.n[x[2]], dett: x[3] };
       return { tipo: 'V', data: iso(x[1]), da: o.n[x[2]], a: o.n[x[3]], dett: x[4] };
     }));
+    // Demo transport (k = created ms): before arrival show the tracker, after it add the "Trasferito" step
+    var trasporto = null;
+    if (o.k) {
+      var arr = o.k + S().trasportoMs(), there = raw.some(function (e) { return e.tipo === 'P'; });
+      if (!there && Date.now() >= arr) {
+        var a = new Date(arr), sm = sawmillName();
+        raw.push({ tipo: 'P', data: a.getFullYear() + '-' + String(a.getMonth() + 1).padStart(2, '0') + '-' + String(a.getDate()).padStart(2, '0'), da: o.n[0], a: sm });
+        var az = (window.FV_SEED.azienda || []).find(function (x) { return x.ragione_sociale === sm; });
+        if (o.n.indexOf(sm) < 0) { o.n.push(sm); o.m = (o.m || []).concat(az ? az.comune : ''); }
+        there = true;
+      }
+      trasporto = { ts: o.k, arrivo: arr, arrivato: there };
+    }
     var sold = raw.some(function (e) { return e.tipo === 'V'; });
     return { code: o.c, species: o.s, vol: o.v, cut: iso(o.t), parcel: o.p, lat: o.g ? o.g[0] : null, lon: o.g ? o.g[1] : null,
       cert: o.ce || null, certYear: o.cx || null, owner: o.n[0], factor: o.f || 0.7, eudr: !!(o.g && o.t), stato: sold ? 'Venduto' : 'Disponibile',
-      steps: raw.map(function (e) { var t = S().stepText(e, comune); t.data = e.data; t.tipo = e.tipo; return t; }) };
+      steps: raw.map(function (e) { var t = S().stepText(e, comune); t.data = e.data; t.tipo = e.tipo; return t; }), trasporto: trasporto };
   }
   function qrUrl(lotto) { return new URL('qr.html?d=' + b64url(JSON.stringify(qrPayload(lotto))), location.href).href; }
   function qrSvg(text) {
@@ -250,7 +306,7 @@
   window.FV = window.FV || {};
   window.FV.ui = {
     num: num, num1: num1, parseNum: parseNum, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
-    certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
+    certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, tracker: tracker, travelPill: travelPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
     phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, homeHref: homeHref, ordCode: ordCode, photo: photo, OSM: OSM, photoKey: photoKey, PHOTO: PHOTO, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, logoHTML: logoHTML, LANG: LANG,
     qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
   };
