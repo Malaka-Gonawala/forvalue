@@ -143,7 +143,7 @@
     var ad = function (n) { return (/^[aeiou]/i.test(n) ? 'ad ' : 'a ') + n; };
     if (e.tipo === 'T') return { titolo: 'Taglio', sotto: e.chi + ' · ' + e.dove, icon: 'forest' };
     if (e.tipo === 'P') return { titolo: 'Trasferito ' + ad(e.a), sotto: 'Da ' + e.da + ' · ' + comune(e.a), icon: 'local_shipping' };
-    if (e.tipo === 'L') return { titolo: 'Segato: ' + e.dett, sotto: e.chi + ' · ' + comune(e.chi), icon: 'carpenter' };
+    if (e.tipo === 'L') return { titolo: (/^[\d.,]+ m³ tronchi$/.test(e.dett) ? 'Tronchi selezionati: ' : 'Segato: ') + e.dett, sotto: e.chi + ' · ' + comune(e.chi), icon: 'carpenter' };
     return { titolo: 'Venduto ' + ad(e.a), sotto: (e.dett ? e.dett + ' · ' : '') + e.da + ' · ' + comune(e.da), icon: 'sell' };
   }
   function comuneByName(n) { var a = all('azienda').find(function (x) { return x.ragione_sociale === n; }); return a ? a.comune : '[comune]'; }

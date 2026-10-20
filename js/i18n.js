@@ -100,7 +100,7 @@
     'Data': 'Date', 'Ordine': 'Order', 'Totale': 'Total', 'Origine': 'Origin', 'Riepilogo': 'Summary',
     // buyer
     'Legname': 'Timber', 'Scarti': 'Offcuts', 'Scarti di segheria in vendita': 'Sawmill offcuts for sale', 'Filtri': 'Filters', 'Rimuovi filtri': 'Clear filters',
-    'Lavorazione': 'Sawing', 'Tavole': 'Boards', 'Cippato': 'Wood chips', 'Data di lavorazione': 'Sawing date', 'Prezzo tavole': 'Board price', 'Prezzo cippato': 'Wood chip price', 'Pubblica offerte': 'Publish offers',
+    'Tronchi pronti per la vendita': 'Logs ready for sale', 'Lavorazione': 'Sawing', 'Tavole': 'Boards', 'Cippato': 'Wood chips', 'Data di lavorazione': 'Sawing date', 'Prezzo tavole': 'Board price', 'Prezzo cippato': 'Wood chip price', 'Pubblica offerte': 'Publish offers',
     'Prima segna cosa hai ricavato dal lotto. Valori proposti in proporzione a FV-2026-00087.': 'First record what you got from the batch. Suggested values are in proportion to FV-2026-00087.',
     'Questo lotto non è ancora stato segato: con Metti in vendita registri prima la lavorazione.': 'This batch has not been sawn yet: Put on sale lets you record the sawing first.',
     'Cerca specie, prodotto o venditore': 'Search species, product or seller', 'Prezzo minimo': 'Minimum price', 'Prezzo massimo': 'Maximum price', 'Min': 'Min', 'Max': 'Max',
@@ -123,8 +123,9 @@
   // Texts with a number, code or name inside
   var RX = [
     [/^Taglio (\d\d\/\d\d\/\d{4})$/, 'Felled $1'],
-    [/^(Tavole|Cippato|Segatura) di (.+)$/, function (m, p, s) { var e = SP[s.toLowerCase()] || s; return (p === 'Tavole' ? cap(e) + ' boards' : cap(e) + ' ' + PROD[p.toLowerCase()]); }],
+    [/^(Tavole|Cippato|Segatura|Tronchi) di (.+)$/, function (m, p, s) { var e = SP[s.toLowerCase()] || s; return (p === 'Tavole' ? cap(e) + ' boards' : cap(e) + ' ' + PROD[p.toLowerCase()]); }],
     [/^Segato: (.+)$/, function (m, d) { return 'Sawn: ' + words(d); }],
+    [/^Tronchi selezionati: (.+)$/, function (m, d) { return 'Logs selected: ' + words(d); }],
     [/^[\d.,]+ (m³|t) .*(tavole|cippato|segatura)/, function (m) { return words(m); }],
     [/^Trasferito ad? (.+)$/, 'Transferred to $1'],
     [/^Venduto ad? (.+)$/, 'Sold to $1'],

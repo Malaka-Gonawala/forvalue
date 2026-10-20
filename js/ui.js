@@ -202,8 +202,8 @@
     ev.sort(function (a, b) { return (b.e.data > a.e.data ? 1 : b.e.data < a.e.data ? -1 : 0) || rank[b.e.tipo] - rank[a.e.tipo]; });
     return ev.map(function (x) {
       var e = x.e;
-      return { l: x.l, icon: e.icon, data: e.data, title: e.tipo === 'L' ? 'Segato in tavole e scarti' : e.titolo,
-        detail: e.tipo === 'L' ? e.titolo.replace('Segato: ', '') : e.tipo === 'V' ? (e.raw.dett || '') : '' };
+      return { l: x.l, icon: e.icon, data: e.data, title: e.tipo === 'L' ? (/^Tronchi/.test(e.titolo) ? 'Tronchi pronti per la vendita' : 'Segato in tavole e scarti') : e.titolo,
+        detail: e.tipo === 'L' ? e.titolo.replace(/^(Segato|Tronchi selezionati): /, '') : e.tipo === 'V' ? (e.raw.dett || '') : '' };
     });
   }
 

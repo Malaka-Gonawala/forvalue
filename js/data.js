@@ -13,7 +13,7 @@
 
 window.FV_SEED = {
 
-  seed_version: 3,
+  seed_version: 4,
 
   /* Not a table: shown on the Aiuto page */
   contatti: { supporto: 'supporto@forvalue.demo' },
@@ -64,12 +64,13 @@ window.FV_SEED = {
     { id: 5, codice_qr: 'FV-2026-00085', id_particella: 1, id_specie: 4, id_azienda: 1, volume_m3: 20, data_taglio: '2026-03-01', certificato: 'PEFC', foto_url: null }
   ],
 
-  /* 7. lavorazione – tipo: segagione */
+  /* 7. lavorazione – tipo: segagione | selezione (logs sorted and sold as they are, no sawing) */
   lavorazione: [
     { id: 1, id_lotto: 1, id_azienda: 2, data: '2026-04-02', tipo: 'segagione' },
     { id: 2, id_lotto: 2, id_azienda: 2, data: '2025-12-05', tipo: 'segagione' },
     { id: 3, id_lotto: 3, id_azienda: 2, data: '2026-02-03', tipo: 'segagione' },
-    { id: 4, id_lotto: 4, id_azienda: 2, data: '2026-03-01', tipo: 'segagione' }
+    { id: 4, id_lotto: 4, id_azienda: 2, data: '2026-03-01', tipo: 'segagione' },
+    { id: 5, id_lotto: 5, id_azienda: 2, data: '2026-03-12', tipo: 'selezione' }
   ],
 
   /* 8. prodotto – categoria: legname | sottoprodotto; unita: m3 | t */
@@ -80,7 +81,8 @@ window.FV_SEED = {
     { id: 4, id_lavorazione: 2, descrizione: 'Cippato di larice', categoria: 'sottoprodotto', quantita: 4, unita: 't' },
     { id: 5, id_lavorazione: 3, descrizione: 'Tavole di abete rosso', categoria: 'legname', quantita: 32, unita: 'm3' },
     { id: 6, id_lavorazione: 4, descrizione: 'Tavole di faggio', categoria: 'legname', quantita: 15, unita: 'm3' },
-    { id: 7, id_lavorazione: 4, descrizione: 'Segatura di faggio', categoria: 'sottoprodotto', quantita: 3, unita: 't' }
+    { id: 7, id_lavorazione: 4, descrizione: 'Segatura di faggio', categoria: 'sottoprodotto', quantita: 3, unita: 't' },
+    { id: 8, id_lavorazione: 5, descrizione: 'Tronchi di pino silvestre', categoria: 'legname', quantita: 12, unita: 'm3' }
   ],
 
   /* 9. offerta – the offers for FV-2026-00087 (tavole 310,00 €/m³ and
@@ -90,7 +92,8 @@ window.FV_SEED = {
     { id: 2, id_prodotto: 4, id_azienda: 2, titolo: 'Cippato di larice', prezzo_unitario: 90, quantita_disponibile: 1, attiva: 1 },
     { id: 3, id_prodotto: 5, id_azienda: 2, titolo: 'Tavole di abete rosso', prezzo_unitario: 305, quantita_disponibile: 2, attiva: 1 },
     { id: 4, id_prodotto: 6, id_azienda: 2, titolo: 'Tavole di faggio', prezzo_unitario: 340, quantita_disponibile: 9, attiva: 1 },
-    { id: 5, id_prodotto: 7, id_azienda: 2, titolo: 'Segatura di faggio', prezzo_unitario: 60, quantita_disponibile: 3, attiva: 1 }
+    { id: 5, id_prodotto: 7, id_azienda: 2, titolo: 'Segatura di faggio', prezzo_unitario: 60, quantita_disponibile: 3, attiva: 1 },
+    { id: 6, id_prodotto: 8, id_azienda: 2, titolo: 'Tronchi di pino silvestre', prezzo_unitario: 180, quantita_disponibile: 12, attiva: 1 }
   ],
 
   /* Prices the sawmill publishes live in the demo for FV-2026-00087 (D2 panel is pre-filled
