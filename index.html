@@ -11,7 +11,22 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/phone.css">
 <style>
-  .brand, .rlang, .dk { display: none; }
+  .rlang { display: none; }
+  /* Phone (< 900 px): brand band with headline + 3 role tiles, login card overlaps it */
+  @media (max-width: 899px) {
+    body.login .hero { display: none; }
+    .brand { display: flex; flex-direction: column; gap: 12px; background: var(--g700); color: #fff; padding: 4px 16px 96px; }
+    .brand .logo { display: none; }
+    .brand h2 { font-size: clamp(28px, 8vw, 32px); line-height: 1.15; font-weight: 700; }
+    .brand .tiles { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .brand .rt { display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,.08); border-radius: 12px; padding: 8px 12px; min-height: 56px; color: #fff; text-align: left; width: 100%; }
+    .brand .rt[aria-pressed="true"] { background: rgba(255,255,255,.18); box-shadow: inset 0 0 0 2px var(--au500); }
+    .brand .rt .tile { background: var(--au500); color: var(--g900); }
+    .brand .rt b { font-size: 16px; line-height: 20px; }
+    .brand .rt small { display: block; color: var(--g100); font-size: 13px; line-height: 18px; }
+    .brand h2 + div { margin-top: -4px !important; font-size: 15px; line-height: 20px; }
+    .dk { margin-bottom: -4px; }
+  }
   @media (min-width: 900px) {
     body.login { max-width: none; display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; font-size: 15px; line-height: 22px; }
     body.login #bar, body.login .hero { display: none; }
@@ -91,7 +106,7 @@
   email.value = owner ? owner.email : '';
   document.querySelector('.rlang').innerHTML = FV.ui.LANG.replace('class="lang"', 'class="lang" style="background:var(--g700)"');
 
-  // Desktop role tiles: fill in that role's demo email
+  // Role tiles (phone + desktop): fill in that role's demo email
   document.getElementById('tiles').onclick = function (e) {
     var t = e.target.closest('[data-role]'); if (!t) return;
     var u = FV.store.all('utente').find(function (x) { return x.ruolo === t.getAttribute('data-role'); });
