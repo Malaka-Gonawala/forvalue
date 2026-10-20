@@ -76,7 +76,7 @@ Things that are **not** columns in the database are worked out the same way the 
 | `home.html`, `nuovo-lotto.html`, `lotto-salvato.html` | P1 Home, P2 New batch, P3 Batch saved + QR |
 | `altro.html`, `lotti.html`, `profilo.html`, `certificati.html`, `notifiche.html`, `aiuto.html` | P4–P9 phone menu pages |
 | `qr.html` | Q1 public QR page |
-| `scan.html` | QR scanner (from the login tip): camera, photo of the QR, or type the batch code |
+| `scan.html` | Phone: QR scanner (camera, photo, or type the code). Laptop: type a batch code or order number |
 | `dashboard.html`, `lotto.html`, `segheria-lotti.html` | D1 Dashboard, D2 Batch detail + sell panel, D7 Lotti ricevuti |
 | `offerte.html`, `ordini-ricevuti.html` | Sawmill: Le mie offerte (`?cat=scarti` = Circolarità), Ordini ricevuti (Accetta / Rifiuta) |
 | `marketplace.html`, `offerta.html`, `carrello.html`, `ordine-inviato.html`, `ordini.html` | Buyer: D3 Marketplace, D4 Offer, D5 Cart, D6 Order sent, D8 I miei ordini |
