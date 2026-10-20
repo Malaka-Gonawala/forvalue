@@ -32,8 +32,8 @@
     return ok ? '<span class="pill p-eudr"><span class="ms" aria-hidden="true">check_circle</span>' + (short ? 'EUDR' : 'EUDR verificato') + '</span>'
               : '<span class="pill p-st"><span class="ms" aria-hidden="true">schedule</span>EUDR in attesa</span>';
   }
-  var ST_ICON = { Disponibile: 'storefront', Riservato: 'lock_clock', Venduto: 'sell' };
-  function statoPill(stato) { return '<span class="pill p-st"><span class="ms" aria-hidden="true">' + ST_ICON[stato] + '</span>' + stato + '</span>'; }
+  var ST_ICON = { Disponibile: 'inventory_2', 'In vendita': 'storefront', Riservato: 'lock_clock', Venduto: 'sell' };
+  function statoPill(stato) { return '<span class="pill ' + (stato === 'In vendita' ? 'p-sale' : 'p-st') + '"><span class="ms" aria-hidden="true">' + ST_ICON[stato] + '</span>' + stato + '</span>'; }
   function badges(lotto, short) {
     return certPill(lotto.certificato) + eudrPill(S().eudrOk(lotto), short) + statoPill(S().statoLotto(lotto.id)) + travelPill(lotto);
   }
@@ -287,13 +287,13 @@
   }
 
   // Notification dots: which news this company has opened (fv_read_v1 = { idAzienda: [keys] }). The first time,
-  // everything but the newest item counts as already read, like the mock-up.
+  // everything already there counts as read, so only news that happens during the demo gets a dot.
   var READ = 'fv_read_v1';
   function newsKey(x) { return x.l.id + '|' + x.title + '|' + x.data; }
   function readAll() { try { return JSON.parse(localStorage.getItem(READ)) || {}; } catch (e) { return {}; } }
   function newsUnread(idAzienda, list) {
     var all = readAll(), seen = all[idAzienda];
-    if (!seen) { seen = all[idAzienda] = list.slice(1).map(newsKey); try { localStorage.setItem(READ, JSON.stringify(all)); } catch (e) {} }
+    if (!seen) { seen = all[idAzienda] = list.map(newsKey); try { localStorage.setItem(READ, JSON.stringify(all)); } catch (e) {} }
     return function (x) { return seen.indexOf(newsKey(x)) < 0; };
   }
   function newsRead(idAzienda, key) {

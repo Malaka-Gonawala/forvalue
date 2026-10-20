@@ -66,7 +66,7 @@ A batch registered live travels to Segheria Alpina by itself: each batch picks a
 You can change it in `js/data.js` (`demo_data_ordine`).
 
 Things that are **not** columns in the database are worked out the same way the demo queries do:
-- **Batch status**: Venduto if an order on it is *inviato*, *accettato* or *consegnato*, otherwise Disponibile. A *rifiutato* (refused) or *annullato* order does not count.
+- **Batch status**: Venduto if an order on it is *inviato*, *accettato* or *consegnato*; otherwise In vendita if the sawmill has an offer published for it; otherwise Disponibile. A *rifiutato* (refused) or *annullato* order does not count.
 - **EUDR verificato**: the parcel has GPS (lat/lon) and the batch has a cut date.
 - **CO₂**: volume × `fattore_co2` of the species (45 m³ × 0,7 = 31,5 t).
 

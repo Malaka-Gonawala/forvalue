@@ -39,7 +39,7 @@
     document.querySelectorAll('#tabs [role=tab]').forEach(function (t) { t.setAttribute('aria-selected', t.getAttribute('data-f') === filter); });
     var rows = lotti.filter(function (l) {
       var stato = st.statoLotto(l.id);
-      return (!filter || stato === filter) && (!q || (l.codice_qr + ' ' + ui.specieName(l)).toLowerCase().indexOf(q) >= 0);
+      return (!filter || (filter === 'Disponibile' ? stato !== 'Venduto' : stato === filter)) && (!q || (l.codice_qr + ' ' + ui.specieName(l)).toLowerCase().indexOf(q) >= 0);
     });
     document.getElementById('rows').innerHTML = rows.map(function (l) {
       var href = 'lotto.html?c=' + encodeURIComponent(l.codice_qr);

@@ -27,7 +27,7 @@
   var lotti = st.lottiOfOwner(S.azienda.id).sort(function (a, b) { return a.codice_qr < b.codice_qr ? 1 : -1; });
   function draw() {
     document.querySelectorAll('#chips .fchip').forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-f') === filter); });
-    // "Disponibili" = not sold yet (Disponibile or Riservato)
+    // "Disponibili" = not sold yet (Disponibile or In vendita)
     var list = lotti.filter(function (l) { var s = st.statoLotto(l.id); return !filter || (filter === 'Disponibile' ? s !== 'Venduto' : s === filter); });
     document.getElementById('list').innerHTML = list.map(function (l) {
       return '<a class="box lcard" href="' + ui.esc(ui.qrUrl(l)) + '"><div class="top">' + ui.v(l, 'codice_qr') + '<span class="ms chev" aria-hidden="true">chevron_right</span></div>' +

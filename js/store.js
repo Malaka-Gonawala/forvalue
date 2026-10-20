@@ -84,10 +84,11 @@
   // An order still counts unless the sawmill refused it (rifiutato) or it was cancelled (annullato)
   function ordineValido(o) { return o.stato !== 'annullato' && o.stato !== 'rifiutato'; }
 
-  // Status: Venduto if an order is inviato, accettato or consegnato, else Disponibile
-  // (accepting the order in "Ordini ricevuti" keeps the batch Venduto; refusing it frees the batch again)
+  // Status: Venduto if an order is inviato, accettato or consegnato; In vendita if the sawmill has an offer
+  // published for it; else Disponibile (accepting an order keeps the batch Venduto; refusing it frees it again)
   function statoLotto(idLotto) {
-    return ordiniOfLotto(idLotto).some(ordineValido) ? 'Venduto' : 'Disponibile';
+    if (ordiniOfLotto(idLotto).some(ordineValido)) return 'Venduto';
+    return offerteOfLotto(idLotto).some(function (o) { return o.attiva && o.quantita_disponibile > 0; }) ? 'In vendita' : 'Disponibile';
   }
 
   // EUDR verificato: the parcel has GPS (lat/lon) and the batch has a cut date

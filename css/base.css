@@ -81,6 +81,7 @@ img { max-width: 100%; display: block; }
 .pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px 4px 7px; border-radius: 999px; font-size: 13px; line-height: 16px; font-weight: 600; white-space: nowrap; }
 .pill .ms { font-size: 16px; }
 .p-cert { background: var(--g100); color: var(--g900); }
+.p-sale { background: var(--g100); color: var(--g700); border: 1px solid #B9D4BF; }
 .p-eudr { background: var(--au500); color: var(--ink); }
 .p-st   { background: var(--n100); color: var(--ink); }
 .p-scarti { background: var(--au100); color: var(--au800); border: 1px solid var(--au300); }

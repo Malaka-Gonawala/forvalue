@@ -55,7 +55,7 @@
     'Apri mappa': 'Open map', 'Apri la mappa della particella': 'Open the map of the parcel', 'Mappa della particella': 'Map of the parcel', 'Apri pagina QR': 'Open QR page',
     'Codice QR del lotto': 'QR code of the batch', 'Tronchi del lotto': 'Logs of the batch',
     'CO₂ stoccata': 'CO₂ stored', 'CO₂ stoccata in questo lotto': 'CO₂ stored in this batch', 'EUDR verificato': 'EUDR verified', 'EUDR in attesa': 'EUDR pending',
-    'Disponibile': 'Available', 'Disponibili': 'Available', 'Venduto': 'Sold', 'Venduti': 'Sold', 'Riservato': 'Reserved', 'Tutti': 'All', 'Tutte': 'All',
+    'Disponibile': 'Available', 'In vendita': 'For sale', 'Disponibili': 'Available', 'Venduto': 'Sold', 'Venduti': 'Sold', 'Riservato': 'Reserved', 'Tutti': 'All', 'Tutte': 'All',
     'Stampa questo QR sul lotto: chiunque lo inquadra vede la storia.': 'Print this QR on the batch: anyone who scans it sees the story.',
     'Torna alla home': 'Back to home', 'Filtra i lotti': 'Filter batches', 'Cerca codice o specie': 'Search code or species',
     'Nessun lotto qui.': 'No batches here.', 'Non hai ancora lotti.': 'You have no batches yet.', 'Registra il primo lotto': 'Register the first batch',
