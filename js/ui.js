@@ -10,6 +10,8 @@
   var nf4 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
   var eur = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   function num(n) { return nf.format(n); }
+  // Reads "45", "45,5" or "1.250,50" → number, or null when it is not a positive number
+  function parseNum(str) { var r = String(str == null ? '' : str).trim(); if (!r) return null; var n = Number(r.indexOf(',') >= 0 ? r.replace(/\./g, '').replace(',', '.') : r); return isFinite(n) && n > 0 ? n : null; }
   function num1(n) { return nf1.format(n); }
   function euro(n) { return eur.format(n) + ' €'; }                // 3.100,00 €
   function date(iso) { if (!iso) return ''; var p = iso.slice(0, 10).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }  // 12/03/2027
@@ -170,7 +172,7 @@
 
   window.FV = window.FV || {};
   window.FV.ui = {
-    num: num, num1: num1, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
+    num: num, num1: num1, parseNum: parseNum, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
     certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
     phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, logoHTML: logoHTML, LANG: LANG,
     qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param

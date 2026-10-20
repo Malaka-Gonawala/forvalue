@@ -1,0 +1,107 @@
+<!doctype html>
+<!-- D2 · Dettaglio lotto + pannello "Metti in vendita" (Figma "D2 Batch detail" + "D2 offer panel").
+     Pubblica creates or updates the offers for the batch's products. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lotto · ForValue</title>
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/desk.css">
+</head>
+<body class="desk">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script><script src="js/lib/qrcode.js"></script>
+<script>var S = FV.auth.require(['segheria']);</script>
+<div id="sb"></div>
+<main class="main" id="main"></main>
+<div id="panelWrap" hidden>
+  <div class="scrim" data-close></div>
+  <aside class="panel" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h2 class="h2" id="pTitle" style="font-size:20px">Metti in vendita</h2>
+      <button type="button" class="backbtn" data-close aria-label="Chiudi" style="border:0"><span class="ms" aria-hidden="true">close</span></button></div>
+    <div class="muted" id="pSub"></div>
+    <div id="prows" style="display:flex;flex-direction:column;gap:16px"></div>
+  </aside>
+</div>
+
+<script>
+  var ui = FV.ui, st = FV.store, me = S.azienda.id;
+  document.getElementById('sb').innerHTML = ui.sidebar('lotti', S);
+  var l = st.lottoByCode(ui.param('c') || '');
+  if (!l) { location.replace('dashboard.html'); throw new Error('no lotto'); }
+  document.title = l.codice_qr + ' · ForValue';
+
+  var part = st.byId('particella', l.id_particella);
+  var prodotti = st.prodottiOfLotto(l.id);
+  var stato = st.statoLotto(l.id);
+
+  function fact(k, v) { return '<div><div class="muted xs">' + k + '</div><div style="font-weight:600">' + v + '</div></div>'; }
+  var url = ui.qrUrl(l);
+  document.getElementById('main').innerHTML =
+    '<div class="head"><a class="backbtn" href="dashboard.html" aria-label="Indietro"><span class="ms" aria-hidden="true">arrow_back</span></a>' +
+      '<div class="grow"><div class="crumb"><a href="dashboard.html">Dashboard</a> <span class="ms" aria-hidden="true">chevron_right</span> <a href="segheria-lotti.html">Lotti</a> <span class="ms" aria-hidden="true">chevron_right</span> ' + ui.esc(l.codice_qr) + '</div>' +
+      '<h1 class="h1">' + ui.v(l, 'codice_qr') + '</h1></div>' +
+      (prodotti.length && stato !== 'Venduto' ? '<button type="button" class="dbtn pri" id="sell"><span class="ms" aria-hidden="true">sell</span>Metti in vendita</button>' : '') + '</div>' +
+    '<div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px">' +
+      '<div style="display:flex;flex-direction:column;gap:20px">' +
+        '<section class="box" style="padding:20px;display:flex;flex-direction:column;gap:16px"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">' +
+          fact('Specie', ui.esc(ui.specieName(l))) + fact('Volume', ui.num(l.volume_m3) + ' m³') + fact('Particella', ui.v(part, 'nome')) + fact('Data di taglio', ui.date(l.data_taglio)) +
+        '</div><div class="pills">' + ui.badges(l) + '</div>' +
+        (prodotti.length ? '' : '<div class="small muted">Questo lotto non è ancora stato segato: niente da mettere in vendita.</div>') + '</section>' +
+        '<section class="box" style="padding:20px;display:flex;flex-direction:column;gap:16px"><h2 style="font-size:15px">Storico</h2><div class="dtl">' +
+          st.storico(l.id).map(function (e) {
+            return '<div class="step"><div class="rail"><div class="dot"></div><div class="line"></div></div><div class="body"><div class="muted xs" style="font-weight:600">' + ui.date(e.data) + '</div><div style="font-weight:600">' + ui.t(e.titolo) + '</div><div class="muted xs">' + ui.t(e.sotto) + '</div></div></div>';
+          }).join('') + '</div></section>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:20px">' +
+        '<div class="map box" style="height:180px;border:0">' +
+          '<span class="ms" aria-hidden="true">location_on</span>' + (part.lat != null ? '<span class="coords">' + ui.gps(part.lat, part.lon) + '</span>' : '') + '<span class="tag">Mappa segnaposto</span></div>' +
+        '<div class="box" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px"><div style="width:180px;height:180px">' + ui.qrSvg(url) + '</div>' +
+          '<a class="dbtn sec full" href="' + ui.esc(url) + '" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">qr_code_2</span>Apri pagina QR</a></div>' +
+      '</div></div>';
+
+  // ---- Offer panel ----
+  var wrap = document.getElementById('panelWrap');
+  function sold(idProdotto) {
+    var offs = st.all('offerta').filter(function (o) { return o.id_prodotto === idProdotto; }).map(function (o) { return o.id; });
+    return st.all('ordine').filter(function (o) { return offs.indexOf(o.id_offerta) >= 0 && o.stato !== 'annullato'; }).reduce(function (s, o) { return s + o.quantita; }, 0);
+  }
+  function openPanel() {
+    document.getElementById('pSub').textContent = 'Dal lotto ' + l.codice_qr;
+    document.getElementById('prows').innerHTML = prodotti.map(function (p) {
+      var off = st.all('offerta').find(function (o) { return o.id_prodotto === p.id && o.id_azienda === me; });
+      var demo = (st.all('demo_offerta') || []).find(function (d) { return d.id_prodotto === p.id; });
+      var max = Math.max(0, p.quantita - sold(p.id)), u = st.unitLabel(p.unita), sc = p.categoria === 'sottoprodotto';
+      var qty = off ? off.quantita_disponibile : max, price = off ? off.prezzo_unitario : (demo ? demo.prezzo_unitario : '');
+      return '<form class="box prow' + (sc ? ' scarti' : '') + '" data-p="' + p.id + '" data-max="' + max + '" novalidate>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center"><b>' + ui.esc(p.descrizione) + '</b>' + (sc ? ui.scartiPill() : '') + '</div>' +
+        '<div class="grid2"><div class="dfield"><label for="q' + p.id + '">Quantità</label><div class="dinput"><input id="q' + p.id + '" inputmode="decimal" value="' + (qty === '' ? '' : ui.num(qty)) + '"><span class="unit">' + u + '</span></div></div>' +
+        '<div class="dfield"><label for="pr' + p.id + '">Prezzo</label><div class="dinput"><input id="pr' + p.id + '" inputmode="decimal" value="' + (price === '' ? '' : ui.euro(price).replace(' €', '')) + '"><span class="unit">€/' + u + '</span></div></div></div>' +
+        '<div class="derr" hidden></div><div class="xs muted">Disponibili: ' + ui.num(max) + ' ' + u + (off ? ' · offerta già pubblicata, la aggiorni' : '') + '</div>' +
+        '<button class="dbtn ' + (sc ? 'sec' : 'pri') + ' full" type="submit">' + (sc ? 'Pubblica scarti' : 'Pubblica offerta') + '</button></form>';
+    }).join('');
+    wrap.hidden = false;
+    var first = wrap.querySelector('input'); if (first) first.focus();
+  }
+  function closePanel() { wrap.hidden = true; }
+  wrap.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closePanel(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !wrap.hidden) closePanel(); });
+  wrap.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, id = Number(f.getAttribute('data-p')), max = Number(f.getAttribute('data-max')), p = st.byId('prodotto', id);
+    var q = ui.parseNum(f.querySelector('#q' + id).value), pr = ui.parseNum(f.querySelector('#pr' + id).value), err = f.querySelector('.derr');
+    var msg = !q ? 'Inserisci una quantità maggiore di zero.' : q > max ? 'Massimo ' + ui.num(max) + ' ' + st.unitLabel(p.unita) + '.' : !pr ? 'Inserisci un prezzo maggiore di zero.' : '';
+    f.querySelectorAll('.dinput').forEach(function (d) { d.classList.remove('err'); });
+    if (msg) { err.textContent = msg; err.hidden = false; f.querySelector(!q || q > max ? '#q' + id : '#pr' + id).parentNode.classList.add('err'); return; }
+    st.publishOfferta(id, me, q, pr);
+    var sc = p.categoria === 'sottoprodotto';
+    ui.flash(sc ? 'Scarti pubblicati' : 'Offerta pubblicata');
+    location.href = 'marketplace.html' + (sc ? '?tab=scarti' : '');
+  });
+  var btn = document.getElementById('sell');
+  if (btn) btn.onclick = openPanel;
+  if (ui.param('vendi') && btn) openPanel();
+</script>
+</body>
+</html>

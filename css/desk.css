@@ -116,3 +116,5 @@ tbody tr.click:hover td { background: #FBFBF8; }
   body.desk { grid-template-columns: 1fr; }
   .sb { position: static; height: auto; }
 }
+.grid2 > *, .dfield { min-width: 0; }
+.dinput input { width: 100%; }

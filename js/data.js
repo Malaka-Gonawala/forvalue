@@ -84,6 +84,13 @@ window.FV_SEED = {
     { id: 5, id_prodotto: 7, id_azienda: 2, titolo: 'Segatura di faggio', prezzo_unitario: 60, quantita_disponibile: 3, attiva: 1, _ph: true }
   ],
 
+  /* Prices the sawmill publishes live in the demo for FV-2027-00087 (D2 panel is pre-filled
+     with these): tavole 310,00 €/m³ and cippato 95,00 €/t, from the database sample. */
+  demo_offerta: [
+    { id_prodotto: 1, prezzo_unitario: 310 },
+    { id_prodotto: 2, prezzo_unitario: 95 }
+  ],
+
   /* 10. ordine – stato: inviato | accettato | consegnato | annullato.
      Spread over 4 months so the dashboard chart has bars. */
   ordine: [

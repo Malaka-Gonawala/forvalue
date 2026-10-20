@@ -1,0 +1,55 @@
+<!doctype html>
+<!-- D7 · Lotti della segheria (Figma "D7 Lotti"). Batches received, with status tabs and search. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lotti · ForValue</title>
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/desk.css">
+</head>
+<body class="desk">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['segheria']);</script>
+<div id="sb"></div>
+<main class="main">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px">
+    <div><div class="crumb" id="crumb"></div><h1 class="h1">Lotti</h1></div>
+    <div class="dinput" style="width:300px"><span class="ms" aria-hidden="true">search</span><input id="q" type="search" placeholder="Cerca codice o specie" aria-label="Cerca codice o specie"></div>
+  </div>
+  <div class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-f="">Tutti</button><button role="tab" data-f="Disponibile">Disponibili</button><button role="tab" data-f="Riservato">Riservati</button><button role="tab" data-f="Venduto">Venduti</button>
+  </div>
+  <section class="box">
+    <div style="padding:16px 16px 4px"><h2 style="font-size:15px">Lotti ricevuti</h2></div>
+    <table><thead><tr><th>Lotto</th><th>Specie</th><th>Volume</th><th>Origine</th><th>Badge</th><th>Stato</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+  </section>
+</main>
+<script>
+  var ui = FV.ui, st = FV.store;
+  document.getElementById('sb').innerHTML = ui.sidebar('lotti', S);
+  document.getElementById('crumb').innerHTML = ui.esc(S.azienda.ragione_sociale) + ' <span class="ms" aria-hidden="true">chevron_right</span> Lotti';
+  var lotti = st.lottiOfSawmill(S.azienda.id).sort(function (a, b) { return st.transferDate(a.id) < st.transferDate(b.id) ? 1 : -1; });
+  var filter = '';
+  function draw() {
+    var q = document.getElementById('q').value.trim().toLowerCase();
+    document.querySelectorAll('#tabs [role=tab]').forEach(function (t) { t.setAttribute('aria-selected', t.getAttribute('data-f') === filter); });
+    var rows = lotti.filter(function (l) {
+      var stato = st.statoLotto(l.id);
+      return (!filter || stato === filter) && (!q || (l.codice_qr + ' ' + ui.specieName(l)).toLowerCase().indexOf(q) >= 0);
+    });
+    document.getElementById('rows').innerHTML = rows.map(function (l) {
+      var href = 'lotto.html?c=' + encodeURIComponent(l.codice_qr);
+      return '<tr><td style="font-weight:600">' + ui.v(l, 'codice_qr') + '</td><td>' + ui.esc(ui.specieName(l)) + '</td><td class="num">' + ui.num(l.volume_m3) + ' m³</td>' +
+        '<td>' + ui.esc(st.byId('azienda', l.id_azienda).ragione_sociale) + '</td>' +
+        '<td><div class="pills">' + ui.certPill(l.certificato) + ui.eudrPill(st.eudrOk(l), true) + '</div></td><td>' + ui.statoPill(st.statoLotto(l.id)) + '</td>' +
+        '<td style="text-align:right"><a class="dbtn sec" href="' + href + '">Apri</a></td></tr>';
+    }).join('') || '<tr><td colspan="7"><div class="empty" style="padding:24px"><span class="ms" aria-hidden="true">inventory_2</span>Nessun lotto con questi filtri.</div></td></tr>';
+  }
+  document.getElementById('tabs').onclick = function (e) { var t = e.target.closest('[data-f]'); if (t) { filter = t.getAttribute('data-f'); draw(); } };
+  document.getElementById('q').oninput = draw;
+  draw();
+</script>
+</body>
+</html>
