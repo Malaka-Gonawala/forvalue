@@ -111,7 +111,7 @@
     proprietario: {
       tabs: [['home', 'home.html', 'home', 'Home'], ['lotti', 'lotti.html', 'inventory_2', 'Lotti'], ['nuovo', 'nuovo-lotto.html', 'add', 'Nuovo lotto'], ['profilo', 'profilo.html', 'person', 'Profilo'], ['altro', 'altro.html', 'menu', 'Altro']],
       side: [['home', 'home.html', 'home', 'Home'], ['lotti', 'lotti.html', 'inventory_2', 'I miei lotti'], ['nuovo', 'nuovo-lotto.html', 'add_box', 'Nuovo lotto'],
-        ['certificati', 'certificati.html', 'workspace_premium', 'Certificati'], ['notifiche', 'notifiche.html', 'notifications', 'Notifiche'], ['profilo', 'profilo.html', 'person', 'Profilo']]
+        ['certificati', 'certificati.html', 'workspace_premium', 'Certificati'], ['notifiche', 'notifiche.html', 'notifications', 'Notifiche']]   // profile = user block at the bottom
     },
     segheria: {
       tabs: [['dashboard', 'dashboard.html', 'space_dashboard', 'Home'], ['lotti', 'segheria-lotti.html', 'inventory_2', 'Lotti'], ['vendi', '#vendi', 'sell', 'Vendi'], ['ordini', 'ordini-ricevuti.html', 'receipt_long', 'Ordini'], ['altro', 'altro.html', 'menu', 'Altro']],
@@ -162,7 +162,7 @@
       '<nav aria-label="Menu">' + NAV[role].side.map(function (x) {
         return '<a href="' + navHref(x) + '"' + (x[0] === active ? ' aria-current="page"' : '') + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + badge(role, x[0]) + '</a>';
       }).join('') + '</nav>' +
-      '<div class="foot"><a class="who" href="profilo.html"' + (active === 'profilo' ? ' aria-current="page"' : '') + ' aria-label="Profilo: ' + esc(session.azienda.ragione_sociale) + '"><span class="ms" aria-hidden="true">account_circle</span>' + esc(session.azienda.ragione_sociale) + '</a>' +
+      '<div class="foot"><a class="who" href="profilo.html"' + (/profilo\.html$/.test(location.pathname) ? ' aria-current="page"' : '') + ' aria-label="Profilo: ' + esc(session.azienda.ragione_sociale) + '"><span class="ms" aria-hidden="true">account_circle</span>' + esc(session.azienda.ragione_sociale) + '</a>' +
       '<button type="button" class="lnk" data-reset><span class="ms" aria-hidden="true">restart_alt</span>Ripristina dati demo</button>' +
       '<button type="button" class="lnk" data-logout><span class="ms" aria-hidden="true">logout</span>Esci</button>' + LANG + '</div></div></aside>';
   }
