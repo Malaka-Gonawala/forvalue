@@ -1,10 +1,105 @@
 # ForValue – Smart Forestry & Value Chain Network
 
-Sito dimostrativo (solo client-side) per il progetto GPOI di Malaka e Alessandro.
-Piattaforma B2B per la tracciabilità del legno (QR + EUDR), marketplace e scarti.
+School project (GPOI) by Malaka and Alessandro. A working website with **no back end**:
+logins, wood batches, offers and orders are saved in the browser (localStorage).
+It copies the Figma file "ForValue Mock-up".
 
-Il sito è in costruzione: le pagine vengono aggiunte qui una sessione alla volta.
-Pubblicato con GitHub Pages.
+> **Demo only.** The passwords are stored in the browser. This is not real security.
 
-> Nota: i dati (login, lotti, ordini) sono salvati nel localStorage del browser.
-> Solo per una demo scolastica, non è sicurezza reale.
+## Demo accounts
+
+| Role | Email | Password | Opens on |
+|---|---|---|---|
+| Forest owner (Consorzio Val di Fiemme) | proprietario@forvalue.demo | demo2027 | Home (phone) |
+| Sawmill (Segheria Alpina) | segheria@forvalue.demo | demo2027 | Dashboard (desktop) |
+| Buyer (Arredi Bianchi Srl) | acquirente@forvalue.demo | demo2027 | Marketplace (desktop) |
+
+These are placeholders until the real `utente` rows are in the database (see `DATA-NEEDED.md`).
+
+**Hidden shortcuts** (no password needed): tap the ForValue logo on the owner's phone screens to become the sawmill;
+click the logo in the sawmill's sidebar to become the buyer (and the buyer's logo goes back to the sawmill).
+
+## The demo in 6 steps
+
+1. On the phone, log in as the owner → **+ Nuovo lotto** → fill the volume → **Salva lotto**. The QR appears.
+2. **Vedi storico del lotto** opens the public QR page (no login).
+3. Tap the logo → sawmill Dashboard → **Vendi** on FV-2027-00087 → **Pubblica offerta** (28 m³ at 310,00 €/m³), then **Pubblica scarti** (6 t at 95,00 €/t).
+4. Click the logo → buyer Marketplace → tick **PEFC** → *Tavole di abete rosso* (310,00 €) → quantity 10 → **Ordina ora**.
+5. The confirmation shows 10 m³ · 3.100,00 €. **Vedi tracciabilità** shows the new step "Venduto ad Arredi Bianchi Srl".
+6. FV-2027-00087 is now **Venduto** everywhere (owner's list, sawmill's lists, QR page).
+
+Before presenting, press **Ripristina dati demo** (phone: Altro; desktop: bottom of the sidebar) to start clean.
+
+## Open it on your computer
+
+Double-clicking `index.html` works for most pages, but browsers limit some features on `file://`.
+It's better to run a tiny local server from this folder:
+
+```
+python -m http.server 8000
+```
+
+then open http://localhost:8000 in the browser. (On Windows you can also use the "Live Server" extension in VS Code.)
+
+## Change a value
+
+All the starting data is in **`js/data.js`**. Each table has the same name and the same fields as the MariaDB
+database (`azienda`, `specie`, `utente`, `certificazione`, `particella`, `lotto`, `lavorazione`, `prodotto`,
+`offerta`, `ordine`, `passaggio`).
+
+1. Open `js/data.js` in any text editor.
+2. Change the value, for example the owner's email in the `utente` table.
+3. If the row has a `_ph` mark (placeholder), remove the field name from `_ph` (or the whole `_ph`), so it stops showing in gold.
+4. Save, reload the site and press **Ripristina dati demo**. The browser keeps the old copy until you reset.
+
+Things that are **not** columns in the database are worked out the same way the demo queries do:
+- **Batch status**: Venduto if an order on it is *inviato* or *consegnato*, Riservato if *accettato*, otherwise Disponibile.
+- **EUDR verificato**: the parcel has GPS (lat/lon) and the batch has a cut date.
+- **CO₂**: volume × `fattore_co2` of the species (45 m³ × 0,7 = 31,5 t).
+
+## Files
+
+| File | What it is |
+|---|---|
+| `index.html` | P0 Login |
+| `home.html`, `nuovo-lotto.html`, `lotto-salvato.html` | P1 Home, P2 New batch, P3 Batch saved + QR |
+| `altro.html`, `lotti.html`, `profilo.html`, `certificati.html`, `notifiche.html`, `aiuto.html` | P4–P9 phone menu pages |
+| `qr.html` | Q1 public QR page |
+| `dashboard.html`, `lotto.html`, `segheria-lotti.html` | D1 Dashboard, D2 Batch detail + sell panel, D7 Sawmill batches |
+| `marketplace.html`, `offerta.html`, `carrello.html`, `ordine-inviato.html`, `ordini.html` | D3 Marketplace, D4 Offer, D5 Cart, D6 Order sent, D8 Orders |
+| `css/` | `base.css` (colours, badges), `phone.css`, `desk.css`, fonts (Inter, Material Symbols) |
+| `js/data.js` | Seed data (same tables as the database) |
+| `js/store.js` | Every read and write to localStorage |
+| `js/auth.js` | Login, logout, role checks |
+| `js/ui.js` | Italian number/date format, badges, menus, QR link |
+| `js/lib/qrcode.js` | QR generator (qrcode-generator, MIT), works offline |
+| `DATA-NEEDED.md` | Values still missing from the database |
+
+Each page starts with a comment saying which Figma screen it is.
+
+## How the QR works
+
+The QR link carries the batch data inside the address (`qr.html?d=…`, short JSON in base64url).
+So a teacher's phone that has never opened the site still shows the full history.
+If `d` is missing, `qr.html?c=FV-2027-00087` reads the batch from this browser's storage;
+if that fails too, the page says "Lotto non trovato".
+
+**Important:** the QR contains the address of the page that made it. Make the QR you print from the
+**published GitHub Pages site**, not from a local file or localhost, or phones won't open it.
+
+## Publish on GitHub Pages
+
+1. Go to https://github.com and sign in. Click **New repository**, name it `forvalue`, make it **Public**, click **Create repository**.
+2. Click **uploading an existing file**, drag **everything inside this folder** (so `index.html` is at the top level, next to `css/` and `js/`), then **Commit changes**.
+3. Open **Settings → Pages**. Under *Build and deployment* choose **Deploy from a branch**, branch **main**, folder **/ (root)**, then **Save**.
+4. Wait 1–2 minutes. The address appears at the top of the Pages settings, like `https://<your-username>.github.io/forvalue/`.
+5. Open that address, log in as the owner, open the QR of FV-2027-00087 (Lotti → the batch, or create a new batch) and print that QR.
+6. Test it with 2 phones **on mobile data** (not the school Wi-Fi).
+
+The empty `.nojekyll` file tells GitHub to publish the files exactly as they are.
+
+## Known limits (it's a prototype)
+
+- The IT · EN switch is shown but only Italian exists.
+- Data lives in one browser: the phone and the laptop each have their own copy. The QR page is the exception, because its data is in the link.
+- Photos are made small and saved in the browser; maps are placeholders with a link to OpenStreetMap.
