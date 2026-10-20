@@ -1,0 +1,99 @@
+/* ForValue – shared styles: fonts, colours, buttons, badges, fields.
+   Colours come from the Figma "ForValue Mock-up" colour styles. */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(fonts/inter.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url(fonts/material-symbols-rounded.woff2) format('woff2');
+}
+
+:root {
+  --g900: #1F4D2C;   /* Green 900: desktop sidebar */
+  --g700: #2E6B3F;   /* Green 700: buttons, phone header */
+  --g500: #4F8A5F;   /* Green 500: chart bars */
+  --g100: #E2EFE5;   /* Green 100: FSC / PEFC badge */
+  --au500: #DBB743;  /* Gold 500: EUDR badge, Nuovo lotto, logo */
+  --au300: #EBD488;
+  --au100: #F8EFCF;
+  --au800: #7A6114;  /* Gold 800: gold text */
+  --bg: #F7F7F2;     /* Sfondo */
+  --ink: #1F2A22;
+  --muted: #4E5A51;
+  --line: #DCDDD3;
+  --field: #7E887F;  /* field border, 3:1 on white */
+  --n100: #EEF0EA;
+  --err: #B3261E;
+  --white: #fff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: Inter, system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+a { color: inherit; text-decoration: none; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; }
+img { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+
+:focus-visible { outline: 3px solid var(--au500); outline-offset: 2px; border-radius: 6px; }
+
+/* Material Symbols icon: <span class="ms">forest</span> */
+.ms {
+  font-family: 'Material Symbols Rounded';
+  font-weight: 700; font-style: normal;
+  font-size: 24px; line-height: 1;
+  display: inline-block; white-space: nowrap; direction: ltr;
+  font-feature-settings: 'liga'; -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* Logo */
+.logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; color: #fff; }
+.logo .mk { width: 28px; height: 28px; border-radius: 8px; background: var(--au500); display: grid; place-items: center; color: var(--g900); }
+.logo .mk .ms { font-size: 18px; }
+
+/* IT · EN switch (shown, not working) */
+.lang { display: inline-flex; background: var(--g900); border-radius: 999px; padding: 2px; }
+.lang span { font-size: 13px; font-weight: 600; line-height: 16px; padding: 6px 12px; border-radius: 999px; color: var(--g100); }
+.lang span.on { background: #fff; color: var(--g900); }
+
+/* Text */
+.h1 { font-size: 28px; line-height: 34px; font-weight: 700; }
+.h2 { font-size: 22px; line-height: 28px; font-weight: 600; }
+.small { font-size: 15px; line-height: 20px; }
+.xs { font-size: 13px; line-height: 16px; }
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Badges: icon + text pill */
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px 4px 8px; border-radius: 999px; font-size: 13px; line-height: 16px; font-weight: 600; white-space: nowrap; }
+.pill .ms { font-size: 16px; }
+.p-cert { background: var(--g100); color: var(--g900); }
+.p-eudr { background: var(--au500); color: var(--ink); }
+.p-st   { background: var(--n100); color: var(--ink); }
+.p-scarti { background: var(--au100); color: var(--au800); border: 1px solid var(--au300); }
+.p-sold { background: var(--n100); color: var(--ink); }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Placeholder: value still missing from the database (gold, in brackets) */
+.ph { color: var(--au800); background: var(--au100); border-radius: 6px; padding: 0 4px; }
+
+/* Fields */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label, .field > .lbl { font-size: 15px; line-height: 20px; font-weight: 600; }
+.errtxt { color: var(--err); font-size: 15px; line-height: 20px; display: flex; gap: 6px; align-items: flex-start; }
+.errtxt .ms { font-size: 20px; }
+
+/* Toast */
+.toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); background: var(--g900); color: #fff; padding: 12px 18px; border-radius: 10px; font-weight: 600; display: flex; gap: 8px; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 100; }
+.toast .ms { color: var(--au500); }

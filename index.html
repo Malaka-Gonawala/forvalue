@@ -1,0 +1,75 @@
+<!doctype html>
+<!-- P0 · Login (Figma "P0 Login"). Checks email + password, sends each role to its home. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Accedi · ForValue</title>
+<meta name="theme-color" content="#2E6B3F">
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/phone.css">
+</head>
+<body class="phone">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+
+<div id="bar"></div>
+<div class="hero" style="padding-bottom:96px">
+  <h1 class="h1" style="margin-top:12px">Accedi</h1>
+  <div class="sub">Ogni lotto, dal bosco al cliente.</div>
+</div>
+
+<main class="over" style="margin-top:-72px">
+  <form id="f" class="box lift" style="padding:20px 16px;display:flex;flex-direction:column;gap:16px" novalidate>
+    <div class="field">
+      <label for="email">Email</label>
+      <div class="input" id="emailBox"><span class="ms" aria-hidden="true">mail</span><input id="email" type="email" autocomplete="username" inputmode="email" required></div>
+    </div>
+    <div class="field">
+      <label for="pw">Password</label>
+      <div class="input" id="pwBox"><span class="ms" aria-hidden="true">lock</span><input id="pw" type="password" autocomplete="current-password" required>
+        <button type="button" id="eye" aria-label="Mostra password" style="width:44px;height:44px;display:grid;place-items:center;margin-right:-10px"><span class="ms" aria-hidden="true">visibility</span></button></div>
+      <div class="errtxt" id="err" hidden role="alert"><span class="ms" aria-hidden="true">error</span><span>Email o password non corretti. Controlla e riprova.</span></div>
+    </div>
+    <button class="btn pri" type="submit">Accedi</button>
+  </form>
+
+  <div class="box" style="background:var(--au100);border-color:var(--au300);padding:16px;display:flex;gap:12px;align-items:center">
+    <div class="tile" style="background:var(--au500);color:var(--ink)"><span class="ms" aria-hidden="true">qr_code_2</span></div>
+    <div><div style="font-weight:600">Hai un QR su un lotto?</div><div class="small" style="color:var(--au800)">Inquadralo con la fotocamera per vederne la storia.</div></div>
+  </div>
+</main>
+
+<script>
+  document.getElementById('bar').innerHTML = FV.ui.phoneBar({ logoHref: 'index.html' });
+
+  // Already logged in? Go straight home.
+  var s = FV.auth.current();
+  if (s) location.replace(FV.auth.home(s.ruolo));
+
+  // Email pre-filled with the forest owner's account (utente table)
+  var owner = FV.store.all('utente').find(function (u) { return u.ruolo === 'proprietario'; });
+  var email = document.getElementById('email'), pw = document.getElementById('pw'), err = document.getElementById('err');
+  email.value = owner ? owner.email : '';
+
+  document.getElementById('eye').onclick = function () {
+    var show = pw.type === 'password'; pw.type = show ? 'text' : 'password';
+    this.setAttribute('aria-label', show ? 'Nascondi password' : 'Mostra password');
+    this.firstChild.textContent = show ? 'visibility_off' : 'visibility';
+  };
+
+  document.getElementById('f').onsubmit = function (e) {
+    e.preventDefault();
+    var u = FV.auth.login(email.value, pw.value);
+    if (!u) {
+      err.hidden = false;
+      document.getElementById('pwBox').classList.add('err');
+      pw.setAttribute('aria-invalid', 'true'); pw.focus();
+      return;
+    }
+    location.href = FV.auth.home(u.ruolo);
+  };
+  pw.oninput = function () { err.hidden = true; document.getElementById('pwBox').classList.remove('err'); pw.removeAttribute('aria-invalid'); };
+</script>
+</body>
+</html>
