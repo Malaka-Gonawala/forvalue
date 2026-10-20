@@ -1,0 +1,81 @@
+<!doctype html>
+<!-- D4 · Dettaglio offerta + ordine (Figma "D4 Offer detail"). Quantity can't go above what's
+     available; Totale = quantità × prezzo. Ordina ora → D6, Aggiungi al carrello → D5. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Offerta · ForValue</title>
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/desk.css">
+</head>
+<body class="desk">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['acquirente', 'segheria']);</script>
+<div id="sb"></div>
+<main class="main" id="main"></main>
+<script>
+  var ui = FV.ui, st = FV.store;
+  var o = st.byId('offerta', ui.param('id'));
+  if (!o) { location.replace('marketplace.html'); throw new Error('no offer'); }
+  var p = st.byId('prodotto', o.id_prodotto), l = st.lottoOfOfferta(o), seller = st.byId('azienda', o.id_azienda);
+  var sc = p.categoria === 'sottoprodotto', unit = st.unitOf(o), buyer = S.ruolo === 'acquirente';
+  var back = 'marketplace.html' + (sc ? '?tab=scarti' : '');
+  document.getElementById('sb').innerHTML = ui.sidebar(sc ? 'circolarita' : 'marketplace', S);
+  document.title = o.titolo + ' · ForValue';
+  var avail = o.quantita_disponibile, start = Math.min(10, avail);
+
+  function fact(k, v) { return '<div><div class="muted xs">' + k + '</div><div style="font-weight:600">' + v + '</div></div>'; }
+  document.getElementById('main').innerHTML =
+    '<div class="head"><a class="backbtn" href="' + back + '" aria-label="Indietro"><span class="ms" aria-hidden="true">arrow_back</span></a>' +
+      '<div class="grow"><div class="crumb"><a href="' + back + '">Marketplace</a> <span class="ms" aria-hidden="true">chevron_right</span> ' + ui.esc(o.titolo) + '</div><h1 class="h1">' + ui.v(o, 'titolo') + '</h1></div></div>' +
+    '<div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start">' +
+      '<div style="display:flex;flex-direction:column;gap:16px">' +
+        '<div class="map" style="height:300px;background:' + (sc ? 'var(--au100)' : 'var(--g100)') + '">' +
+          (l && l.foto_url ? '<img src="' + l.foto_url + '" alt="Foto del lotto" style="width:100%;height:100%;object-fit:cover">'
+            : '<span class="ms" style="font-size:56px;color:' + (sc ? 'var(--au800)' : 'var(--g500)') + '" aria-hidden="true">' + (sc ? 'recycling' : 'forest') + '</span><span class="tag">Foto da inserire</span>') + '</div>' +
+        '<section class="box" style="padding:16px 20px;display:flex;flex-direction:column;gap:12px"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">' +
+          fact('Venditore', ui.esc(seller.ragione_sociale)) + fact('Specie', l ? ui.esc(ui.specieName(l)) : '–') + fact('Disponibile', ui.num(avail) + ' ' + unit) + '</div>' +
+          '<div class="pills">' + ui.certPill(l && l.certificato) + (l ? ui.eudrPill(st.eudrOk(l)) : '') + (sc ? ui.scartiPill() : '') + '</div>' +
+          (l ? '<a href="' + ui.esc(ui.qrUrl(l)) + '" style="display:flex;gap:6px;align-items:center;color:var(--g700);font-weight:600;text-decoration:underline"><span class="ms" style="font-size:20px" aria-hidden="true">qr_code_2</span>Lotto di origine: ' + ui.esc(l.codice_qr) + '</a>' : '') +
+        '</section></div>' +
+      '<form class="box" id="buy" style="padding:16px;display:flex;flex-direction:column;gap:14px" novalidate>' +
+        '<div><span style="font-size:24px;font-weight:700" class="num">' + ui.euro(o.prezzo_unitario) + '</span> <span class="muted xs">/ ' + unit + '</span></div>' +
+        '<div class="dfield"><label for="qty">Quantità</label><div class="dinput" id="qBox"><input id="qty" inputmode="decimal" value="' + ui.num(start) + '" aria-describedby="qHint qErr"><span class="unit">' + unit + '</span></div>' +
+          '<div class="derr" id="qErr" hidden></div><div class="xs muted" id="qHint">max ' + ui.num(avail) + ' ' + unit + '</div></div>' +
+        '<div class="dfield"><label for="del">Data di consegna <span class="muted" style="font-weight:400">(facoltativa)</span></label><div class="dinput"><input id="del" type="date"></div></div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:12px"><b>Totale</b><b style="font-size:20px" class="num" id="tot"></b></div>' +
+        (buyer ? '<button class="dbtn pri full" type="submit" id="order">Ordina ora</button><button class="dbtn sec full" type="button" id="cart"><span class="ms" aria-hidden="true">add_shopping_cart</span>Aggiungi al carrello</button>'
+               : '<div class="small muted">Solo un acquirente può ordinare. Stai guardando come ' + ui.esc(S.azienda.ragione_sociale) + '.</div>') +
+      '</form></div>';
+
+  var qty = document.getElementById('qty'), qErr = document.getElementById('qErr'), qBox = document.getElementById('qBox');
+  document.getElementById('del').min = st.todayISO();
+  function check() {
+    var q = ui.parseNum(qty.value);
+    var msg = !q ? 'Inserisci una quantità maggiore di zero.' : q > avail ? 'Puoi ordinare al massimo ' + ui.num(avail) + ' ' + unit + '.' : '';
+    qErr.textContent = msg; qErr.hidden = !msg; qBox.classList.toggle('err', !!msg);
+    document.getElementById('tot').textContent = q && !msg ? ui.euro(Math.round(q * o.prezzo_unitario * 100) / 100) : '–';
+    return msg ? null : q;
+  }
+  qty.oninput = check; check();
+
+  if (buyer) {
+    document.getElementById('buy').onsubmit = function (e) {
+      e.preventDefault();
+      var q = check(); if (!q) { qty.focus(); return; }
+      var ord = st.placeOrdine(o.id, S.azienda.id, q, document.getElementById('del').value || null);
+      if (ord) location.href = 'ordine-inviato.html?id=' + ord.id;
+    };
+    document.getElementById('cart').onclick = function () {
+      var q = check(); if (!q) { qty.focus(); return; }
+      var cart = st.getCart().filter(function (c) { return c.id_offerta !== o.id; });
+      cart.push({ id_offerta: o.id, quantita: q, data_consegna: document.getElementById('del').value || null });
+      st.setCart(cart);
+      location.href = 'carrello.html';
+    };
+  }
+</script>
+</body>
+</html>

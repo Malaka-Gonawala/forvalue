@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- D6 · Ordine inviato (Figma "D6 Order sent"). Order number, summary, Vedi tracciabilità → Q1. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ordine inviato · ForValue</title>
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/desk.css">
+</head>
+<body class="desk">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['acquirente']);</script>
+<div id="sb"></div>
+<main class="main" style="padding:0">
+  <div style="background:var(--g700);height:240px"></div>
+  <div id="cards" style="margin:-192px auto 40px;width:min(560px,calc(100% - 40px));display:flex;flex-direction:column;gap:16px"></div>
+</main>
+<script>
+  var ui = FV.ui, st = FV.store;
+  document.getElementById('sb').innerHTML = ui.sidebar('ordini', S);
+  var ords = String(ui.param('id') || '').split(',').map(function (id) { return st.byId('ordine', id); })
+    .filter(function (o) { return o && o.id_azienda === S.azienda.id; });
+  if (!ords.length) location.replace('ordini.html');
+  document.getElementById('cards').innerHTML = ords.map(function (o, i) {
+    var off = st.byId('offerta', o.id_offerta), l = st.lottoOfOfferta(off), seller = st.byId('azienda', off.id_azienda);
+    return '<section class="box" style="padding:32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;box-shadow:0 8px 24px rgba(31,77,44,.14);border:0">' +
+      (i === 0 ? '<div style="width:56px;height:56px;border-radius:999px;background:var(--g100);display:grid;place-items:center"><span class="ms" style="font-size:32px;color:var(--g700)" aria-hidden="true">check</span></div><h1 class="h1">Ordine inviato</h1>' : '') +
+      '<div class="muted">Ordine n. <span class="ph">' + o.id + '</span></div>' +
+      '<div style="font-weight:600">' + ui.esc(off.titolo) + '</div>' +
+      '<div class="num" style="font-weight:600">' + ui.num(o.quantita) + ' ' + st.unitOf(off) + ' · ' + ui.euro(o.prezzo_totale) + ' · ' + ui.esc(seller.ragione_sociale) + '</div>' +
+      (o.data_consegna ? '<div class="small muted">Consegna richiesta: ' + ui.date(o.data_consegna) + '</div>' : '') +
+      ui.ordinePill(o.stato) +
+      '<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px">' +
+        (l ? '<a class="dbtn pri" href="' + ui.esc(ui.qrUrl(l)) + '"><span class="ms" aria-hidden="true">qr_code_2</span>Vedi tracciabilità</a>' : '') +
+        (i === ords.length - 1 ? '<a class="dbtn sec" href="marketplace.html">Torna al Marketplace</a>' : '') + '</div></section>';
+  }).join('');
+</script>
+</body>
+</html>

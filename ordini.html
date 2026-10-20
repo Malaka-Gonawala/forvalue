@@ -1,0 +1,59 @@
+<!doctype html>
+<!-- D8 · I miei ordini (Figma "D8 Ordini"). Buyer: own orders. Sawmill: orders received on its offers.
+     Each row has a Tracciabilità link to Q1. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ordini · ForValue</title>
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/desk.css">
+</head>
+<body class="desk">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['acquirente', 'segheria']);</script>
+<div id="sb"></div>
+<main class="main">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px">
+    <div><div class="crumb" id="crumb"></div><h1 class="h1" id="title"></h1></div>
+    <div class="dinput" style="width:300px"><span class="ms" aria-hidden="true">search</span><input id="q" type="search" placeholder="Cerca ordine o prodotto" aria-label="Cerca ordine o prodotto"></div>
+  </div>
+  <div class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-f="">Tutti</button><button role="tab" data-f="inviato">Inviati</button><button role="tab" data-f="accettato">Accettati</button><button role="tab" data-f="consegnato">Consegnati</button>
+  </div>
+  <section class="box">
+    <table><thead><tr><th>Ordine</th><th>Data</th><th id="who"></th><th>Prodotto</th><th>Quantità</th><th>Totale</th><th>Stato</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+  </section>
+</main>
+<script>
+  var ui = FV.ui, st = FV.store, buyer = S.ruolo === 'acquirente', me = S.azienda.id;
+  document.getElementById('sb').innerHTML = ui.sidebar('ordini', S);
+  document.getElementById('title').textContent = buyer ? 'I miei ordini' : 'Ordini ricevuti';
+  document.getElementById('who').textContent = buyer ? 'Venditore' : 'Acquirente';
+  document.getElementById('crumb').innerHTML = ui.esc(S.azienda.ragione_sociale) + ' <span class="ms" aria-hidden="true">chevron_right</span> Ordini';
+  var ords = st.all('ordine').filter(function (o) {
+    var off = st.byId('offerta', o.id_offerta);
+    return buyer ? o.id_azienda === me : off && off.id_azienda === me;
+  }).sort(function (a, b) { return b.id - a.id; });
+  var filter = '';
+  function draw() {
+    var q = document.getElementById('q').value.trim().toLowerCase();
+    document.querySelectorAll('#tabs [role=tab]').forEach(function (t) { t.setAttribute('aria-selected', t.getAttribute('data-f') === filter); });
+    var rows = ords.filter(function (o) {
+      var off = st.byId('offerta', o.id_offerta);
+      return (!filter || o.stato === filter) && (!q || (String(o.id) + ' ' + off.titolo).toLowerCase().indexOf(q) >= 0);
+    });
+    document.getElementById('rows').innerHTML = rows.map(function (o) {
+      var off = st.byId('offerta', o.id_offerta), l = st.lottoOfOfferta(off), other = st.byId('azienda', buyer ? off.id_azienda : o.id_azienda);
+      return '<tr><td>' + ui.v(o, 'id') + '</td><td>' + ui.v(o, 'data', ui.date(o.data)) + '</td><td>' + ui.esc(other.ragione_sociale) + '</td><td style="font-weight:600">' + ui.esc(off.titolo) + '</td>' +
+        '<td class="num">' + ui.num(o.quantita) + ' ' + st.unitOf(off) + '</td><td class="num" style="font-weight:600">' + ui.euro(o.prezzo_totale) + '</td><td>' + ui.ordinePill(o.stato) + '</td>' +
+        '<td style="text-align:right">' + (l ? '<a class="dbtn sec" href="' + ui.esc(ui.qrUrl(l)) + '"><span class="ms" aria-hidden="true">qr_code_2</span>Tracciabilità</a>' : '') + '</td></tr>';
+    }).join('') || '<tr><td colspan="8"><div class="empty" style="padding:24px"><span class="ms" aria-hidden="true">receipt_long</span>Nessun ordine.</div></td></tr>';
+  }
+  document.getElementById('tabs').onclick = function (e) { var t = e.target.closest('[data-f]'); if (t) { filter = t.getAttribute('data-f'); draw(); } };
+  document.getElementById('q').oninput = draw;
+  draw();
+</script>
+</body>
+</html>

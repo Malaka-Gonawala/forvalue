@@ -1,0 +1,108 @@
+<!doctype html>
+<!-- D3 · Marketplace (Figma "D3 Marketplace", "D3 Scarti", "D3 empty"). Tabs Legname / Scarti,
+     search and 4 filters that really filter. ?tab=scarti opens Scarti (sidebar "Circolarità"). -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marketplace · ForValue</title>
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/desk.css">
+</head>
+<body class="desk">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['acquirente', 'segheria']);</script>
+<div id="sb"></div>
+<main class="main">
+  <h1 class="h1">Marketplace</h1>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tLeg" data-tab="legname">Legname</button>
+    <button role="tab" id="tSc" data-tab="scarti" class="scarti"><span class="ms" aria-hidden="true">recycling</span>Scarti</button>
+  </div>
+  <div class="dinput" style="min-height:44px"><span class="ms" aria-hidden="true">search</span><input id="q" type="search" placeholder="Cerca specie, prodotto o venditore" aria-label="Cerca specie, prodotto o venditore"></div>
+  <div style="display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;align-items:start">
+    <form class="box" id="filters" style="padding:16px;display:flex;flex-direction:column;gap:16px" onsubmit="return false">
+      <h2 style="font-size:15px">Filtri</h2>
+      <div class="dfield"><label for="fSpecie">Specie</label><div class="dinput"><select id="fSpecie"></select><span class="ms" aria-hidden="true">expand_more</span></div></div>
+      <fieldset style="border:0;display:flex;flex-direction:column;gap:4px"><legend class="xs" style="font-weight:600;margin-bottom:4px">Certificazione</legend>
+        <label style="display:flex;gap:10px;align-items:center;min-height:32px"><input type="checkbox" id="fFSC" style="width:20px;height:20px;accent-color:var(--g700)">FSC</label>
+        <label style="display:flex;gap:10px;align-items:center;min-height:32px"><input type="checkbox" id="fPEFC" style="width:20px;height:20px;accent-color:var(--g700)">PEFC</label></fieldset>
+      <div class="dfield"><span class="lbl" id="priceLbl">Prezzo (€/m³)</span>
+        <div style="display:flex;gap:8px"><div class="dinput" style="flex:1"><input id="fMin" inputmode="decimal" placeholder="Min" aria-label="Prezzo minimo"></div><div class="dinput" style="flex:1"><input id="fMax" inputmode="decimal" placeholder="Max" aria-label="Prezzo massimo"></div></div></div>
+      <div class="dfield"><label for="fReg">Regione</label><div class="dinput"><select id="fReg"></select><span class="ms" aria-hidden="true">expand_more</span></div></div>
+      <button type="button" class="dbtn sec" id="clear2">Rimuovi filtri</button>
+    </form>
+    <div>
+      <div class="xs muted" id="count" style="margin-bottom:8px" aria-live="polite"></div>
+      <div class="ogrid" id="grid"></div>
+    </div>
+  </div>
+</main>
+<script>
+  var ui = FV.ui, st = FV.store;
+  var tab = ui.param('tab') === 'scarti' ? 'scarti' : 'legname';
+  document.getElementById('sb').innerHTML = ui.sidebar(tab === 'scarti' ? 'circolarita' : 'marketplace', S);
+
+  // Offer + where it comes from
+  function info(o) {
+    var p = st.byId('prodotto', o.id_prodotto), l = st.lottoOfOfferta(o), seller = st.byId('azienda', o.id_azienda);
+    return { o: o, p: p, l: l, seller: seller, specie: l ? ui.specieName(l) : '', cert: l ? l.certificato : null, unit: st.unitOf(o) };
+  }
+  var offers = st.all('offerta').filter(function (o) { return o.attiva && o.quantita_disponibile > 0; }).map(info);
+
+  // Filter options from the data
+  document.getElementById('fSpecie').innerHTML = '<option value="">Tutte</option>' + st.all('specie').map(function (s) { return '<option>' + ui.esc(s.nome_comune) + '</option>'; }).join('');
+  var regions = []; offers.forEach(function (x) { if (regions.indexOf(x.seller.regione) < 0) regions.push(x.seller.regione); });
+  document.getElementById('fReg').innerHTML = '<option value="">Tutte</option>' + regions.map(function (r) { return '<option>' + ui.esc(r) + '</option>'; }).join('');
+
+  var F = ['q', 'fSpecie', 'fFSC', 'fPEFC', 'fMin', 'fMax', 'fReg'].map(function (id) { return document.getElementById(id); });
+  function clearFilters() { F.forEach(function (el) { if (el.type === 'checkbox') el.checked = false; else el.value = ''; }); draw(); }
+
+  function card(x) {
+    var sc = x.p.categoria === 'sottoprodotto';
+    var img = x.l && x.l.foto_url ? '<img src="' + x.l.foto_url + '" alt="" style="width:100%;height:100%;object-fit:cover">'
+      : '<span class="ms" aria-hidden="true">' + (sc ? 'recycling' : 'forest') + '</span><span class="tag">Foto da inserire</span>';
+    return '<a class="box ocard' + (sc ? ' scarti' : '') + '" href="offerta.html?id=' + x.o.id + '">' +
+      '<div class="ph-img">' + img + '</div><div class="bd">' +
+      '<b>' + ui.v(x.o, 'titolo') + '</b>' +
+      '<div class="small muted">' + ui.esc(x.seller.ragione_sociale) + ' · ' + ui.num(x.o.quantita_disponibile) + ' ' + x.unit + ' disponibili</div>' +
+      '<div class="price">' + ui.euro(x.o.prezzo_unitario) + ' <span class="xs muted">/ ' + x.unit + '</span></div>' +
+      '<div class="pills">' + ui.certPill(x.cert) + (x.l ? ui.eudrPill(st.eudrOk(x.l), true) : '') + (sc ? ui.scartiPill() : '') + '</div></div></a>';
+  }
+
+  function draw() {
+    document.getElementById('tLeg').setAttribute('aria-selected', tab === 'legname');
+    document.getElementById('tSc').setAttribute('aria-selected', tab === 'scarti');
+    document.getElementById('priceLbl').textContent = tab === 'scarti' ? 'Prezzo (€/t)' : 'Prezzo (€/m³)';
+    var q = F[0].value.trim().toLowerCase(), sp = F[1].value, fsc = F[2].checked, pefc = F[3].checked,
+        min = ui.parseNum(F[4].value), max = ui.parseNum(F[5].value), reg = F[6].value;
+    var list = offers.filter(function (x) {
+      if ((x.p.categoria === 'sottoprodotto') !== (tab === 'scarti')) return false;
+      if (q && (x.o.titolo + ' ' + x.specie + ' ' + x.seller.ragione_sociale).toLowerCase().indexOf(q) < 0) return false;
+      if (sp && x.specie !== sp) return false;
+      if ((fsc || pefc) && !((fsc && x.cert === 'FSC') || (pefc && x.cert === 'PEFC'))) return false;
+      if (min && x.o.prezzo_unitario < min) return false;
+      if (max && x.o.prezzo_unitario > max) return false;
+      if (reg && x.seller.regione !== reg) return false;
+      return true;
+    });
+    document.getElementById('count').textContent = list.length + (list.length === 1 ? ' offerta' : ' offerte');
+    document.getElementById('grid').innerHTML = list.length ? list.map(card).join('') :
+      '<div class="box empty"><span class="ms" aria-hidden="true">' + (tab === 'scarti' ? 'recycling' : 'park') + '</span><div style="color:var(--ink);font-weight:600">Nessuna offerta con questi filtri.</div>' +
+      '<button type="button" class="dbtn pri" id="clear">Rimuovi filtri</button></div>';
+    var c = document.getElementById('clear'); if (c) c.onclick = clearFilters;
+  }
+  F.forEach(function (el) { el.addEventListener(el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input', draw); });
+  document.getElementById('clear2').onclick = clearFilters;
+  document.querySelector('.tabs').onclick = function (e) {
+    var t = e.target.closest('[data-tab]'); if (!t) return;
+    tab = t.getAttribute('data-tab');
+    history.replaceState(null, '', tab === 'scarti' ? '?tab=scarti' : 'marketplace.html');
+    document.getElementById('sb').innerHTML = ui.sidebar(tab === 'scarti' ? 'circolarita' : 'marketplace', S);
+    draw();
+  };
+  draw();
+</script>
+</body>
+</html>

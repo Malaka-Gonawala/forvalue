@@ -111,7 +111,10 @@
       var prods = all('prodotto').filter(function (p) { return p.id_lavorazione === lav.id; });
       ev.push({ tipo: 'L', data: lav.data, chi: name(lav.id_azienda), dett: prods.map(function (p) { return fmtNum(p.quantita) + ' ' + unitLabel(p.unita) + ' ' + shortName(p.descrizione); }).join(' + ') });
     });
-    ev.sort(function (a, b) { return a.data < b.data ? -1 : a.data > b.data ? 1 : 0; });
+    // Story order: cut → transfers → sawing → sales (a live sale has today's date, which can be
+    // earlier than the 2027 sample dates), then by date inside each kind
+    var rank = { T: 0, P: 1, L: 2, V: 3 };
+    ev.sort(function (a, b) { return rank[a.tipo] - rank[b.tipo] || (a.data < b.data ? -1 : a.data > b.data ? 1 : 0); });
     return ev;
   }
   // Turns a raw step into the text shown on screen. comune(name) gives a company's town.

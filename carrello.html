@@ -1,0 +1,77 @@
+<!doctype html>
+<!-- D5 · Carrello (Figma "D5 Cart"). Conferma ordine places every line as an order → D6. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carrello · ForValue</title>
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/desk.css">
+</head>
+<body class="desk">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['acquirente']);</script>
+<div id="sb"></div>
+<main class="main">
+  <div class="head"><a class="backbtn" href="marketplace.html" aria-label="Indietro"><span class="ms" aria-hidden="true">arrow_back</span></a>
+    <div class="grow"><div class="crumb"><a href="marketplace.html">Marketplace</a> <span class="ms" aria-hidden="true">chevron_right</span> Carrello</div><h1 class="h1">Carrello</h1></div></div>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start">
+    <div class="box" id="lines"></div>
+    <div class="box" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+      <h2 style="font-size:15px">Riepilogo</h2>
+      <div style="display:flex;justify-content:space-between" class="small"><span class="muted" id="nProd"></span><span class="num" id="sub"></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:12px"><b>Totale</b><b style="font-size:22px" class="num" id="tot"></b></div>
+      <div class="derr" id="err" hidden></div>
+      <button class="dbtn pri full" id="confirm">Conferma ordine</button>
+      <a class="dbtn sec full" href="marketplace.html">Continua gli acquisti</a>
+    </div>
+  </div>
+</main>
+<script>
+  var ui = FV.ui, st = FV.store;
+  function render() {
+    document.getElementById('sb').innerHTML = ui.sidebar('carrello', S);
+    var cart = st.getCart().filter(function (c) { var o = st.byId('offerta', c.id_offerta); return o && o.attiva; });
+    var total = 0;
+    document.getElementById('lines').innerHTML = cart.length ? cart.map(function (c, i) {
+      var o = st.byId('offerta', c.id_offerta), u = st.unitOf(o), seller = st.byId('azienda', o.id_azienda), line = Math.round(c.quantita * o.prezzo_unitario * 100) / 100;
+      var sc = st.byId('prodotto', o.id_prodotto).categoria === 'sottoprodotto';
+      total += line;
+      return '<div style="display:flex;gap:16px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)">' +
+        '<div style="width:48px;height:48px;border-radius:8px;background:' + (sc ? 'var(--au100)' : 'var(--g100)') + ';display:grid;place-items:center;flex:none"><span class="ms" style="color:' + (sc ? 'var(--au800)' : 'var(--g500)') + '" aria-hidden="true">' + (sc ? 'recycling' : 'forest') + '</span></div>' +
+        '<div style="flex:1;min-width:0"><b>' + ui.v(o, 'titolo') + '</b><div class="xs muted">' + ui.esc(seller.ragione_sociale) + ' · ' + ui.euro(o.prezzo_unitario) + '/' + u + ' · max ' + ui.num(o.quantita_disponibile) + ' ' + u + '</div></div>' +
+        '<div class="dinput" style="width:120px"><input data-i="' + i + '" inputmode="decimal" value="' + ui.num(c.quantita) + '" aria-label="Quantità ' + ui.esc(o.titolo) + '"><span class="unit">' + u + '</span></div>' +
+        '<b class="num" style="width:110px;text-align:right">' + ui.euro(line) + '</b>' +
+        '<button type="button" class="backbtn" style="border:0" data-del="' + i + '" aria-label="Rimuovi ' + ui.esc(o.titolo) + '"><span class="ms" aria-hidden="true">delete</span></button></div>';
+    }).join('') : '<div class="empty"><span class="ms" aria-hidden="true">shopping_cart</span><div style="color:var(--ink);font-weight:600">Il carrello è vuoto.</div><a class="dbtn pri" href="marketplace.html">Vai al Marketplace</a></div>';
+    document.getElementById('nProd').textContent = cart.length + (cart.length === 1 ? ' prodotto' : ' prodotti');
+    document.getElementById('sub').textContent = ui.euro(total);
+    document.getElementById('tot').textContent = ui.euro(total);
+    document.getElementById('confirm').disabled = !cart.length;
+    st.setCart(cart);
+  }
+  document.getElementById('lines').addEventListener('change', function (e) {
+    var i = e.target.getAttribute('data-i'); if (i == null) return;
+    var cart = st.getCart(), o = st.byId('offerta', cart[i].id_offerta), q = ui.parseNum(e.target.value);
+    if (q) cart[i].quantita = Math.min(q, o.quantita_disponibile);
+    st.setCart(cart); render();
+  });
+  document.getElementById('lines').addEventListener('click', function (e) {
+    var d = e.target.closest('[data-del]'); if (!d) return;
+    var cart = st.getCart(); cart.splice(Number(d.getAttribute('data-del')), 1); st.setCart(cart); render();
+  });
+  document.getElementById('confirm').onclick = function () {
+    var ids = [], bad = null;
+    st.getCart().forEach(function (c) {
+      var ord = st.placeOrdine(c.id_offerta, S.azienda.id, c.quantita, c.data_consegna);
+      if (ord) ids.push(ord.id); else bad = c;
+    });
+    st.setCart([]);
+    if (ids.length) location.href = 'ordine-inviato.html?id=' + ids.join(',');
+    else { var err = document.getElementById('err'); err.textContent = 'Quantità non più disponibile. Controlla il carrello.'; err.hidden = false; render(); }
+  };
+  render();
+</script>
+</body>
+</html>
