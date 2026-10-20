@@ -64,8 +64,10 @@ img { max-width: 100%; display: block; }
 
 /* IT · EN switch (shown, not working) */
 .lang { display: inline-flex; background: var(--g900); border-radius: 999px; padding: 2px; }
-.lang span { font-size: 13px; font-weight: 600; line-height: 16px; padding: 6px 12px; border-radius: 999px; color: var(--g100); }
-.lang span.on { background: #fff; color: var(--g900); }
+.lang span { display: block; font-size: 13px; font-weight: 600; line-height: 16px; padding: 6px 12px; border-radius: 999px; color: var(--g100); }
+.lang button { cursor: pointer; padding: 8px 0; margin: -8px 0; }   /* 44 px tap area, same look */
+.lang span.on, .lang button.on span { background: #fff; color: var(--g900); }
+.lang button:not(.on):hover span { color: #fff; }
 
 /* Text */
 .h1 { font-size: 28px; line-height: 34px; font-weight: 700; }

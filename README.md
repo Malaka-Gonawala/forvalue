@@ -88,6 +88,7 @@ Things that are **not** columns in the database are worked out the same way the 
 | `js/auth.js` | Login tokens (`fv_tokens_v1`), login, logout, role checks |
 | `js/ui.js` | Italian number/date format, badges, menus per role, QR link |
 | `js/lib/qrcode.js` | QR generator (qrcode-generator, MIT), works offline |
+| `js/i18n.js` | IT · EN switch: English texts for every screen (list at the top of the file) |
 | `js/lib/jsqr.js` | QR reader for the scanner (jsQR 1.4.0, Apache-2.0), works offline |
 | `DATA-NEEDED.md` | What was filled in (nothing is missing now) |
 
@@ -131,3 +132,10 @@ The empty `.nojekyll` file tells GitHub to publish the files exactly as they are
 - The IT · EN switch is shown but only Italian exists.
 - Data lives in one browser: the phone and the laptop each have their own copy. The QR page is the exception, because its data is in the link.
 - Photos of new batches are made small and saved in the browser. Product photos and the map come from files in `img/` (names in `DATA-NEEDED.md`). The map is an OpenStreetMap picture, so its credit line stays under it.
+
+## Language (IT · EN)
+
+The **IT · EN** switch is in the phone bar, the sidebar, the login page and the QR page. The choice is saved in this browser (`fv_lang_v1`); Italian is the default.
+Pages are written in Italian; `js/i18n.js` swaps each text for its English version, also texts drawn later (messages, toasts, confirm dialogs).
+Species and product names are translated (Abete rosso → Norway spruce, Tavole → boards); codes, company names, places and people stay as they are.
+Numbers: 3.100,00 € in Italian, 3,100.00 € in English. **To add or change a translation**, edit the `EN` list in `js/i18n.js` (Italian text → English text).

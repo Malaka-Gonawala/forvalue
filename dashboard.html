@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="css/shell.css">
 </head>
 <body class="desk">
-<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script src="js/i18n.js"></script><script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
 <script>var S = FV.auth.require(['segheria']);</script>
 <div id="sb"></div>
 <main class="main">
@@ -61,7 +61,7 @@
     kpi('Volume scambiato', ui.num(vol), 'm³') +
     kpi('Prezzo medio', vol ? ui.euro(tot / vol).replace(' €', '') : '–', '€/m³') +
     kpi('% legno certificato', lotti.length ? ui.num(Math.round(cert / lotti.length * 100)) : '–', '%', true) +
-    kpi('CO₂ stoccata', new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(co2), 't');
+    kpi('CO₂ stoccata', new Intl.NumberFormat(FV.i18n.loc, { maximumFractionDigits: 1 }).format(co2), 't');
 
   // Chart: m³ per month / quarter / year
   function drawChart() {

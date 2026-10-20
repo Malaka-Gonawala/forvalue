@@ -5,13 +5,13 @@
   var S = function () { return FV.store; };
 
   /* ---------- formats (Italian) ---------- */
-  var nf = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2 });
-  var nf1 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  var nf4 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-  var eur = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var nf = new Intl.NumberFormat(FV.i18n.loc, { maximumFractionDigits: 2 });
+  var nf1 = new Intl.NumberFormat(FV.i18n.loc, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  var nf4 = new Intl.NumberFormat(FV.i18n.loc, { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  var eur = new Intl.NumberFormat(FV.i18n.loc, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   function num(n) { return nf.format(n); }
   // Reads "45", "45,5" or "1.250,50" → number, or null when it is not a positive number
-  function parseNum(str) { var r = String(str == null ? '' : str).trim(); if (!r) return null; var n = Number(r.indexOf(',') >= 0 ? r.replace(/\./g, '').replace(',', '.') : r); return isFinite(n) && n > 0 ? n : null; }
+  function parseNum(str) { var r = String(str == null ? '' : str).trim(); if (!r) return null; if (FV.i18n.lang === 'en') r = r.replace(/,/g, ''); var n = Number(r.indexOf(',') >= 0 ? r.replace(/\./g, '').replace(',', '.') : r); return isFinite(n) && n > 0 ? n : null; }
   function num1(n) { return nf1.format(n); }
   function euro(n) { return eur.format(n) + ' €'; }                // 3.100,00 €
   function date(iso) { if (!iso) return ''; var p = iso.slice(0, 10).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }  // 12/03/2026
@@ -86,7 +86,11 @@
   function specieName(lotto) { return S().byId('specie', lotto.id_specie).nome_comune; }
 
   /* ---------- phone parts ---------- */
-  var LANG = '<div class="lang" aria-label="Lingua (solo italiano in questa demo)"><span class="on">IT</span><span>EN</span></div>';
+  // IT · EN switch (js/i18n.js does the rest)
+  var LANG = '<div class="lang" role="group" aria-label="Lingua">' + ['it', 'en'].map(function (l) {
+    var on = FV.i18n.lang === l;
+    return '<button type="button" data-lang="' + l + '"' + (on ? ' class="on"' : '') + ' aria-pressed="' + on + '" lang="' + l + '"><span>' + l.toUpperCase() + '</span></button>';
+  }).join('') + '</div>';
   function logoHTML() { return '<span class="logo"><span class="mk"><span class="ms" aria-hidden="true">forest</span></span>ForValue</span>'; }
 
   // Logo link: your own home when logged in, else the login page

@@ -155,7 +155,7 @@
   function shortName(t) { return t.split(' ')[0].toLowerCase(); }   // "Tavole di abete rosso" → "tavole"
   function unitLabel(u) { return u === 'm3' ? 'm³' : u; }
   function unitOf(offerta) { var p = byId('prodotto', offerta.id_prodotto); return unitLabel(p ? p.unita : 'm3'); }
-  function fmtNum(n) { return new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2 }).format(n); }
+  function fmtNum(n) { return new Intl.NumberFormat(FV.i18n.loc, { maximumFractionDigits: 2 }).format(n); }
 
   /* ---------- demo transport: a new batch reaches the sawmill by itself ---------- */
   // Seed batches have no creato_ts, so they are never moved.

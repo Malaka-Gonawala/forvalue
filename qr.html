@@ -38,7 +38,7 @@
 </style>
 </head>
 <body class="phone qr">
-<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script src="js/i18n.js"></script><script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
 
 <div id="bar"></div>
 <div id="page"></div>
@@ -70,7 +70,7 @@
       '<a class="btn pri" href="' + ui.homeHref() + '">Vai a ForValue</a></div></main>';
   } else {
     document.title = view.code + ' · ForValue';
-    var co2 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(view.vol * view.factor);
+    var co2 = new Intl.NumberFormat(FV.i18n.loc, { maximumFractionDigits: 1 }).format(view.vol * view.factor);
     var map = view.lat != null
       ? '<a class="box" style="display:block;height:160px;border:0;border-radius:12px;background:var(--g100);position:relative;overflow:hidden" target="_blank" rel="noopener" ' +
         'href="https://www.openstreetmap.org/?mlat=' + view.lat + '&mlon=' + view.lon + '#map=14/' + view.lat + '/' + view.lon + '" aria-label="Apri la mappa della particella">' +
