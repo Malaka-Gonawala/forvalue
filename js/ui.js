@@ -81,6 +81,7 @@
     }
     var hot = r === 'segheria' ? 'acquirente' : 'segheria';
     return '<aside class="sb"><div class="sb-in"><button type="button" class="logo" data-switch="' + hot + '" aria-label="ForValue">' + logoHTML().replace(/^<span class="logo">|<\/span>$/g, '') + '</button>' +
+      '<button type="button" class="sb-toggle" aria-expanded="false" aria-label="Apri menu" data-sbtoggle><span class="ms" aria-hidden="true">menu</span></button>' +
       '<nav aria-label="Menu">' + items.map(function (x) {
         return '<a href="' + x[1] + '"' + (x[0] === active ? ' aria-current="page"' : '') + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + '</a>';
       }).join('') + '</nav>' +
@@ -162,6 +163,8 @@
   document.addEventListener('click', function (e) {
     var sw = e.target.closest('[data-switch]'); if (sw) { FV.auth.switchTo(sw.getAttribute('data-switch')); return; }
     if (e.target.closest('[data-logout]')) { FV.auth.logout(); return; }
+    var tg = e.target.closest('[data-sbtoggle]');
+    if (tg) { var open = tg.closest('.sb').classList.toggle('open'); tg.setAttribute('aria-expanded', open); tg.setAttribute('aria-label', open ? 'Chiudi menu' : 'Apri menu'); tg.firstChild.textContent = open ? 'close' : 'menu'; return; }
     if (e.target.closest('[data-reset]')) {
       if (confirm('Ripristinare i dati demo? Lotti, offerte e ordini creati verranno cancellati.')) {
         FV.store.reset(); var s = FV.auth.current(); location.href = s ? FV.auth.home(s.ruolo) : 'index.html';
