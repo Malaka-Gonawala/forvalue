@@ -80,7 +80,7 @@ body.phone.has-sticky { padding-bottom: calc(96px + env(safe-area-inset-bottom))
 /* Timeline */
 .tl { position: relative; padding-left: 28px; display: flex; flex-direction: column; gap: 20px; }
 .tl .st { position: relative; }
-.tl .st::before { content: ''; position: absolute; left: -28px; top: 4px; width: 16px; height: 16px; border-radius: 999px; background: var(--g700); border: 3px solid #fff; box-shadow: 0 0 0 2px var(--g700); z-index: 1; }
+.tl .st::before { content: ''; position: absolute; left: -26px; top: 5px; width: 12px; height: 12px; border-radius: 999px; background: var(--g700); box-shadow: 0 0 0 3px var(--g100); z-index: 1; }
 .tl .st:not(:last-child)::after { content: ''; position: absolute; left: -21px; top: 20px; bottom: -24px; width: 2px; background: var(--g100); }
 .tl .d { font-size: 15px; color: var(--muted); font-weight: 600; }
 
