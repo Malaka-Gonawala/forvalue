@@ -13,6 +13,15 @@
 <link rel="stylesheet" href="css/desk.css">
 <link rel="stylesheet" href="css/phone.css">
 <link rel="stylesheet" href="css/shell.css">
+<style>
+  /* Desktop home: table + notifications side by side on wide screens, stacked below 1440 px.
+     The table drops the Particella column below 1600 px and Specie below 1100 px, so no column is cut off. */
+  .oh { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (min-width: 1440px) { .oh { grid-template-columns: minmax(0, 1fr) 300px; } }
+  @media (max-width: 1599px) { .oh .cp { display: none; } }
+  @media (max-width: 1099px) { .oh .cs { display: none; } .oh th, .oh td { padding: 12px 10px; } }
+  .oh .qr .dbtn { padding: 0 12px; }
+</style>
 </head>
 <body class="phone has-tabs">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
@@ -28,10 +37,10 @@
 <!-- Desktop home -->
 <section class="only-d flex" style="flex-direction:column;gap:20px;padding:20px 32px 0">
   <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px" id="kpis"></div>
-  <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start">
+  <div class="oh">
     <section class="box" style="overflow-x:auto">
       <div style="padding:16px 16px 4px;display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:15px">I miei lotti</h2><a class="xs" href="lotti.html" style="color:var(--g700);font-weight:600">Tutti i lotti</a></div>
-      <table><thead><tr><th>Lotto</th><th>Specie</th><th>Volume</th><th>Particella</th><th>Badge</th><th>Stato</th><th></th></tr></thead><tbody id="drows" style="white-space:nowrap"></tbody></table>
+      <table><thead><tr><th>Lotto</th><th class="cs">Specie</th><th>Volume</th><th class="cp">Particella</th><th>Badge</th><th>Stato</th><th></th></tr></thead><tbody id="drows" style="white-space:nowrap"></tbody></table>
     </section>
     <section class="box">
       <div style="padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:15px">Ultime notifiche</h2><a class="xs" href="notifiche.html" style="color:var(--g700);font-weight:600">Tutte</a></div>
@@ -71,10 +80,10 @@
     kpi('CO₂ stoccata', new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(co2), 't');
   document.getElementById('drows').innerHTML = tutti.map(function (l) {
     var part = st.byId('particella', l.id_particella);
-    return '<tr><td style="font-weight:600">' + ui.v(l, 'codice_qr') + '</td><td>' + ui.esc(ui.specieName(l)) + '</td><td class="num">' + ui.num(l.volume_m3) + ' m³</td>' +
-      '<td>' + ui.v(part, 'nome') + '</td><td><div class="pills" style="flex-wrap:nowrap">' + ui.certPill(l.certificato) + ui.eudrPill(st.eudrOk(l), true) + '</div></td>' +
+    return '<tr><td style="font-weight:600">' + ui.v(l, 'codice_qr') + '</td><td class="cs">' + ui.esc(ui.specieName(l)) + '</td><td class="num">' + ui.num(l.volume_m3) + ' m³</td>' +
+      '<td class="cp">' + ui.v(part, 'nome') + '</td><td><div class="pills" style="flex-wrap:nowrap">' + ui.certPill(l.certificato) + ui.eudrPill(st.eudrOk(l), true) + '</div></td>' +
       '<td>' + ui.statoPill(st.statoLotto(l.id)) + '</td>' +
-      '<td style="text-align:right"><a class="dbtn sec" href="' + ui.esc(ui.qrUrl(l)) + '"><span class="ms" aria-hidden="true">qr_code_2</span>QR</a></td></tr>';
+      '<td class="qr" style="text-align:right"><a class="dbtn sec" href="' + ui.esc(ui.qrUrl(l)) + '" aria-label="QR di ' + ui.esc(l.codice_qr) + '"><span class="ms" aria-hidden="true">qr_code_2</span>QR</a></td></tr>';
   }).join('') || '<tr><td colspan="7" class="muted">Non hai ancora lotti.</td></tr>';
   document.getElementById('news').innerHTML = ui.ownerNews(S.azienda.id).slice(0, 5).map(function (x) {
     return '<a class="row" href="' + ui.esc(ui.qrUrl(x.l)) + '" style="min-height:0;padding:10px 16px"><span class="tile" style="width:32px;height:32px;border-radius:8px"><span class="ms" style="font-size:20px" aria-hidden="true">' + x.icon + '</span></span>' +
