@@ -119,6 +119,7 @@ img { max-width: 100%; display: block; }
 .photo-x { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; }
 .osm { font-size: 11px; line-height: 16px; color: var(--muted); text-align: right; margin-top: 4px; }
 .map .coords { z-index: 3; }
+.map > .ms, .mapmk { position: relative; z-index: 3; transform: translateY(-40%); filter: drop-shadow(0 0 1px #fff) drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
 
 /* Toast */
 .toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); background: var(--g900); color: #fff; padding: 12px 18px; border-radius: 10px; font-weight: 600; display: flex; gap: 8px; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 100; }
@@ -129,14 +130,17 @@ img { max-width: 100%; display: block; }
 
 /* Demo transport tracker (new batch → sawmill): map card */
 .trkm { overflow: hidden; padding: 0; }
-.trkm-map { position: relative; height: 340px; background: var(--g100) url(../img/mappa-fiemme.jpg) center/cover; }
-.trkm-map::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(31,77,44,0) 45%, rgba(31,77,44,.6)); }
-.trkm-map svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+.trkm-map { position: relative; height: 340px; background: var(--g100); }
+.trkm-map::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(31,77,44,0) 45%, rgba(31,77,44,.6)); }
+.trkm-map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.trkm-map:not(.ready) .trkm-chip, .trkm-map:not(.ready) .trkm-truck { visibility: hidden; }
 .trkm-chip, .trkm-truck { position: absolute; z-index: 2; background: #fff; border-radius: 999px; display: flex; gap: 6px; align-items: center; font-size: 13px; line-height: 18px; font-weight: 600; color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,.15); }
-.trkm-chip { padding: 6px 12px 6px 8px; }
+.trkm-chip { padding: 6px 12px 6px 8px; white-space: nowrap; }
 .trkm-chip .ms { color: var(--g700); font-size: 20px; }
-.trkm-from { left: calc(14% - 12px); top: calc(73.5% - 16px); }
-.trkm-to { right: 8%; top: calc(26.5% - 44px); }
+.trkm-chip { transform: translate(-50%, calc(-100% - 22px)); }
+.trkm-chip::after { content: ""; position: absolute; left: 50%; bottom: -6px; margin-left: -6px; border: 6px solid transparent; border-bottom: 0; border-top-color: #fff; }
+.trkm-to { transform: translate(-80%, calc(-100% - 22px)); }
+.trkm-to::after { left: 80%; }
 .trkm-truck { padding: 6px; background: var(--au500); transform: translate(-50%, -50%); transition: left 1s linear, top 1s linear; }
 .trkm-truck .ms { font-size: 22px; }
 .trkm.done .trkm-truck { background: var(--g700); color: #fff; }
@@ -153,7 +157,7 @@ img { max-width: 100%; display: block; }
 .trkm-legend b { color: var(--ink); }
 @media (max-width: 600px) {
   .trkm-map { height: 260px; }
-  .trkm-from { left: calc(14% - 18px); top: calc(73.5% - 44px); padding: 6px; }
+  .trkm-from { padding: 6px; }
   .trkm-from > span:last-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .trkm-info b { font-size: 16px; line-height: 22px; } .trkm-info span { font-size: 12px; } .trkm-cd b { font-size: 26px; line-height: 30px; }
   .trkm-legend { padding: 12px 16px; }

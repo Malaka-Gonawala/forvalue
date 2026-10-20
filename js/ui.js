@@ -44,14 +44,10 @@
   function hhmm(ms) { var d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
   function townOf(c) { return String(c || '').replace(/\s*\([A-Z]{2}\)$/, ''); }
   var TRK_KM = 18;
-  var TRK_D = 'M140 250 C 260 200, 330 260, 450 190 S 650 120, 760 150 S 860 110, 880 90';
-  // Points along the route every 5% (x %, y %), so the truck sits on the line without measuring the SVG
-  var TRK_PTS = [14, 73.5, 17.7, 69.8, 21.7, 67.6, 25.6, 66.9, 29.6, 66.9, 33.7, 66.5, 37.5, 64.8, 41.4, 61.2, 44.9, 56, 48.4, 50.4, 52.1, 45.5,
-    55.9, 41.7, 59.8, 39.4, 63.7, 38.5, 67.8, 39.2, 71.7, 41.1, 75.6, 43.8, 79.5, 46.1, 83.4, 45, 86.2, 37, 88, 26.5];
-  function trkPoint(p) {
-    var f = Math.min(1, Math.max(0, p)) * 20, i = Math.min(19, Math.floor(f)), r = f - i;
-    return [TRK_PTS[2 * i] + (TRK_PTS[2 * i + 2] - TRK_PTS[2 * i]) * r, TRK_PTS[2 * i + 1] + (TRK_PTS[2 * i + 3] - TRK_PTS[2 * i + 1]) * r];
-  }
+  // Route on img/mappa-fiemme.jpg (1000×695 px): Cavalese → SS48 → Piera di Tesero → towards Ziano. The SVG shows the
+  // image and the route in the same coordinates (slice = like background cover), so they always line up.
+  var TRK_D = 'M512 340 C 560 344, 600 330, 640 318 S 720 312, 780 326 S 870 346, 925 350';
+  var TRK_VB = [400, 160, 600, 380];
   function trkFrac(t) { return t.arrivato || Date.now() >= t.arrivo ? 1 : Math.min(1, Math.max(0, (Date.now() - t.ts) / (t.arrivo - t.ts))); }
   // Compact variant for list rows: "In viaggio 0:38" + thin bar. href → links to the QR page (Q1)
   function travelPill(lotto, href) {
@@ -66,16 +62,18 @@
   function tracker(t) {
     if (!t) return '';
     var dur = t.arrivo - t.ts, done = t.arrivato || Date.now() >= t.arrivo, name = sawmillName();
-    var f = trkFrac(t), pt = trkPoint(f), km = Math.round(TRK_KM * f);
+    var f = trkFrac(t), km = Math.round(TRK_KM * f);
     var path = function (attrs) { return '<path d="' + TRK_D + '" pathLength="100" fill="none" stroke-linecap="round" ' + attrs + '/>'; };
     return '<section class="trkm card' + (done ? ' done' : '') + '" role="group" aria-label="Viaggio del lotto verso la segheria"' + (done ? '' : ' data-trk-arr="' + t.arrivo + '" data-trk-dur="' + dur + '"') + '>' +
       '<div class="trkm-map">' +
-        '<svg viewBox="0 0 1000 340" preserveAspectRatio="none" aria-hidden="true">' + path('stroke="#fff" stroke-width="9" opacity=".85"') +
-          path('stroke="#1F4D2C" stroke-width="4" stroke-dasharray="0.3 1.2"') +
-          path('class="trkm-done" stroke="#DBB743" stroke-width="6" stroke-dasharray="' + (f * 100).toFixed(2) + ' 100"') + '</svg>' +
-        '<span class="trkm-chip trkm-from"><span class="ms" aria-hidden="true">forest</span><span>Bosco Val Fiemme</span></span>' +
-        '<span class="trkm-chip trkm-to"><span class="ms" aria-hidden="true">carpenter</span><span>' + esc(name) + '</span></span>' +
-        '<span class="trkm-truck" style="left:' + pt[0].toFixed(2) + '%;top:' + pt[1].toFixed(2) + '%"><span class="ms" aria-hidden="true">' + (done ? 'check' : 'local_shipping') + '</span></span>' +
+        '<svg viewBox="' + TRK_VB.join(' ') + '" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+          '<image href="img/mappa-fiemme.jpg" x="0" y="0" width="1000" height="695"/>' + path('stroke="#fff" stroke-width="7" opacity=".9"') +
+          path('stroke="#1F4D2C" stroke-width="3" stroke-dasharray="0.4 1.4"') +
+          path('class="trkm-done" stroke="#DBB743" stroke-width="5" stroke-dasharray="' + (f * 100).toFixed(2) + ' 100"') +
+          '<circle cx="512" cy="340" r="6" fill="#2E6B3F" stroke="#fff" stroke-width="3"/><circle cx="925" cy="350" r="6" fill="#2E6B3F" stroke="#fff" stroke-width="3"/></svg>' +
+        '<span class="trkm-chip trkm-from" data-at="0"><span class="ms" aria-hidden="true">forest</span><span>Bosco Val Fiemme</span></span>' +
+        '<span class="trkm-chip trkm-to" data-at="1"><span class="ms" aria-hidden="true">carpenter</span><span>' + esc(name) + '</span></span>' +
+        '<span class="trkm-truck" data-f="' + f.toFixed(4) + '"><span class="ms" aria-hidden="true">' + (done ? 'check' : 'local_shipping') + '</span></span>' +
         '<div class="trkm-info"><div><b>' + (done ? 'Arrivato in ' + esc(name) : 'In viaggio') + '</b><span>' + esc(townOf(t.da) || 'Cavalese') + ' → ' + esc(townOf(t.a) || 'Ziano di Fiemme') + '</span></div>' +
           (done ? '<div class="trkm-cd"><span class="ms" aria-hidden="true">check_circle</span></div>'
                 : '<div class="trkm-cd tnum"><b data-trk-left>' + mmss(t.arrivo - Date.now()) + '</b><span>all\'arrivo</span></div>') + '</div></div>' +
@@ -83,6 +81,28 @@
       '<div class="trkm-legend tnum"><span><b data-trk-km>' + km + '</b> di ' + TRK_KM + ' km</span><span>Taglio <b>fatto</b></span><span>Partito <b>' + hhmm(t.ts) + '</b></span>' +
         (done ? '<span>Arrivato <b>' + hhmm(t.arrivo) + '</b></span>' : '') + '<span>© OpenStreetMap contributors</span></div></section>';
   }
+  // Places the chips and the truck on the route: SVG user units → px inside the map (same maths as preserveAspectRatio slice)
+  function trkLayout() {
+    document.querySelectorAll('.trkm-map').forEach(function (m) {
+      var W = m.clientWidth, H = m.clientHeight, path = m.querySelector('.trkm-done');
+      if (!W || !path) return;
+      var k = Math.max(W / TRK_VB[2], H / TRK_VB[3]), ox = (W - TRK_VB[2] * k) / 2, oy = (H - TRK_VB[3] * k) / 2, L = path.getTotalLength();
+      var at = function (f) { var p = path.getPointAtLength(L * Math.min(1, Math.max(0, f))); return [(p.x - TRK_VB[0]) * k + ox, (p.y - TRK_VB[1]) * k + oy]; };
+      m.querySelectorAll('[data-at],[data-f]').forEach(function (el) {
+        var f = el.hasAttribute('data-at') ? Number(el.getAttribute('data-at')) : Number(el.getAttribute('data-f')), p = at(f);
+        el.style.left = p[0].toFixed(1) + 'px'; el.style.top = p[1].toFixed(1) + 'px';
+        if (el.hasAttribute('data-at')) {   // keep the label inside the map on narrow screens
+          var r = el.getBoundingClientRect(), mr = m.getBoundingClientRect(), dx = 0;
+          if (r.right > mr.right - 8) dx = mr.right - 8 - r.right; else if (r.left < mr.left + 8) dx = mr.left + 8 - r.left;
+          if (dx) el.style.left = (p[0] + dx).toFixed(1) + 'px';
+        }
+      });
+      m.classList.add('ready');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', trkLayout);
+  addEventListener('load', trkLayout);
+  addEventListener('resize', trkLayout);
   // Live: countdowns, bars, km and truck every second; every 5 s (and when a countdown ends) check for arrivals.
   // On arrival the page redraws itself (kept simple: a quick reload, unless you are typing).
   (function live() {
@@ -99,9 +119,10 @@
         var bar = el.querySelector('[role=progressbar]'); if (bar) bar.setAttribute('aria-valuenow', Math.round(f * 100));
         var km = el.querySelector('[data-trk-km]'); if (km) km.textContent = Math.round(TRK_KM * f);
         var done = el.querySelector('.trkm-done'); if (done) done.setAttribute('stroke-dasharray', (f * 100).toFixed(2) + ' 100');
-        var tr = el.querySelector('.trkm-truck'); if (tr) { var pt = trkPoint(f); tr.style.left = pt[0].toFixed(2) + '%'; tr.style.top = pt[1].toFixed(2) + '%'; }
+        var tr = el.querySelector('.trkm-truck'); if (tr) tr.setAttribute('data-f', f.toFixed(4));
         if (left <= 0) hit = true;
       });
+      trkLayout();
       if (hit && !ended) { ended = true; S().tick(); arrived(); }
     }, 1000);
     setInterval(function () { if (S().tick()) arrived(); }, 5000);
@@ -317,7 +338,7 @@
   var PHOTO = { tavole: 'tavole.jpg', cippato: 'cippato.jpg', segatura: 'segatura.jpg', tronchi: 'tronchi.jpg', mappa: 'mappa-fiemme.jpg' };
   var OSM = '<div class="osm">© OpenStreetMap contributors</div>';
   function photoKey(prodotto) { var w = prodotto ? prodotto.descrizione.split(' ')[0].toLowerCase() : ''; return PHOTO[w] ? w : 'tronchi'; }
-  function photo(key, alt) { return '<img class="photo-x" src="img/' + PHOTO[key] + '" alt="' + esc(alt || '') + '" onerror="this.remove()">'; }
+  function photo(key, alt) { return '<img class="photo-x" src="img/' + PHOTO[key] + '"' + (key === 'mappa' ? ' style="object-position:51% 48%"' : '') + ' alt="' + esc(alt || '') + '" onerror="this.remove()">'; }
 
   /* ---------- small helpers ---------- */
   function flash(msg) { try { sessionStorage.setItem('fv_flash', msg); } catch (e) {} }
@@ -345,6 +366,6 @@
     num: num, num1: num1, parseNum: parseNum, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
     certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, tracker: tracker, travelPill: travelPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
     phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, homeHref: homeHref, ordCode: ordCode, photo: photo, OSM: OSM, photoKey: photoKey, PHOTO: PHOTO, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, canSell: canSell, logoHTML: logoHTML, LANG: LANG,
-    qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
+    qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, trkLayout: trkLayout, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
   };
 })();
