@@ -46,7 +46,7 @@
       return '<tr><td style="font-weight:600">' + ui.v(l, 'codice_qr') + '</td><td>' + ui.esc(ui.specieName(l)) + '</td><td class="num">' + ui.num(l.volume_m3) + ' m³</td>' +
         '<td>' + ui.esc(st.byId('azienda', l.id_azienda).ragione_sociale) + '</td>' +
         '<td><div class="pills">' + ui.certPill(l.certificato) + ui.eudrPill(st.eudrOk(l), true) + '</div></td><td>' + ui.statoPill(st.statoLotto(l.id)) + '</td>' +
-        '<td style="text-align:right"><a class="dbtn sec" href="' + href + '">Apri</a></td></tr>';
+        '<td style="text-align:right;white-space:nowrap">' + (ui.canSell(l) ? '<a class="dbtn pri" href="' + href + '&vendi=1">Vendi</a> ' : '') + '<a class="dbtn sec" href="' + href + '">Apri</a></td></tr>';
     }).join('') || '<tr><td colspan="7"><div class="empty" style="padding:24px"><span class="ms" aria-hidden="true">inventory_2</span>Nessun lotto con questi filtri.</div></td></tr>';
   }
   document.getElementById('tabs').onclick = function (e) { var t = e.target.closest('[data-f]'); if (t) { filter = t.getAttribute('data-f'); draw(); } };

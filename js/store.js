@@ -204,6 +204,14 @@
     return l;
   }
 
+  // D2: a received batch not sawn yet – the sawmill records the sawing and its products first
+  function addLavorazione(idLotto, idAzienda, data, prodotti) {
+    var lav = insert('lavorazione', { id_lotto: idLotto, id_azienda: idAzienda, data: data, tipo: 'segagione' });
+    return prodotti.map(function (p) {
+      return insert('prodotto', { id_lavorazione: lav.id, descrizione: p.descrizione, categoria: p.categoria, quantita: p.quantita, unita: p.unita });
+    });
+  }
+
   // D2: create or update the offer for a product
   function publishOfferta(idProdotto, idAzienda, quantita, prezzo) {
     var p = byId('prodotto', idProdotto);
@@ -269,7 +277,7 @@
     lottoByCode: lottoByCode, nextLottoCode: nextLottoCode, prodottiOfLotto: prodottiOfLotto, offerteOfLotto: offerteOfLotto,
     ordiniOfLotto: ordiniOfLotto, storicoRaw: storicoRaw, stepText: stepText, comuneByName: comuneByName, lottoOfOfferta: lottoOfOfferta, statoLotto: statoLotto, eudrOk: eudrOk, holderOf: holderOf,
     lottiOfOwner: lottiOfOwner, lottiOfSawmill: lottiOfSawmill, transferDate: transferDate, storico: storico, unitOf: unitOf, unitLabel: unitLabel,
-    addLotto: addLotto, demoDate: demoDate, addDays: addDays, setStatoOrdine: setStatoOrdine, ordineValido: ordineValido, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
+    addLotto: addLotto, addLavorazione: addLavorazione, demoDate: demoDate, addDays: addDays, setStatoOrdine: setStatoOrdine, ordineValido: ordineValido, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
     getCart: getCart, setCart: setCart, trasporto: trasporto, tick: tick, trasportoMs: trasportoMs, sawmillId: sawmillId
   };
   window.FV.store.tick();

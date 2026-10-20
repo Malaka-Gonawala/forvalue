@@ -100,6 +100,9 @@
     'Data': 'Date', 'Ordine': 'Order', 'Totale': 'Total', 'Origine': 'Origin', 'Riepilogo': 'Summary',
     // buyer
     'Legname': 'Timber', 'Scarti': 'Offcuts', 'Scarti di segheria in vendita': 'Sawmill offcuts for sale', 'Filtri': 'Filters', 'Rimuovi filtri': 'Clear filters',
+    'Lavorazione': 'Sawing', 'Tavole': 'Boards', 'Cippato': 'Wood chips', 'Data di lavorazione': 'Sawing date', 'Prezzo tavole': 'Board price', 'Prezzo cippato': 'Wood chip price', 'Pubblica offerte': 'Publish offers',
+    'Prima segna cosa hai ricavato dal lotto. Valori proposti in proporzione a FV-2026-00087.': 'First record what you got from the batch. Suggested values are in proportion to FV-2026-00087.',
+    'Questo lotto non è ancora stato segato: con Metti in vendita registri prima la lavorazione.': 'This batch has not been sawn yet: Put on sale lets you record the sawing first.',
     'Cerca specie, prodotto o venditore': 'Search species, product or seller', 'Prezzo minimo': 'Minimum price', 'Prezzo massimo': 'Maximum price', 'Min': 'Min', 'Max': 'Max',
     'Nessuna offerta con questi filtri.': 'No offers with these filters.', 'Nessuno scarto in vendita.': 'No offcuts for sale.', 'Venditore': 'Seller',
     'Aggiungi al carrello': 'Add to cart', 'Ordina ora': 'Order now', 'Data di consegna': 'Delivery date', 'Conferma ordine': 'Confirm order',

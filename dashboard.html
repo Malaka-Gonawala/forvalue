@@ -93,7 +93,7 @@
   // Last 5 batches received (newest transfer first)
   var last = lotti.slice().sort(function (a, b) { return st.transferDate(a.id) < st.transferDate(b.id) ? 1 : -1; }).slice(0, 5);
   document.getElementById('rows').innerHTML = last.map(function (l) {
-    var stato = st.statoLotto(l.id), canSell = stato !== 'Venduto' && st.prodottiOfLotto(l.id).length;
+    var stato = st.statoLotto(l.id), canSell = ui.canSell(l);
     return '<tr class="click" data-href="lotto.html?c=' + encodeURIComponent(l.codice_qr) + '">' +
       '<td style="font-weight:600"><a href="lotto.html?c=' + encodeURIComponent(l.codice_qr) + '">' + ui.v(l, 'codice_qr') + '</a></td>' +
       '<td>' + ui.esc(ui.specieName(l)) + '</td><td class="num">' + ui.num(l.volume_m3) + ' m³</td>' +

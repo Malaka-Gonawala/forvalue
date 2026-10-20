@@ -124,10 +124,15 @@
     }
   };
 
-  // Sawmill "Vendi": the first received batch that is sawn and not sold (no offer yet first), else Le mie offerte
+  // Sawmill can sell a batch it holds unless it is sold or still on its way (unsawn batches get a sawing step first)
+  function canSell(l) {
+    var st = S(), t = st.trasporto(l);
+    return st.statoLotto(l.id) !== 'Venduto' && !(t && !t.arrivato);
+  }
+  // Sawmill "Vendi": the first received batch it can sell (no offer yet first), else Le mie offerte
   function vendiHref() {
     var s = FV.auth.current(), st = S();
-    var ok = st.lottiOfSawmill(s.azienda.id).filter(function (l) { return st.prodottiOfLotto(l.id).length && st.statoLotto(l.id) !== 'Venduto'; });
+    var ok = st.lottiOfSawmill(s.azienda.id).filter(canSell);
     ok.sort(function (a, b) { return st.offerteOfLotto(a.id).length - st.offerteOfLotto(b.id).length || (a.codice_qr < b.codice_qr ? 1 : -1); });
     return ok.length ? 'lotto.html?c=' + encodeURIComponent(ok[0].codice_qr) + '&vendi=1' : 'offerte.html';
   }
@@ -311,7 +316,7 @@
   window.FV.ui = {
     num: num, num1: num1, parseNum: parseNum, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
     certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, tracker: tracker, travelPill: travelPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
-    phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, homeHref: homeHref, ordCode: ordCode, photo: photo, OSM: OSM, photoKey: photoKey, PHOTO: PHOTO, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, logoHTML: logoHTML, LANG: LANG,
+    phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, homeHref: homeHref, ordCode: ordCode, photo: photo, OSM: OSM, photoKey: photoKey, PHOTO: PHOTO, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, canSell: canSell, logoHTML: logoHTML, LANG: LANG,
     qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
   };
 })();

@@ -37,6 +37,7 @@
   var part = st.byId('particella', l.id_particella);
   var prodotti = st.prodottiOfLotto(l.id);
   var stato = st.statoLotto(l.id);
+  var editing = st.offerteOfLotto(l.id).some(function (o) { return o.id_azienda === me; });
 
   function fact(k, v) { return '<div><div class="muted xs">' + k + '</div><div style="font-weight:600">' + v + '</div></div>'; }
   var url = ui.qrUrl(l);
@@ -44,13 +45,13 @@
     '<div class="head pg"><a class="backbtn" href="dashboard.html" aria-label="Indietro"><span class="ms" aria-hidden="true">arrow_back</span></a>' +
       '<div class="grow"><div class="crumb"><a href="dashboard.html">Dashboard</a> <span class="ms" aria-hidden="true">chevron_right</span> <a href="segheria-lotti.html">Lotti ricevuti</a> <span class="ms" aria-hidden="true">chevron_right</span> ' + ui.esc(l.codice_qr) + '</div>' +
       '<h1 class="h1">' + ui.v(l, 'codice_qr') + '</h1></div>' +
-      (prodotti.length && stato !== 'Venduto' ? '<button type="button" class="dbtn pri" id="sell"><span class="ms" aria-hidden="true">sell</span>Metti in vendita</button>' : '') + '</div>' +
+      (ui.canSell(l) ? '<button type="button" class="dbtn pri" id="sell"><span class="ms" aria-hidden="true">' + (editing ? 'edit' : 'sell') + '</span>' + (editing ? 'Modifica offerta' : 'Metti in vendita') + '</button>' : '') + '</div>' +
     '<div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px">' +
       '<div style="display:flex;flex-direction:column;gap:20px">' +
         '<section class="box" style="padding:20px;display:flex;flex-direction:column;gap:16px"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">' +
           fact('Specie', ui.esc(ui.specieName(l))) + fact('Volume', ui.num(l.volume_m3) + ' m³') + fact('Particella', ui.v(part, 'nome')) + fact('Data di taglio', ui.date(l.data_taglio)) +
         '</div><div class="pills">' + ui.badges(l) + '</div>' +
-        (prodotti.length ? '' : '<div class="small muted">Questo lotto non è ancora stato segato: niente da mettere in vendita.</div>') + '</section>' +
+        (prodotti.length ? '' : '<div class="small muted">Questo lotto non è ancora stato segato: con Metti in vendita registri prima la lavorazione.</div>') + '</section>' +
         '<section class="box" style="padding:20px;display:flex;flex-direction:column;gap:16px"><h2 style="font-size:15px">Storico</h2><div class="dtl">' +
           st.storico(l.id).map(function (e) {
             return '<div class="step"><div class="rail"><div class="dot"></div><div class="line"></div></div><div class="body"><div class="muted xs" style="font-weight:600">' + ui.date(e.data) + '</div><div style="font-weight:600">' + ui.t(e.titolo) + '</div><div class="muted xs">' + ui.t(e.sotto) + '</div></div></div>';
@@ -69,8 +70,43 @@
     var offs = st.all('offerta').filter(function (o) { return o.id_prodotto === idProdotto; }).map(function (o) { return o.id; });
     return st.all('ordine').filter(function (o) { return offs.indexOf(o.id_offerta) >= 0 && st.ordineValido(o); }).reduce(function (s, o) { return s + o.quantita; }, 0);
   }
+  // Not sawn yet: one form records the sawing (tavole + cippato, like FV-2026-00087: 28 m³ and 6 t from 45 m³) and publishes both offers
+  var RATIO = { tavole: 28 / 45, cippato: 6 / 45 };
+  function sawForm() {
+    var sp = ui.specieName(l).toLowerCase(), v = l.volume_m3;
+    var demo = function (i) { var d = (st.all('demo_offerta') || [])[i]; return d ? ui.euro(d.prezzo_unitario).replace(' €', '') : ''; };
+    var field = function (id, label, value, unit, type) {
+      return '<div class="dfield"><label for="' + id + '">' + label + '</label><div class="dinput"><input id="' + id + '" ' + (type === 'date' ? 'type="date"' : 'inputmode="decimal"') + ' value="' + value + '">' + (unit ? '<span class="unit">' + unit + '</span>' : '') + '</div></div>';
+    };
+    return '<form class="box prow" id="sawForm" novalidate>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center"><b>Lavorazione</b><span class="pill p-st"><span class="ms" aria-hidden="true">carpenter</span>Nuova</span></div>' +
+      '<div class="xs muted">Prima segna cosa hai ricavato dal lotto. Valori proposti in proporzione a FV-2026-00087.</div>' +
+      field('sawDate', 'Data di lavorazione', st.todayISO(), '', 'date') +
+      '<div class="grid2">' + field('sawT', 'Tavole', ui.num(Math.round(v * RATIO.tavole)), 'm³') + field('sawC', 'Cippato', ui.num(Math.round(v * RATIO.cippato)), 't') + '</div>' +
+      '<div class="grid2">' + field('prT', 'Prezzo tavole', demo(0), '€/m³') + field('prC', 'Prezzo cippato', demo(1), '€/t') + '</div>' +
+      '<div class="derr" hidden></div>' +
+      '<button class="dbtn pri full" type="submit">Pubblica offerte</button></form>';
+  }
+  function submitSaw(f) {
+    var sp = ui.specieName(l).toLowerCase(), err = f.querySelector('.derr');
+    var t = ui.parseNum(f.querySelector('#sawT').value), c = ui.parseNum(f.querySelector('#sawC').value);
+    var pt = ui.parseNum(f.querySelector('#prT').value), pc = ui.parseNum(f.querySelector('#prC').value), d = f.querySelector('#sawDate').value || st.todayISO();
+    f.querySelectorAll('.dinput').forEach(function (x) { x.classList.remove('err'); });
+    var bad = !t ? ['#sawT', 'Inserisci una quantità maggiore di zero.'] : t > l.volume_m3 ? ['#sawT', 'Massimo ' + ui.num(l.volume_m3) + ' m³.'] : !pt ? ['#prT', 'Inserisci un prezzo maggiore di zero.'] : c && !pc ? ['#prC', 'Inserisci un prezzo maggiore di zero.'] : null;
+    if (bad) { err.textContent = bad[1]; err.hidden = false; f.querySelector(bad[0]).parentNode.classList.add('err'); f.querySelector(bad[0]).focus(); return; }
+    var prods = [{ descrizione: 'Tavole di ' + sp, categoria: 'legname', quantita: t, unita: 'm3' }];
+    if (c) prods.push({ descrizione: 'Cippato di ' + sp, categoria: 'sottoprodotto', quantita: c, unita: 't' });
+    var made = st.addLavorazione(l.id, me, d, prods);
+    st.publishOfferta(made[0].id, me, t, pt);
+    if (made[1]) st.publishOfferta(made[1].id, me, c, pc);
+    ui.flash('Offerta pubblicata');
+    location.href = 'offerte.html';
+  }
+
   function openPanel() {
     document.getElementById('pSub').textContent = 'Dal lotto ' + l.codice_qr;
+    document.getElementById('pTitle').textContent = editing ? 'Modifica offerta' : 'Metti in vendita';
+    if (!prodotti.length) { document.getElementById('prows').innerHTML = sawForm(); wrap.hidden = false; document.getElementById('sawT').focus(); return; }
     document.getElementById('prows').innerHTML = prodotti.map(function (p) {
       var off = st.all('offerta').find(function (o) { return o.id_prodotto === p.id && o.id_azienda === me; });
       var demo = (st.all('demo_offerta') || []).find(function (d) { return d.id_prodotto === p.id; });
@@ -81,7 +117,7 @@
         '<div class="grid2"><div class="dfield"><label for="q' + p.id + '">Quantità</label><div class="dinput"><input id="q' + p.id + '" inputmode="decimal" value="' + (qty === '' ? '' : ui.num(qty)) + '"><span class="unit">' + u + '</span></div></div>' +
         '<div class="dfield"><label for="pr' + p.id + '">Prezzo</label><div class="dinput"><input id="pr' + p.id + '" inputmode="decimal" value="' + (price === '' ? '' : ui.euro(price).replace(' €', '')) + '"><span class="unit">€/' + u + '</span></div></div></div>' +
         '<div class="derr" hidden></div><div class="xs muted">Disponibili: ' + ui.num(max) + ' ' + u + (off ? ' · offerta già pubblicata, la aggiorni' : '') + '</div>' +
-        '<button class="dbtn ' + (sc ? 'sec' : 'pri') + ' full" type="submit">' + (sc ? 'Pubblica scarti' : 'Pubblica offerta') + '</button></form>';
+        '<button class="dbtn ' + (sc ? 'sec' : 'pri') + ' full" type="submit">' + (off ? 'Salva modifiche' : sc ? 'Pubblica scarti' : 'Pubblica offerta') + '</button></form>';
     }).join('');
     wrap.hidden = false;
     var first = wrap.querySelector('input'); if (first) first.focus();
@@ -91,14 +127,16 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !wrap.hidden) closePanel(); });
   wrap.addEventListener('submit', function (e) {
     e.preventDefault();
+    if (e.target.id === 'sawForm') { submitSaw(e.target); return; }
     var f = e.target, id = Number(f.getAttribute('data-p')), max = Number(f.getAttribute('data-max')), p = st.byId('prodotto', id);
     var q = ui.parseNum(f.querySelector('#q' + id).value), pr = ui.parseNum(f.querySelector('#pr' + id).value), err = f.querySelector('.derr');
     var msg = !q ? 'Inserisci una quantità maggiore di zero.' : q > max ? 'Massimo ' + ui.num(max) + ' ' + st.unitLabel(p.unita) + '.' : !pr ? 'Inserisci un prezzo maggiore di zero.' : '';
     f.querySelectorAll('.dinput').forEach(function (d) { d.classList.remove('err'); });
     if (msg) { err.textContent = msg; err.hidden = false; f.querySelector(!q || q > max ? '#q' + id : '#pr' + id).parentNode.classList.add('err'); return; }
+    var had = st.all('offerta').some(function (o) { return o.id_prodotto === id && o.id_azienda === me; });
     st.publishOfferta(id, me, q, pr);
     var sc = p.categoria === 'sottoprodotto';
-    ui.flash(sc ? 'Scarti pubblicati' : 'Offerta pubblicata');
+    ui.flash(had ? 'Offerta aggiornata' : sc ? 'Scarti pubblicati' : 'Offerta pubblicata');
     location.href = 'offerte.html' + (sc ? '?cat=scarti' : '');
   });
   var btn = document.getElementById('sell');
