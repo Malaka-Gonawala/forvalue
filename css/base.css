@@ -165,3 +165,23 @@ img { max-width: 100%; display: block; }
 .trkp-bar i { display: block; height: 100%; background: var(--au500); transition: width 1s linear; }
 a.trkp:hover .pill { text-decoration: underline; }
 .p-trk { background: var(--au100); color: var(--au800); font-variant-numeric: tabular-nums; }
+
+/* Scrollbars: page 10px, inner scroll boxes 8px, sidebar 6px (Chrome/Safari/Edge).
+   Firefox gets the standard thin bar + colours; it is kept out of Chrome, where scrollbar-color would switch these off. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+body *::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--g500); border-radius: 999px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: var(--g700); }
+::-webkit-scrollbar-thumb:active { background: var(--au500); }
+::-webkit-scrollbar-corner { background: var(--bg); }
+.sb-in::-webkit-scrollbar { width: 6px; height: 6px; }
+.sb-in::-webkit-scrollbar-track { background: var(--g900); }
+.sb-in::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border: 0; }
+.sb-in::-webkit-scrollbar-thumb:hover { background: var(--au300); }
+.sb-in::-webkit-scrollbar-thumb:active { background: var(--au500); }
+@media (min-width: 900px) { html { scrollbar-gutter: stable; } }   /* laptop: content does not jump between short and long pages */
+@supports not selector(::-webkit-scrollbar) {
+  html { scrollbar-width: thin; scrollbar-color: var(--g500) var(--bg); }
+  .sb-in { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) var(--g900); }
+}
