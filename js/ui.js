@@ -44,10 +44,10 @@
   function hhmm(ms) { var d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
   function townOf(c) { return String(c || '').replace(/\s*\([A-Z]{2}\)$/, ''); }
   var TRK_KM = 18;
-  // Route on img/mappa-fiemme.jpg (1000×695 px): Cavalese → SS48 → Piera di Tesero → towards Ziano. The SVG shows the
+  // Route on img/mappa-fiemme.jpg (1504×1046 px): Cavalese → SS48 → Piera di Tesero → towards Ziano. The SVG shows the
   // image and the route in the same coordinates (slice = like background cover), so they always line up.
-  var TRK_D = 'M512 340 C 560 344, 600 330, 640 318 S 720 312, 780 326 S 870 346, 925 350';
-  var TRK_VB = [400, 160, 600, 380];
+  var TRK_D = 'M765 512 C 820 518, 880 514, 935 500 S 975 472, 1010 470 S 1150 466, 1190 476 S 1215 500, 1250 512 S 1340 534, 1392 540';
+  var TRK_VB = [602, 241, 902, 571];
   function trkFrac(t) { return t.arrivato || Date.now() >= t.arrivo ? 1 : Math.min(1, Math.max(0, (Date.now() - t.ts) / (t.arrivo - t.ts))); }
   // Compact variant for list rows: "In viaggio 0:38" + thin bar. href → links to the QR page (Q1)
   function travelPill(lotto, href) {
@@ -67,10 +67,10 @@
     return '<section class="trkm card' + (done ? ' done' : '') + '" role="group" aria-label="Viaggio del lotto verso la segheria"' + (done ? '' : ' data-trk-arr="' + t.arrivo + '" data-trk-dur="' + dur + '"') + '>' +
       '<div class="trkm-map">' +
         '<svg viewBox="' + TRK_VB.join(' ') + '" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
-          '<image href="img/mappa-fiemme.jpg" x="0" y="0" width="1000" height="695"/>' + path('stroke="#fff" stroke-width="7" opacity=".9"') +
-          path('stroke="#1F4D2C" stroke-width="3" stroke-dasharray="0.4 1.4"') +
-          path('class="trkm-done" stroke="#DBB743" stroke-width="5" stroke-dasharray="' + (f * 100).toFixed(2) + ' 100"') +
-          '<circle cx="512" cy="340" r="6" fill="#2E6B3F" stroke="#fff" stroke-width="3"/><circle cx="925" cy="350" r="6" fill="#2E6B3F" stroke="#fff" stroke-width="3"/></svg>' +
+          '<image href="img/mappa-fiemme.jpg" x="0" y="0" width="1504" height="1046"/>' + path('stroke="#fff" stroke-width="10.5" opacity=".9"') +
+          path('stroke="#1F4D2C" stroke-width="4.5" stroke-dasharray="0.4 1.4"') +
+          path('class="trkm-done" stroke="#DBB743" stroke-width="7.5" stroke-dasharray="' + (f * 100).toFixed(2) + ' 100"') +
+          '<circle cx="765" cy="512" r="9" fill="#2E6B3F" stroke="#fff" stroke-width="4.5"/><circle cx="1392" cy="540" r="9" fill="#2E6B3F" stroke="#fff" stroke-width="4.5"/></svg>' +
         '<span class="trkm-chip trkm-from" data-at="0"><span class="ms" aria-hidden="true">forest</span><span>Bosco Val Fiemme</span></span>' +
         '<span class="trkm-chip trkm-to" data-at="1"><span class="ms" aria-hidden="true">carpenter</span><span>' + esc(name) + '</span></span>' +
         '<span class="trkm-truck" data-f="' + f.toFixed(4) + '"><span class="ms" aria-hidden="true">' + (done ? 'check' : 'local_shipping') + '</span></span>' +
@@ -338,7 +338,7 @@
   var PHOTO = { tavole: 'tavole.jpg', cippato: 'cippato.jpg', segatura: 'segatura.jpg', tronchi: 'tronchi.jpg', mappa: 'mappa-fiemme.jpg' };
   var OSM = '<div class="osm">© OpenStreetMap contributors</div>';
   function photoKey(prodotto) { var w = prodotto ? prodotto.descrizione.split(' ')[0].toLowerCase() : ''; return PHOTO[w] ? w : 'tronchi'; }
-  function photo(key, alt) { return '<img class="photo-x" src="img/' + PHOTO[key] + '"' + (key === 'mappa' ? ' style="object-position:51% 48%"' : '') + ' alt="' + esc(alt || '') + '" onerror="this.remove()">'; }
+  function photo(key, alt) { return '<img class="photo-x" src="img/' + PHOTO[key] + '"' + (key === 'mappa' ? ' style="object-position:51% 49%"' : '') + ' alt="' + esc(alt || '') + '" onerror="this.remove()">'; }
 
   /* ---------- small helpers ---------- */
   function flash(msg) { try { sessionStorage.setItem('fv_flash', msg); } catch (e) {} }
