@@ -212,7 +212,13 @@
     var n = st.all('ordine').filter(function (o) { var off = st.byId('offerta', o.id_offerta); return o.stato === 'inviato' && off && off.id_azienda === s.azienda.id; }).length;
     return n ? '<span class="count">' + n + '</span>' : '';
   }
-  function badge(role, key) { return key === 'carrello' ? cartCount() : role === 'segheria' && key === 'ordini' ? newOrders() : ''; }
+  // Owner: notifications not opened yet (on Notifiche, and on Altro in the phone tab bar)
+  function newsCount() {
+    var s = FV.auth.current(); if (!s || !s.azienda) return '';
+    var n = newsUnreadCount(s.azienda.id);
+    return n ? '<span class="count" aria-label="' + n + ' nuove">' + n + '</span>' : '';
+  }
+  function badge(role, key) { return key === 'carrello' ? cartCount() : role === 'segheria' && key === 'ordini' ? newOrders() : role === 'proprietario' && (key === 'notifiche' || key === 'altro') ? newsCount() : ''; }
 
   function tabbar(role, active) {
     return '<nav class="tabbar" aria-label="Menu">' + NAV[role].tabs.map(function (x, i) {
@@ -302,6 +308,8 @@
       '<span class="grow"><b style="font-weight:600' + (compact ? ';font-size:14px' : '') + '">' + t(x.title) + '</b><div class="' + (compact ? 'xs' : 'small') + ' muted">' + v(x.l, 'codice_qr') + ' · ' + (x.detail && !compact ? esc(x.detail) + ' · ' : '') + date(x.data) + '</div></span>' +
       (unread ? '<span class="ndot" role="img" aria-label="Nuova"></span>' : '') + '</a>';
   }
+  function newsUnreadCount(idAzienda) { var list = ownerNews(idAzienda), isNew = newsUnread(idAzienda, list); return list.filter(isNew).length; }
+  function newsReadAll(idAzienda) { var all = readAll(); all[idAzienda] = ownerNews(idAzienda).map(newsKey); try { localStorage.setItem(READ, JSON.stringify(all)); } catch (e) {} }
   function newsList(idAzienda, n, compact) {
     var list = ownerNews(idAzienda), isNew = newsUnread(idAzienda, list);
     return list.slice(0, n).map(function (x) { return newsRow(idAzienda, x, isNew(x), compact); }).join('');
@@ -311,6 +319,7 @@
     if (!a || !u || !u.azienda) return;
     newsRead(u.azienda.id, a.getAttribute('data-nk'));
     var d = a.querySelector('.ndot'); if (d) d.remove();
+    document.querySelectorAll('.count').forEach(function (c) { if (c.parentNode.closest('[href="notifiche.html"],[href="altro.html"]')) { var n = Number(c.textContent) - 1; if (n > 0) c.textContent = n; else c.remove(); } });
   });
 
   /* ---------- QR ---------- */
@@ -446,6 +455,6 @@
     num: num, num1: num1, parseNum: parseNum, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
     certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, tracker: tracker, travelPill: travelPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
     phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, homeHref: homeHref, ordCode: ordCode, photo: photo, OSM: OSM, photoKey: photoKey, PHOTO: PHOTO, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, canSell: canSell, logoHTML: logoHTML, LANG: LANG,
-    qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, newsList: newsList, trkLayout: trkLayout, tripNow: tripNow, orderTravelPill: orderTravelPill, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
+    qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, newsList: newsList, newsUnreadCount: newsUnreadCount, newsReadAll: newsReadAll, trkLayout: trkLayout, tripNow: tripNow, orderTravelPill: orderTravelPill, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
   };
 })();

@@ -16,12 +16,16 @@
 <script>var S = FV.auth.require(['proprietario']);</script>
 <div id="bar"></div>
 <div class="hero" style="padding:4px 16px 56px"><div class="sub">I tuoi lotti</div></div>
-<main class="over" style="margin-top:-40px;padding-bottom:24px"><div class="box lift" id="list"></div></main>
+<main class="over" style="margin-top:-40px;padding-bottom:24px"><div class="box lift" id="list"></div>
+  <button type="button" class="linkbtn" id="allRead" hidden style="margin:12px auto 0;display:block;background:none;border:0;color:var(--g700);font-weight:600;padding:12px 8px;font:inherit;font-weight:600;cursor:pointer">Segna tutte come lette</button></main>
 <script>
   var ui = FV.ui, st = FV.store;
   document.getElementById('bar').innerHTML = ui.backBar('Notifiche', 'altro.html');
   ui.shell('notifiche', { title: 'Notifiche', noTabs: true });
   document.getElementById('list').innerHTML = ui.newsList(S.azienda.id, 20) || '<div class="empty"><span class="ms" aria-hidden="true">notifications</span>Nessuna notifica.</div>';
+  var allBtn = document.getElementById('allRead');
+  allBtn.hidden = !ui.newsUnreadCount(S.azienda.id);
+  allBtn.onclick = function () { ui.newsReadAll(S.azienda.id); location.reload(); };
 </script>
 </body>
 </html>
