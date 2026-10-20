@@ -1,0 +1,168 @@
+<!doctype html>
+<!-- Scansiona QR (from the login tip "Hai un QR su un lotto?"). Public, no login.
+     Rear camera + jsQR (js/lib/jsqr.js, local). A ForValue QR (…qr.html?d=… or ?c=…, any host)
+     opens the local qr.html with the same query. Fallbacks: photo of the QR, or type the batch code. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scansiona QR · ForValue</title>
+<meta name="theme-color" content="#2E6B3F">
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/phone.css">
+<style>
+  .cam { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--g900); display: grid; place-items: center; color: #fff; }
+  .cam video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .cam .frame { position: absolute; inset: 18%; border: 3px solid var(--au500); border-radius: 16px; box-shadow: 0 0 0 999px rgba(0,0,0,.25); pointer-events: none; }
+  .cam .msg { position: relative; z-index: 1; padding: 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .cam .msg .ms { font-size: 48px; color: var(--au500); }
+  .cam.on .msg { display: none; }
+  .note { font-size: 15px; line-height: 20px; color: var(--muted); text-align: center; }
+  .or { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 15px; }
+  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .crow { display: flex; gap: 8px; }
+  .crow .input { flex: 1; min-width: 0; }
+  .crow .btn { width: auto; flex: none; }
+  .ok-msg { color: var(--g700); font-weight: 600; }
+  @media (min-width: 900px) {
+    body.phone.scan { max-width: 520px; padding-bottom: 48px; }
+    body.scan main { padding-top: 24px; }
+    body.scan .cam { aspect-ratio: 4 / 3; }
+  }
+</style>
+</head>
+<body class="phone scan">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script><script src="js/lib/jsqr.js"></script>
+
+<div id="bar"></div>
+<main class="over" style="padding-top:16px;padding-bottom:24px">
+  <p class="note" style="color:var(--ink);text-align:left">Inquadra il QR stampato sul lotto: la storia del lotto si apre da sola.</p>
+
+  <div class="cam" id="cam" role="region" aria-label="Fotocamera">
+    <video id="video" playsinline muted aria-hidden="true"></video>
+    <div class="frame" hidden id="frame"></div>
+    <div class="msg" id="camMsg"><span class="ms" aria-hidden="true">photo_camera</span><span id="camTxt">Avvio della fotocamera…</span></div>
+  </div>
+  <div class="errtxt" id="err" hidden role="alert"><span class="ms" aria-hidden="true">error</span><span id="errTxt"></span></div>
+  <div class="note" id="live" aria-live="polite"></div>
+
+  <label class="btn sec" for="file"><span class="ms" aria-hidden="true">add_photo_alternate</span>Usa una foto del QR</label>
+  <input type="file" id="file" accept="image/*" capture="environment" hidden>
+
+  <div class="or">oppure</div>
+
+  <form id="codeForm" class="field" novalidate>
+    <label for="code">Inserisci codice lotto</label>
+    <div class="crow">
+      <div class="input" id="codeBox"><span class="ms" aria-hidden="true">tag</span><input id="code" placeholder="FV-2027-00087" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="codeHelp"></div>
+      <button class="btn pri" type="submit">Apri</button>
+    </div>
+    <div class="xs muted" id="codeHelp">Il codice è scritto sotto il QR, ad esempio FV-2027-00087.</div>
+  </form>
+
+  <button class="btn sec" type="button" id="cancel">Annulla</button>
+</main>
+
+<script>
+(function () {
+  var ui = FV.ui;
+  var back = document.referrer && new URL(document.referrer).origin === location.origin && !/scan\.html/.test(document.referrer) ? document.referrer : (FV.auth.current() ? ui.homeHref() : 'index.html');
+  document.getElementById('bar').innerHTML = ui.backBar('Scansiona QR', back);
+
+  var video = document.getElementById('video'), cam = document.getElementById('cam'), camTxt = document.getElementById('camTxt');
+  var errBox = document.getElementById('err'), live = document.getElementById('live');
+  var stream = null, timer = null, done = false;
+  var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  function showErr(t) { document.getElementById('errTxt').textContent = t; errBox.hidden = !t; }
+
+  // Decoded text → where to go. ForValue QR from any host, or a bare batch code.
+  function target(text) {
+    text = String(text || '').trim();
+    if (/^FV-\d{4}-\d{5}$/i.test(text)) return 'qr.html?c=' + encodeURIComponent(text.toUpperCase());
+    var u; try { u = new URL(text, location.href); } catch (e) { return null; }
+    if (!/(^|\/)qr\.html$/.test(u.pathname)) return null;
+    var q = new URLSearchParams();
+    if (u.searchParams.get('d')) q.set('d', u.searchParams.get('d'));
+    else if (u.searchParams.get('c')) q.set('c', u.searchParams.get('c'));
+    else return null;
+    return 'qr.html?' + q.toString();
+  }
+  function handle(text) {
+    var t = target(text);
+    if (!t) { showErr('Questo QR non è di un lotto ForValue. Prova con il QR stampato sul lotto.'); return false; }
+    done = true; stop(); showErr(''); live.innerHTML = '<span class="ok-msg">QR letto. Apro la storia del lotto…</span>';
+    location.href = t; return true;
+  }
+
+  function decode(src, w, h, max) {
+    var s = Math.min(1, max / Math.max(w, h)); canvas.width = Math.round(w * s); canvas.height = Math.round(h * s);
+    ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
+    var r = jsQR(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+    return r && r.data;
+  }
+
+  var lastBad = '';
+  function tick() {
+    if (done || !stream) return;
+    if (video.readyState >= 2 && video.videoWidth) {
+      var t = decode(video, video.videoWidth, video.videoHeight, 640);
+      if (t && t !== lastBad && !handle(t)) lastBad = t;
+    }
+    timer = setTimeout(tick, 150);
+  }
+  function stop() {
+    clearTimeout(timer);
+    if (stream) stream.getTracks().forEach(function (k) { k.stop(); });
+    stream = null; cam.classList.remove('on'); document.getElementById('frame').hidden = true;
+  }
+  function noCam(t) { camTxt.textContent = t; }
+
+  if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    noCam('La fotocamera non è disponibile qui. Usa una foto del QR o scrivi il codice del lotto.');
+  } else {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false }).then(function (s) {
+      if (done) { s.getTracks().forEach(function (k) { k.stop(); }); return; }
+      stream = s; video.srcObject = s; video.play();
+      cam.classList.add('on'); document.getElementById('frame').hidden = false;
+      live.textContent = 'Fotocamera attiva: inquadra il QR.';
+      tick();
+    }).catch(function (e) {
+      noCam(e && e.name === 'NotAllowedError'
+        ? 'Non hai dato il permesso alla fotocamera. Usa una foto del QR o scrivi il codice del lotto.'
+        : 'Fotocamera non trovata. Usa una foto del QR o scrivi il codice del lotto.');
+    });
+  }
+
+  document.getElementById('file').onchange = function () {
+    var f = this.files && this.files[0]; this.value = ''; if (!f) return;
+    showErr(''); live.textContent = 'Leggo la foto…';
+    var img = new Image(), url = URL.createObjectURL(f);
+    img.onload = function () {
+      var t = decode(img, img.naturalWidth, img.naturalHeight, 1600) || decode(img, img.naturalWidth, img.naturalHeight, 800);
+      URL.revokeObjectURL(url); live.textContent = '';
+      if (t) handle(t); else showErr('Non trovo un QR in questa foto. Prova con una foto più vicina e nitida.');
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); live.textContent = ''; showErr('Non riesco ad aprire questa immagine.'); };
+    img.src = url;
+  };
+
+  var code = document.getElementById('code'), codeBox = document.getElementById('codeBox');
+  document.getElementById('codeForm').onsubmit = function (e) {
+    e.preventDefault();
+    var v = code.value.trim().toUpperCase();
+    if (!/^FV-\d{4}-\d{5}$/.test(v)) {
+      showErr('Codice non valido. Scrivilo così: FV-2027-00087.');
+      codeBox.classList.add('err'); code.setAttribute('aria-invalid', 'true'); code.focus(); return;
+    }
+    handle(v);
+  };
+  code.oninput = function () { codeBox.classList.remove('err'); code.removeAttribute('aria-invalid'); showErr(''); };
+
+  document.getElementById('cancel').onclick = function () { done = true; stop(); location.href = back; };
+  window.addEventListener('pagehide', stop);
+})();
+</script>
+</body>
+</html>

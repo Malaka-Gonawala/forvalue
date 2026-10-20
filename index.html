@@ -30,6 +30,7 @@
     body.login main.over { grid-column: 2; grid-row: 1; align-self: center; justify-self: center; width: min(420px, 100% - 64px); margin: 0 !important; padding: 0; }
     body.login .btn, body.login .input { min-height: 48px; border-radius: 8px; }
     body.login .input input { height: 44px; }
+    body.login .qtip:hover { border-color: var(--au500); }
     body.login .lift { box-shadow: 0 8px 24px rgba(31,77,44,.10); }
   }
 </style>
@@ -70,10 +71,11 @@
     <button class="btn pri" type="submit">Accedi</button>
   </form>
 
-  <div class="box" style="background:var(--au100);border-color:var(--au300);padding:16px;display:flex;gap:12px;align-items:center">
-    <div class="tile" style="background:var(--au500);color:var(--ink)"><span class="ms" aria-hidden="true">qr_code_2</span></div>
-    <div><div style="font-weight:600">Hai un QR su un lotto?</div><div class="small" style="color:var(--au800)">Inquadralo con la fotocamera per vederne la storia.</div></div>
-  </div>
+  <a class="box qtip" id="qrTip" href="scan.html" style="background:var(--au100);border-color:var(--au300);padding:16px;display:flex;gap:12px;align-items:center;min-height:44px">
+    <div class="tile" style="background:var(--au500);color:var(--ink)"><span class="ms" aria-hidden="true">qr_code_scanner</span></div>
+    <div style="flex:1;min-width:0"><div style="font-weight:600">Hai un QR su un lotto?</div><div class="small" style="color:var(--au800)">Inquadralo con la fotocamera per vederne la storia.</div></div>
+    <span class="ms" aria-hidden="true" style="color:var(--au800)">chevron_right</span>
+  </a>
 </main>
 
 <script>

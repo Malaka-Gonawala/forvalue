@@ -76,6 +76,7 @@ Things that are **not** columns in the database are worked out the same way the 
 | `home.html`, `nuovo-lotto.html`, `lotto-salvato.html` | P1 Home, P2 New batch, P3 Batch saved + QR |
 | `altro.html`, `lotti.html`, `profilo.html`, `certificati.html`, `notifiche.html`, `aiuto.html` | P4–P9 phone menu pages |
 | `qr.html` | Q1 public QR page |
+| `scan.html` | QR scanner (from the login tip): camera, photo of the QR, or type the batch code |
 | `dashboard.html`, `lotto.html`, `segheria-lotti.html` | D1 Dashboard, D2 Batch detail + sell panel, D7 Lotti ricevuti |
 | `offerte.html`, `ordini-ricevuti.html` | Sawmill: Le mie offerte (`?cat=scarti` = Circolarità), Ordini ricevuti (Accetta / Rifiuta) |
 | `marketplace.html`, `offerta.html`, `carrello.html`, `ordine-inviato.html`, `ordini.html` | Buyer: D3 Marketplace, D4 Offer, D5 Cart, D6 Order sent, D8 I miei ordini |
@@ -85,6 +86,7 @@ Things that are **not** columns in the database are worked out the same way the 
 | `js/auth.js` | Login tokens (`fv_tokens_v1`), login, logout, role checks |
 | `js/ui.js` | Italian number/date format, badges, menus per role, QR link |
 | `js/lib/qrcode.js` | QR generator (qrcode-generator, MIT), works offline |
+| `js/lib/jsqr.js` | QR reader for the scanner (jsQR 1.4.0, Apache-2.0), works offline |
 | `DATA-NEEDED.md` | What was filled in (nothing is missing now) |
 
 Each page starts with a comment saying which Figma screen it is.
