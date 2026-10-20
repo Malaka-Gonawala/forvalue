@@ -72,6 +72,7 @@
 </div>
 
 <main class="over" style="margin-top:-72px">
+  <div class="box" id="delNote" hidden role="status" style="padding:12px 16px;display:flex;gap:10px;align-items:center;background:#FBE9E7;border-color:#F2B8B5;color:#B3261E;font-weight:600"><span class="ms" aria-hidden="true">delete</span>Account eliminato (demo)</div>
   <form id="f" class="box lift" style="padding:20px 16px;display:flex;flex-direction:column;gap:16px" novalidate>
     <h2 class="h1 dk">Accedi</h2>
     <div class="field">
@@ -83,6 +84,7 @@
       <div class="input" id="pwBox"><span class="ms" aria-hidden="true">lock</span><input id="pw" type="password" autocomplete="current-password" required>
         <button type="button" id="eye" aria-label="Mostra password" style="width:44px;height:44px;display:grid;place-items:center;margin-right:-10px"><span class="ms" aria-hidden="true">visibility</span></button></div>
       <div class="errtxt" id="err" hidden role="alert"><span class="ms" aria-hidden="true">error</span><span>Email o password non corretti. Controlla e riprova.</span></div>
+      <div class="errtxt" id="errDel" hidden role="alert"><span class="ms" aria-hidden="true">error</span><span>Account eliminato. Usa Ripristina dati demo per ripristinarlo. <button type="button" data-reset style="text-decoration:underline;font-weight:600;color:inherit;min-height:44px">Ripristina dati demo</button></span></div>
     </div>
     <button class="btn pri" type="submit">Accedi</button>
   </form>
@@ -124,6 +126,7 @@
   document.getElementById('f').onsubmit = function (e) {
     e.preventDefault();
     var u = FV.auth.login(email.value, pw.value);
+    if (!u && FV.store.utenteEliminato(email.value)) { document.getElementById('errDel').hidden = false; err.hidden = true; return; }
     if (!u) {
       err.hidden = false;
       document.getElementById('pwBox').classList.add('err');
@@ -132,7 +135,8 @@
     }
     location.href = FV.auth.home(u.ruolo);
   };
-  pw.oninput = function () { err.hidden = true; document.getElementById('pwBox').classList.remove('err'); pw.removeAttribute('aria-invalid'); };
+  if (FV.ui.param('eliminato')) document.getElementById('delNote').hidden = false;
+  pw.oninput = function () { document.getElementById('errDel').hidden = true; err.hidden = true; document.getElementById('pwBox').classList.remove('err'); pw.removeAttribute('aria-invalid'); };
 </script>
 </body>
 </html>

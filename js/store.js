@@ -204,6 +204,10 @@
     return l;
   }
 
+  // Profilo → "Elimina account (demo)": only marks the user; Ripristina dati demo brings it back
+  function eliminaUtente(id) { var u = byId('utente', id); if (u) { u.eliminato = true; save(db); } return u; }
+  function utenteEliminato(email) { email = String(email || '').trim().toLowerCase(); return all('utente').some(function (u) { return u.eliminato && u.email.toLowerCase() === email; }); }
+
   // D2: a received batch not sawn yet – the sawmill records the sawing and its products first
   function addLavorazione(idLotto, idAzienda, data, prodotti) {
     var lav = insert('lavorazione', { id_lotto: idLotto, id_azienda: idAzienda, data: data, tipo: 'segagione' });
@@ -277,7 +281,7 @@
     lottoByCode: lottoByCode, nextLottoCode: nextLottoCode, prodottiOfLotto: prodottiOfLotto, offerteOfLotto: offerteOfLotto,
     ordiniOfLotto: ordiniOfLotto, storicoRaw: storicoRaw, stepText: stepText, comuneByName: comuneByName, lottoOfOfferta: lottoOfOfferta, statoLotto: statoLotto, eudrOk: eudrOk, holderOf: holderOf,
     lottiOfOwner: lottiOfOwner, lottiOfSawmill: lottiOfSawmill, transferDate: transferDate, storico: storico, unitOf: unitOf, unitLabel: unitLabel,
-    addLotto: addLotto, addLavorazione: addLavorazione, demoDate: demoDate, addDays: addDays, setStatoOrdine: setStatoOrdine, ordineValido: ordineValido, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
+    addLotto: addLotto, eliminaUtente: eliminaUtente, utenteEliminato: utenteEliminato, addLavorazione: addLavorazione, demoDate: demoDate, addDays: addDays, setStatoOrdine: setStatoOrdine, ordineValido: ordineValido, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
     getCart: getCart, setCart: setCart, trasporto: trasporto, tick: tick, trasportoMs: trasportoMs, sawmillId: sawmillId
   };
   window.FV.store.tick();

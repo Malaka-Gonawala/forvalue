@@ -29,11 +29,12 @@
   <div class="box">
     <button type="button" class="row" data-logout style="color:var(--err)"><span class="tile" style="background:#FBE9E7;color:var(--err)"><span class="ms" aria-hidden="true">logout</span></span><span class="grow" style="font-weight:600">Esci</span></button>
   </div>
+  <button type="button" class="btn" id="delAcc" style="background:#fff;color:#B3261E;border:2px solid #B3261E"><span class="ms" aria-hidden="true">delete</span>Elimina account (demo)</button>
 </main>
 <script>
   var ui = FV.ui, st = FV.store, u = S.utente;
   document.getElementById('bar').innerHTML = ui.phoneBar();
-  ui.shell('profilo', { title: 'Profilo' });
+  ui.shell(S.ruolo === 'proprietario' ? 'profilo' : 'altro', { title: 'Profilo' });   // sawmill and buyer reach it from Altro
   var a = S.azienda, ROLE = { proprietario: ['forest', 'Proprietario forestale'], segheria: ['carpenter', 'Segheria'], acquirente: ['storefront', 'Acquirente'] }[S.ruolo];
   document.getElementById('name').textContent = a.ragione_sociale;
   document.getElementById('roleIcon').textContent = ROLE[0];
@@ -66,6 +67,10 @@
     html = stat('Ordini', mine.length) + stat('Totale speso', ui.euro(ok.reduce(function (s, o) { return s + o.prezzo_totale; }, 0))) +
       stat('m³ acquistati', ui.num(m3(ok)) + ' m³') + stat('Fornitori', Object.keys(sellers).length);
   }
+  document.getElementById('delAcc').onclick = function () {
+    if (!confirm("Eliminare l'account? Solo demo: puoi ripristinarlo con Ripristina dati demo.")) return;
+    st.eliminaUtente(u.id); FV.auth.clear(); location.href = 'index.html?eliminato=1';
+  };
   if (html) { document.getElementById('stats').innerHTML = html; document.getElementById('statsBox').hidden = false; }
 </script>
 </body>

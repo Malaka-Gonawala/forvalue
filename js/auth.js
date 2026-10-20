@@ -30,7 +30,7 @@
   function current() {
     var r = activeRole();
     var u = r ? FV.store.all('utente').find(function (x) { return x.ruolo === r; }) : null;
-    if (!u) return null;
+    if (!u || u.eliminato) return null;
     return { utente: u, azienda: FV.store.byId('azienda', u.id_azienda), ruolo: u.ruolo };
   }
 
@@ -38,7 +38,7 @@
   function login(email, password) {
     email = String(email || '').trim().toLowerCase();
     var u = FV.store.all('utente').find(function (x) { return x.email.toLowerCase() === email && x.password === password; });
-    if (!u) return null;
+    if (!u || u.eliminato) return null;   // deleted in the demo: index.html says so
     var t = noTokens(); t[u.ruolo] = true; saveTokens(t);
     return u;
   }

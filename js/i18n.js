@@ -100,6 +100,9 @@
     'Data': 'Date', 'Ordine': 'Order', 'Totale': 'Total', 'Origine': 'Origin', 'Riepilogo': 'Summary',
     // buyer
     'Legname': 'Timber', 'Scarti': 'Offcuts', 'Scarti di segheria in vendita': 'Sawmill offcuts for sale', 'Filtri': 'Filters', 'Rimuovi filtri': 'Clear filters',
+    'Elimina account (demo)': 'Delete account (demo)', 'Account eliminato (demo)': 'Account deleted (demo)',
+    'Account eliminato. Usa Ripristina dati demo per ripristinarlo.': 'Account deleted. Use Reset demo data to restore it.',
+    "Eliminare l'account? Solo demo: puoi ripristinarlo con Ripristina dati demo.": 'Delete the account? Demo only: you can restore it with Reset demo data.',
     'La tua attività': 'Your activity', 'Ragione sociale': 'Company name', 'P.IVA': 'VAT number', 'Indirizzo': 'Address',
     'Offerte attive': 'Active offers', 'm³ venduti': 'm³ sold', 'Totale speso': 'Total spent', 'm³ acquistati': 'm³ bought', 'Fornitori': 'Suppliers',
     'Tronchi pronti per la vendita': 'Logs ready for sale', 'Lavorazione': 'Sawing', 'Tavole': 'Boards', 'Cippato': 'Wood chips', 'Data di lavorazione': 'Sawing date', 'Prezzo tavole': 'Board price', 'Prezzo cippato': 'Wood chip price', 'Pubblica offerte': 'Publish offers',
