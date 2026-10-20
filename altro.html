@@ -36,8 +36,8 @@
   // [href, icon, label, second line]
   var LINKS = {
     proprietario: [['certificati.html', 'workspace_premium', 'Certificati', certLine], ['notifiche.html', 'notifications', 'Notifiche'], ['aiuto.html', 'help', 'Aiuto']],
-    segheria: [['offerte.html', 'sell', 'Le mie offerte'], ['offerte.html?cat=scarti', 'recycling', 'Circolarità', 'Scarti rimessi in circolo'], ['aiuto.html', 'help', 'Aiuto']],
-    acquirente: [['marketplace.html?tab=scarti', 'recycling', 'Circolarità', 'Scarti di segheria in vendita'], ['aiuto.html', 'help', 'Aiuto']]
+    segheria: [['profilo.html', 'person', 'Profilo', S.azienda.ragione_sociale], ['offerte.html', 'sell', 'Le mie offerte'], ['offerte.html?cat=scarti', 'recycling', 'Circolarità', 'Scarti rimessi in circolo'], ['aiuto.html', 'help', 'Aiuto']],
+    acquirente: [['profilo.html', 'person', 'Profilo', S.azienda.ragione_sociale], ['marketplace.html?tab=scarti', 'recycling', 'Circolarità', 'Scarti di segheria in vendita'], ['aiuto.html', 'help', 'Aiuto']]
   };
   document.getElementById('links').innerHTML = LINKS[S.ruolo].map(function (x) {
     return '<a class="row" href="' + x[0] + '"><span class="tile"><span class="ms" aria-hidden="true">' + x[1] + '</span></span><span class="grow"><b style="font-weight:600">' + x[2] + '</b>' +

@@ -1,5 +1,6 @@
 <!doctype html>
-<!-- P6 · Profilo (Figma "P6 Profilo"). Company, contact person, email, parcel, GPS, certificate. -->
+<!-- P6 · Profilo (Figma "P6 Profilo"), for all 3 roles. Contact person, email, company data, certificate;
+     owner: parcel + GPS; sawmill and buyer: their numbers. -->
 <html lang="it">
 <head>
 <meta charset="utf-8">
@@ -13,17 +14,30 @@
 </head>
 <body class="phone app has-tabs">
 <script src="js/i18n.js"></script><script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
-<script>var S = FV.auth.require(['proprietario']);</script>
+<script>var S = FV.auth.require(['proprietario', 'segheria', 'acquirente']);</script>
 <div id="bar"></div>
 <div class="hero" style="padding:8px 16px 56px;flex-direction:row;align-items:center;gap:12px">
-  <div style="width:64px;height:64px;border-radius:999px;background:var(--au500);color:var(--g900);display:grid;place-items:center;flex:none"><span class="ms" style="font-size:36px" aria-hidden="true">forest</span></div>
-  <div><h1 class="h2" id="name"></h1><div style="color:var(--au300);font-weight:600">Proprietario forestale</div></div></div>
-<main class="over" style="margin-top:-40px;padding-bottom:16px"><div class="box lift" id="rows"></div></main>
+  <div style="width:64px;height:64px;border-radius:999px;background:var(--au500);color:var(--g900);display:grid;place-items:center;flex:none"><span class="ms" style="font-size:36px" aria-hidden="true" id="roleIcon">forest</span></div>
+  <div><h1 class="h2" id="name"></h1><div style="color:var(--au300);font-weight:600" id="roleName">Proprietario forestale</div></div></div>
+<main class="over" style="margin-top:-40px;padding-bottom:16px">
+  <div class="box lift" id="rows"></div>
+  <section class="box" id="statsBox" hidden style="padding:16px;display:flex;flex-direction:column;gap:12px"><h2 style="font-size:15px">La tua attività</h2><div id="stats" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div></section>
+  <div class="box" id="company"></div>
+  <div class="box">
+    <button type="button" class="row" data-reset><span class="tile"><span class="ms" aria-hidden="true">restart_alt</span></span><span class="grow"><b style="font-weight:600">Ripristina dati demo</b><div class="small muted">Riporta lotti, offerte e ordini ai dati iniziali</div></span></button>
+  </div>
+  <div class="box">
+    <button type="button" class="row" data-logout style="color:var(--err)"><span class="tile" style="background:#FBE9E7;color:var(--err)"><span class="ms" aria-hidden="true">logout</span></span><span class="grow" style="font-weight:600">Esci</span></button>
+  </div>
+</main>
 <script>
   var ui = FV.ui, st = FV.store, u = S.utente;
   document.getElementById('bar').innerHTML = ui.phoneBar();
   ui.shell('profilo', { title: 'Profilo' });
-  document.getElementById('name').textContent = S.azienda.ragione_sociale;
+  var a = S.azienda, ROLE = { proprietario: ['forest', 'Proprietario forestale'], segheria: ['carpenter', 'Segheria'], acquirente: ['storefront', 'Acquirente'] }[S.ruolo];
+  document.getElementById('name').textContent = a.ragione_sociale;
+  document.getElementById('roleIcon').textContent = ROLE[0];
+  document.getElementById('roleName').textContent = ROLE[1];
   var p = st.all('particella').find(function (x) { return x.id_azienda === S.azienda.id; });
   var c = st.all('certificazione').find(function (x) { return x.id_azienda === S.azienda.id; });
   function row(icon, k, v) { return '<div class="row"><span class="tile"><span class="ms" aria-hidden="true">' + icon + '</span></span><div class="grow"><div class="small muted">' + k + '</div><div style="font-weight:600;overflow-wrap:anywhere">' + v + '</div></div></div>'; }
@@ -31,7 +45,28 @@
     row('person', 'Referente', ui.v(u, 'nome', u.nome + ' ' + u.cognome)) +
     row('mail', 'Email', ui.v(u, 'email')) +
     (p ? row('forest', 'Particella', ui.v(p, 'nome')) + row('my_location', 'GPS', ui.gps(p.lat, p.lon)) : '') +
-    (c ? row('verified', 'Certificato', ui.esc(c.schema) + ' · valido fino al ' + c.data_scadenza.slice(0, 4)) : '');
+    (c ? row('verified', 'Certificato', ui.esc(c.schema) + ' ' + ui.esc(c.codice) + ' · valido fino al ' + ui.date(c.data_scadenza)) : '');
+  document.getElementById('company').innerHTML =
+    row('domain', 'Ragione sociale', ui.v(a, 'ragione_sociale')) + row('badge', 'P.IVA', ui.v(a, 'partita_iva')) +
+    row('home_pin', 'Indirizzo', ui.v(a, 'indirizzo') + ', ' + ui.v(a, 'comune')) + row('map', 'Regione', ui.v(a, 'regione'));
+
+  // Sawmill and buyer: their numbers, worked out from the orders and offers
+  function stat(k, v) { return '<div class="kpi" style="background:var(--bg);border-radius:10px;padding:12px"><small class="small muted" style="display:block">' + k + '</small><b style="font-size:22px;line-height:28px">' + v + '</b></div>'; }
+  var myOffers = st.all('offerta').filter(function (o) { return o.id_azienda === a.id; }).map(function (o) { return o.id; });
+  var m3 = function (os) { return os.filter(function (o) { var off = st.byId('offerta', o.id_offerta); return off && st.unitOf(off) === 'm³'; }).reduce(function (s, o) { return s + o.quantita; }, 0); };
+  var html = '';
+  if (S.ruolo === 'segheria') {
+    var ric = st.all('ordine').filter(function (o) { return myOffers.indexOf(o.id_offerta) >= 0; });
+    html = stat('Lotti ricevuti', st.lottiOfSawmill(a.id).length) +
+      stat('Offerte attive', st.all('offerta').filter(function (o) { return o.id_azienda === a.id && o.attiva && o.quantita_disponibile > 0; }).length) +
+      stat('Ordini ricevuti', ric.length) + stat('m³ venduti', ui.num(m3(ric.filter(st.ordineValido))) + ' m³');
+  } else if (S.ruolo === 'acquirente') {
+    var mine = st.all('ordine').filter(function (o) { return o.id_azienda === a.id; }), ok = mine.filter(st.ordineValido);
+    var sellers = {}; ok.forEach(function (o) { var off = st.byId('offerta', o.id_offerta); if (off) sellers[off.id_azienda] = 1; });
+    html = stat('Ordini', mine.length) + stat('Totale speso', ui.euro(ok.reduce(function (s, o) { return s + o.prezzo_totale; }, 0))) +
+      stat('m³ acquistati', ui.num(m3(ok)) + ' m³') + stat('Fornitori', Object.keys(sellers).length);
+  }
+  if (html) { document.getElementById('stats').innerHTML = html; document.getElementById('statsBox').hidden = false; }
 </script>
 </body>
 </html>

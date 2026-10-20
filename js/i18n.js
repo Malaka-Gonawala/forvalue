@@ -100,6 +100,8 @@
     'Data': 'Date', 'Ordine': 'Order', 'Totale': 'Total', 'Origine': 'Origin', 'Riepilogo': 'Summary',
     // buyer
     'Legname': 'Timber', 'Scarti': 'Offcuts', 'Scarti di segheria in vendita': 'Sawmill offcuts for sale', 'Filtri': 'Filters', 'Rimuovi filtri': 'Clear filters',
+    'La tua attività': 'Your activity', 'Ragione sociale': 'Company name', 'P.IVA': 'VAT number', 'Indirizzo': 'Address',
+    'Offerte attive': 'Active offers', 'm³ venduti': 'm³ sold', 'Totale speso': 'Total spent', 'm³ acquistati': 'm³ bought', 'Fornitori': 'Suppliers',
     'Tronchi pronti per la vendita': 'Logs ready for sale', 'Lavorazione': 'Sawing', 'Tavole': 'Boards', 'Cippato': 'Wood chips', 'Data di lavorazione': 'Sawing date', 'Prezzo tavole': 'Board price', 'Prezzo cippato': 'Wood chip price', 'Pubblica offerte': 'Publish offers',
     'Prima segna cosa hai ricavato dal lotto. Valori proposti in proporzione a FV-2026-00087.': 'First record what you got from the batch. Suggested values are in proportion to FV-2026-00087.',
     'Questo lotto non è ancora stato segato: con Metti in vendita registri prima la lavorazione.': 'This batch has not been sawn yet: Put on sale lets you record the sawing first.',
@@ -135,6 +137,7 @@
     [/^Lotto di origine: (.+)$/, 'Source batch: $1'],
     [/^Ordine (ORD-.+)$/, 'Order $1'],
     [/^QR di (.+)$/, 'QR of $1'],
+    [/^Profilo: (.+)$/, 'Profile: $1'],
     [/^Quantità (.+)$/, function (m, x) { return 'Quantity ' + tr(x); }],
     [/^Rimuovi (.+)$/, function (m, x) { return 'Remove ' + tr(x); }],
     [/^Consegna richiesta: (.+)$/, 'Requested delivery: $1'],

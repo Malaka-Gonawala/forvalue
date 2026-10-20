@@ -162,7 +162,7 @@
       '<nav aria-label="Menu">' + NAV[role].side.map(function (x) {
         return '<a href="' + navHref(x) + '"' + (x[0] === active ? ' aria-current="page"' : '') + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + badge(role, x[0]) + '</a>';
       }).join('') + '</nav>' +
-      '<div class="foot"><div class="who"><span class="ms" aria-hidden="true">account_circle</span>' + esc(session.azienda.ragione_sociale) + '</div>' +
+      '<div class="foot"><a class="who" href="profilo.html"' + (active === 'profilo' ? ' aria-current="page"' : '') + ' aria-label="Profilo: ' + esc(session.azienda.ragione_sociale) + '"><span class="ms" aria-hidden="true">account_circle</span>' + esc(session.azienda.ragione_sociale) + '</a>' +
       '<button type="button" class="lnk" data-reset><span class="ms" aria-hidden="true">restart_alt</span>Ripristina dati demo</button>' +
       '<button type="button" class="lnk" data-logout><span class="ms" aria-hidden="true">logout</span>Esci</button>' + LANG + '</div></div></aside>';
   }
