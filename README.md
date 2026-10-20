@@ -16,19 +16,24 @@ It copies the Figma file "ForValue Mock-up".
 
 These are placeholders until the real `utente` rows are in the database (see `DATA-NEEDED.md`).
 
-**Hidden shortcuts** (no password needed): tap the ForValue logo on the owner's phone screens to become the sawmill;
-click the logo in the sawmill's sidebar to become the buyer (and the buyer's logo goes back to the sawmill).
+**Changing user:** press **Esci** (phone: Altro; laptop: bottom of the sidebar), then log in with another account.
+The ForValue logo always takes you to your own home (or to the login page when nobody is logged in).
+
+**Who is logged in** is saved in the browser as login tokens, key `fv_tokens_v1`:
+`{"proprietario": false, "segheria": true, "acquirente": false}`. Logging in sets that user's token to true and the others to false,
+so only one user is active at a time. **Esci** and **Ripristina dati demo** set all of them to false.
+Every protected page reads these tokens: no token → login page; another role's page → back to your own home.
 
 ## The demo in 6 steps
 
 1. On the phone, log in as the owner → **+ Nuovo lotto** → fill the volume → **Salva lotto**. The QR appears.
-2. **Vedi storico del lotto** opens the public QR page (no login).
-3. Tap the logo → sawmill Dashboard → **Vendi** on FV-2027-00087 → **Pubblica offerta** (28 m³ at 310,00 €/m³), then **Pubblica scarti** (6 t at 95,00 €/t). They appear in **Le mie offerte**.
-4. Click the logo → buyer Marketplace → tick **PEFC** → *Tavole di abete rosso* (310,00 €) → quantity 10 → **Ordina ora**.
+2. **Vedi storico del lotto** opens the public QR page (no login needed). When you are logged in, its top bar shows **La mia home** instead of **Accedi**.
+3. **Esci**, log in as the sawmill → Dashboard → **Vendi** on FV-2027-00087 → **Pubblica offerta** (28 m³ at 310,00 €/m³), then **Pubblica scarti** (6 t at 95,00 €/t). They appear in **Le mie offerte**.
+4. **Esci**, log in as the buyer → Marketplace → tick **PEFC** → *Tavole di abete rosso* (310,00 €) → quantity 10 → **Ordina ora**.
 5. The confirmation shows 10 m³ · 3.100,00 €. **Vedi tracciabilità** shows the new step "Venduto ad Arredi Bianchi Srl".
 6. FV-2027-00087 is now **Venduto** everywhere (owner's list, sawmill's lists, QR page). Optional: as the sawmill, open **Ordini ricevuti** and press **Accetta** (or **Rifiuta**, which gives the quantity back).
 
-Before presenting, press **Ripristina dati demo** (phone: Altro; desktop: bottom of the sidebar) to start clean.
+Before presenting, press **Ripristina dati demo** (phone: Altro; desktop: bottom of the sidebar) to start clean. It also logs you out.
 
 ## Open it on your computer
 
@@ -74,7 +79,7 @@ Things that are **not** columns in the database are worked out the same way the 
 | `css/` | `base.css` (colours, badges, bars), `phone.css`, `desk.css`, `shell.css` (sidebar, tab bar, phone/laptop switch), fonts |
 | `js/data.js` | Seed data (same tables as the database) |
 | `js/store.js` | Every read and write to localStorage |
-| `js/auth.js` | Login, logout, role checks |
+| `js/auth.js` | Login tokens (`fv_tokens_v1`), login, logout, role checks |
 | `js/ui.js` | Italian number/date format, badges, menus per role, QR link |
 | `js/lib/qrcode.js` | QR generator (qrcode-generator, MIT), works offline |
 | `DATA-NEEDED.md` | Values still missing from the database |

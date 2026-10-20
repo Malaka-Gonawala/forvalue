@@ -28,7 +28,7 @@
 </main>
 <script>
   var ui = FV.ui, st = FV.store;
-  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: ui.hotspot() });
+  document.getElementById('bar').innerHTML = ui.phoneBar();
   ui.shell('altro', { title: 'Altro' });
   document.getElementById('who').textContent = S.azienda.ragione_sociale;
   var c = st.all('certificazione').find(function (x) { return x.id_azienda === S.azienda.id; });

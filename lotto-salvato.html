@@ -33,7 +33,7 @@
 
 <script>
   var ui = FV.ui, st = FV.store;
-  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: ui.hotspot() });
+  document.getElementById('bar').innerHTML = ui.phoneBar();
   ui.shell('', { title: 'Lotto salvato', crumb: '<a href="lotti.html">I miei lotti</a>' });
 
   var l = st.lottoByCode(ui.param('c') || '');

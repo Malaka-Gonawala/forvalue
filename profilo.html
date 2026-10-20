@@ -21,7 +21,7 @@
 <main class="over" style="margin-top:-40px;padding-bottom:16px"><div class="box lift" id="rows"></div></main>
 <script>
   var ui = FV.ui, st = FV.store, u = S.utente;
-  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: ui.hotspot() });
+  document.getElementById('bar').innerHTML = ui.phoneBar();
   ui.shell('profilo', { title: 'Profilo' });
   document.getElementById('name').textContent = S.azienda.ragione_sociale;
   var p = st.all('particella').find(function (x) { return x.id_azienda === S.azienda.id; });

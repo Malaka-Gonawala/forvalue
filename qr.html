@@ -45,7 +45,11 @@
 
 <script>
   var ui = FV.ui, st = FV.store;
-  document.getElementById('bar').innerHTML = ui.phoneBar({ logoHref: 'index.html', right: '<a class="link" href="index.html">Accedi</a>' });
+  // Logged out: "Accedi". Logged in: back to your own home (no login link)
+  var me = FV.auth.current();
+  document.getElementById('bar').innerHTML = ui.phoneBar({ right: me
+    ? '<a class="link" href="' + FV.auth.home(me.ruolo) + '"><span class="ms" aria-hidden="true" style="font-size:20px;margin-right:4px">arrow_back</span>La mia home</a>'
+    : '<a class="link" href="index.html">Accedi</a>' });
 
   var view = null;
   try {
@@ -63,7 +67,7 @@
     page.innerHTML = '<div class="hero nfh" style="padding:8px 16px 72px"><h1 class="h1">Lotto non trovato</h1></div>' +
       '<main class="over nfm" style="margin-top:-48px"><div class="box lift empty"><span class="ms" aria-hidden="true">qr_code_scanner</span>' +
       '<div style="color:var(--ink);font-weight:600">Questo QR non contiene un lotto valido.</div><div class="small">Prova a inquadrarlo di nuovo, oppure chiedi il codice del lotto al venditore.</div>' +
-      '<a class="btn pri" href="index.html">Vai a ForValue</a></div></main>';
+      '<a class="btn pri" href="' + ui.homeHref() + '">Vai a ForValue</a></div></main>';
   } else {
     document.title = view.code + ' · ForValue';
     var co2 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(view.vol * view.factor);

@@ -47,12 +47,12 @@
   var LANG = '<div class="lang" aria-label="Lingua (solo italiano in questa demo)"><span class="on">IT</span><span>EN</span></div>';
   function logoHTML() { return '<span class="logo"><span class="mk"><span class="ms" aria-hidden="true">forest</span></span>ForValue</span>'; }
 
-  // Top bar with logo. hotspot = role to switch to when the logo is tapped (hidden demo shortcut)
+  // Logo link: your own home when logged in, else the login page
+  function homeHref() { var s = FV.auth.current(); return s ? FV.auth.home(s.ruolo) : 'index.html'; }
+  // Top bar with logo
   function phoneBar(opts) {
     opts = opts || {};
-    var left = opts.hotspot
-      ? '<button class="logo-btn" type="button" data-switch="' + opts.hotspot + '" aria-label="ForValue">' + logoHTML() + '</button>'
-      : '<a class="logo-btn" href="' + (opts.logoHref || '#') + '" aria-label="ForValue">' + logoHTML() + '</a>';
+    var left = '<a class="logo-btn" href="' + homeHref() + '" aria-label="ForValue, home">' + logoHTML() + '</a>';
     return '<header class="bar">' + left + (opts.right || LANG) + '</header>';
   }
   // Top bar with ← and a title
@@ -77,8 +77,6 @@
       side: [['marketplace', 'marketplace.html', 'storefront', 'Marketplace'], ['circolarita', 'marketplace.html?tab=scarti', 'recycling', 'Circolarità'], ['carrello', 'carrello.html', 'shopping_cart', 'Carrello'], ['ordini', 'ordini.html', 'receipt_long', 'I miei ordini']]
     }
   };
-  // Hidden demo shortcut on the logo: owner → sawmill → buyer → sawmill
-  var HOT = { proprietario: 'segheria', segheria: 'acquirente', acquirente: 'segheria' };
 
   // Sawmill "Vendi": the first received batch that is sawn and not sold (no offer yet first), else Le mie offerte
   function vendiHref() {
@@ -109,7 +107,7 @@
   /* ---------- desktop sidebar ---------- */
   function sidebar(role, active) {
     var session = FV.auth.current();
-    return '<aside class="sb"><div class="sb-in"><button type="button" class="logo" data-switch="' + HOT[role] + '" aria-label="ForValue">' + logoHTML().replace(/^<span class="logo">|<\/span>$/g, '') + '</button>' +
+    return '<aside class="sb"><div class="sb-in"><a class="logo" href="' + FV.auth.home(role) + '" aria-label="ForValue, home">' + logoHTML().replace(/^<span class="logo">|<\/span>$/g, '') + '</a>' +
       '<nav aria-label="Menu">' + NAV[role].side.map(function (x) {
         return '<a href="' + navHref(x) + '"' + (x[0] === active ? ' aria-current="page"' : '') + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + badge(role, x[0]) + '</a>';
       }).join('') + '</nav>' +
@@ -135,7 +133,7 @@
       b.classList.add('has-tabs');
     }
     if (b.classList.contains('desk') && !document.getElementById('pbar')) {
-      var pb = document.createElement('div'); pb.id = 'pbar'; pb.innerHTML = phoneBar({ hotspot: HOT[role] });
+      var pb = document.createElement('div'); pb.id = 'pbar'; pb.innerHTML = phoneBar();
       slot.insertAdjacentElement('afterend', pb);
     }
     if (opts.title && !document.getElementById('dhead')) {
@@ -157,7 +155,6 @@
         detail: e.tipo === 'L' ? e.titolo.replace('Segato: ', '') : e.tipo === 'V' ? (e.raw.dett || '') : '' };
     });
   }
-  function hotspot() { var s = FV.auth.current(); return s ? HOT[s.ruolo] : null; }
 
   /* ---------- QR ---------- */
   function b64url(str) {
@@ -230,11 +227,10 @@
 
   // Global clicks: logo shortcut, logout, reset
   document.addEventListener('click', function (e) {
-    var sw = e.target.closest('[data-switch]'); if (sw) { FV.auth.switchTo(sw.getAttribute('data-switch')); return; }
     if (e.target.closest('[data-logout]')) { FV.auth.logout(); return; }
     if (e.target.closest('[data-reset]')) {
-      if (confirm('Ripristinare i dati demo? Lotti, offerte e ordini creati verranno cancellati.')) {
-        FV.store.reset(); var s = FV.auth.current(); location.href = s ? FV.auth.home(s.ruolo) : 'index.html';
+      if (confirm('Ripristinare i dati demo? Lotti, offerte e ordini creati verranno cancellati e dovrai accedere di nuovo.')) {
+        FV.store.reset(); FV.auth.clear(); location.href = 'index.html';   // reset also logs everyone out
       }
     }
   });
@@ -244,7 +240,7 @@
   window.FV.ui = {
     num: num, num1: num1, parseNum: parseNum, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
     certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
-    phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, hotspot: hotspot, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, logoHTML: logoHTML, LANG: LANG,
+    phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, homeHref: homeHref, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, logoHTML: logoHTML, LANG: LANG,
     qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
   };
 })();

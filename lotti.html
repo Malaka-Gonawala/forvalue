@@ -21,7 +21,7 @@
 <main class="over" style="padding-top:16px;padding-bottom:16px"><div id="list" style="display:flex;flex-direction:column;gap:12px"></div></main>
 <script>
   var ui = FV.ui, st = FV.store, filter = '';
-  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: ui.hotspot() });
+  document.getElementById('bar').innerHTML = ui.phoneBar();
   ui.shell('lotti', { title: 'I miei lotti' });
   document.getElementById('who').textContent = S.azienda.ragione_sociale;
   var lotti = st.lottiOfOwner(S.azienda.id).sort(function (a, b) { return a.codice_qr < b.codice_qr ? 1 : -1; });
