@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- P8 · Notifiche (Figma "P8 Notifiche"). Built from the history events of the owner's batches, newest first. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notifiche · ForValue</title>
+<meta name="theme-color" content="#2E6B3F">
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/phone.css">
+</head>
+<body class="phone">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['proprietario']);</script>
+<div id="bar"></div>
+<div class="hero" style="padding:4px 16px 56px"><div class="sub">I tuoi lotti</div></div>
+<main class="over" style="margin-top:-40px;padding-bottom:24px"><div class="box lift" id="list"></div></main>
+<script>
+  var ui = FV.ui, st = FV.store, today = st.todayISO();
+  document.getElementById('bar').innerHTML = ui.backBar('Notifiche', 'altro.html');
+  // Every step after the cut is news for the owner
+  var ev = [];
+  st.lottiOfOwner(S.azienda.id).forEach(function (l) {
+    st.storico(l.id).forEach(function (e) { if (e.tipo !== 'T') ev.push({ e: e, l: l }); });
+  });
+  // Newest first; a live sale (today's date) always on top
+  ev.sort(function (a, b) {
+    return ((b.e.data === today) - (a.e.data === today)) || (b.e.data > a.e.data ? 1 : b.e.data < a.e.data ? -1 : 0);
+  });
+  document.getElementById('list').innerHTML = ev.slice(0, 20).map(function (x, i) {
+    var e = x.e;
+    var title = e.tipo === 'L' ? 'Segato in tavole e scarti' : e.titolo;
+    var detail = e.tipo === 'L' ? e.titolo.replace('Segato: ', '') : e.tipo === 'V' ? (e.raw.dett || '') : '';
+    return '<a class="row" href="' + ui.esc(ui.qrUrl(x.l)) + '"><span class="tile"><span class="ms" aria-hidden="true">' + e.icon + '</span></span>' +
+      '<span class="grow"><b style="font-weight:600">' + ui.t(title) + '</b><div class="small muted">' + ui.v(x.l, 'codice_qr') + ' · ' + (detail ? ui.esc(detail) + ' · ' : '') + ui.date(e.data) + '</div></span>' +
+      (i === 0 ? '<span style="width:10px;height:10px;border-radius:99px;background:var(--au500);flex:none" role="img" aria-label="Nuova"></span>' : '') + '</a>';
+  }).join('') || '<div class="empty"><span class="ms" aria-hidden="true">notifications</span>Nessuna notifica.</div>';
+</script>
+</body>
+</html>

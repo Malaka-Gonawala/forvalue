@@ -1,0 +1,43 @@
+<!doctype html>
+<!-- P7 · Certificati (Figma "P7 Certificati"). The owner's certificate from the certificazione table. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Certificati · ForValue</title>
+<meta name="theme-color" content="#2E6B3F">
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/phone.css">
+</head>
+<body class="phone">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['proprietario']);</script>
+<div id="bar"></div>
+<div class="hero" style="padding:4px 16px 56px"><div class="sub" id="who"></div></div>
+<main class="over" style="margin-top:-40px;padding-bottom:24px"><div id="certs" style="display:flex;flex-direction:column;gap:16px"></div>
+  <div class="box" style="background:var(--au100);border-color:var(--au300);padding:16px;display:flex;gap:12px;align-items:center">
+    <span class="tile" style="background:var(--au500);color:var(--ink)"><span class="ms" aria-hidden="true">info</span></span>
+    <div class="small" style="color:var(--au800)" id="note"></div></div>
+</main>
+<script>
+  var ui = FV.ui, st = FV.store;
+  document.getElementById('bar').innerHTML = ui.backBar('Certificati', 'altro.html');
+  document.getElementById('who').textContent = S.azienda.ragione_sociale;
+  var NAME = { PEFC: 'Gestione forestale sostenibile', FSC: 'Forest Stewardship Council' };
+  var certs = st.all('certificazione').filter(function (c) { return c.id_azienda === S.azienda.id; });
+  var parcels = st.all('particella').filter(function (p) { return p.id_azienda === S.azienda.id && p.nome !== 'Posizione rilevata'; });
+  document.getElementById('certs').innerHTML = certs.map(function (c) {
+    var active = c.data_scadenza >= st.todayISO();
+    return '<div class="box lift"><div style="display:flex;gap:12px;align-items:center;padding:16px;border-bottom:1px solid var(--line)">' +
+      '<span class="tile" style="width:48px;height:48px;background:var(--g100);color:var(--g700)"><span class="ms" aria-hidden="true">verified</span></span>' +
+      '<div style="flex:1;min-width:0"><div class="h2">' + ui.esc(c.schema) + '</div><div class="small muted">' + (NAME[c.schema] || '') + '</div></div>' +
+      (active ? '<span class="pill p-cert"><span class="ms" aria-hidden="true">check_circle</span>Attivo</span>' : '<span class="pill p-st">Scaduto</span>') + '</div>' +
+      '<div class="dl"><div class="dr"><span class="k">Valido fino al</span><span class="v">' + ui.v(c, 'data_scadenza', c.data_scadenza.slice(0, 4)) + '</span></div>' +
+      '<div class="dr"><span class="k">Numero certificato</span><span class="v">' + ui.v(c, 'codice') + '</span></div>' +
+      '<div class="dr"><span class="k">Bosco</span><span class="v">' + parcels.map(function (p) { return ui.v(p, 'nome'); }).join(', ') + '</span></div></div></div>';
+  }).join('') || '<div class="box empty"><span class="ms" aria-hidden="true">workspace_premium</span>Nessun certificato.</div>';
+  document.getElementById('note').textContent = certs.length ? 'I lotti di questo bosco ricevono il badge ' + certs[0].schema + ' in automatico.' : 'Aggiungi un certificato per mostrare il badge sui lotti.';
+</script>
+</body>
+</html>

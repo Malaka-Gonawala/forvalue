@@ -1,0 +1,31 @@
+<!doctype html>
+<!-- P9 · Aiuto (Figma "P9 Aiuto"). FAQ that opens and closes. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aiuto · ForValue</title>
+<meta name="theme-color" content="#2E6B3F">
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/phone.css">
+</head>
+<body class="phone">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['proprietario']);</script>
+<div id="bar"></div>
+<div class="hero" style="padding:4px 16px 56px"><div class="sub">Domande frequenti</div></div>
+<main class="over" style="margin-top:-40px;padding-bottom:24px">
+  <div class="box lift">
+    <details class="faq" open><summary>Come registro un lotto?<span class="ms" aria-hidden="true">expand_more</span></summary><p>Tocca + Nuovo lotto, compila i campi e salva. Il QR si crea da solo.</p></details>
+    <details class="faq"><summary>Cosa vuol dire EUDR verificato?<span class="ms" aria-hidden="true">expand_more</span></summary><p>Il lotto ha la posizione GPS della particella e la data di taglio: sono i dati che il regolamento europeo EUDR chiede per provare che il legno non viene da zone disboscate.</p></details>
+    <details class="faq"><summary>A cosa serve il QR?<span class="ms" aria-hidden="true">expand_more</span></summary><p>Chi lo inquadra con il telefono vede la storia del lotto: taglio, trasporto, lavorazione e vendita. Non serve accedere.</p></details>
+    <details class="faq"><summary>Come cambio lingua?<span class="ms" aria-hidden="true">expand_more</span></summary><p>Il selettore IT · EN è in alto. In questa versione dimostrativa c'è solo l'italiano.</p></details>
+  </div>
+  <div class="box" style="background:var(--au100);border-color:var(--au300);padding:16px;display:flex;gap:12px;align-items:center">
+    <span class="tile" style="background:var(--au500);color:var(--ink)"><span class="ms" aria-hidden="true">support_agent</span></span>
+    <div><div style="font-weight:600">Serve altro aiuto?</div><div class="small"><span class="ph">[email supporto]</span></div></div></div>
+</main>
+<script>document.getElementById('bar').innerHTML = FV.ui.backBar('Aiuto', 'altro.html');</script>
+</body>
+</html>

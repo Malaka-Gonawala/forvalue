@@ -1,0 +1,37 @@
+<!doctype html>
+<!-- P6 · Profilo (Figma "P6 Profilo"). Company, contact person, email, parcel, GPS, certificate. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Profilo · ForValue</title>
+<meta name="theme-color" content="#2E6B3F">
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/phone.css">
+</head>
+<body class="phone has-tabs">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['proprietario']);</script>
+<div id="bar"></div>
+<div class="hero" style="padding:8px 16px 56px;flex-direction:row;align-items:center;gap:12px">
+  <div style="width:64px;height:64px;border-radius:999px;background:var(--au500);color:var(--g900);display:grid;place-items:center;flex:none"><span class="ms" style="font-size:36px" aria-hidden="true">forest</span></div>
+  <div><h1 class="h2" id="name"></h1><div style="color:var(--au300);font-weight:600">Proprietario forestale</div></div></div>
+<main class="over" style="margin-top:-40px;padding-bottom:16px"><div class="box lift" id="rows"></div></main>
+<div id="tabs"></div>
+<script>
+  var ui = FV.ui, st = FV.store, u = S.utente;
+  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: 'segheria' });
+  document.getElementById('tabs').innerHTML = ui.tabbar('profilo');
+  document.getElementById('name').textContent = S.azienda.ragione_sociale;
+  var p = st.all('particella').find(function (x) { return x.id_azienda === S.azienda.id; });
+  var c = st.all('certificazione').find(function (x) { return x.id_azienda === S.azienda.id; });
+  function row(icon, k, v) { return '<div class="row"><span class="tile"><span class="ms" aria-hidden="true">' + icon + '</span></span><div class="grow"><div class="small muted">' + k + '</div><div style="font-weight:600;overflow-wrap:anywhere">' + v + '</div></div></div>'; }
+  document.getElementById('rows').innerHTML =
+    row('person', 'Referente', ui.v(u, 'nome', u.nome + ' ' + u.cognome)) +
+    row('mail', 'Email', ui.v(u, 'email')) +
+    (p ? row('forest', 'Particella', ui.v(p, 'nome')) + row('my_location', 'GPS', ui.gps(p.lat, p.lon)) : '') +
+    (c ? row('verified', 'Certificato', ui.esc(c.schema) + ' · valido fino al ' + c.data_scadenza.slice(0, 4)) : '');
+</script>
+</body>
+</html>
