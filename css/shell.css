@@ -119,3 +119,6 @@
 @media (max-width: 400px) {
   .main #kpis[style] { grid-template-columns: minmax(0, 1fr) !important; }
 }
+
+/* Amounts like "1.550,00 €" never break across two lines */
+.rt td.num { white-space: nowrap; }
