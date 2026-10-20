@@ -89,13 +89,20 @@
   }
   function navHref(x) { return x[1] === '#vendi' ? vendiHref() : x[1]; }
   function cartCount() { var n = S().getCart().length; return n ? '<span class="count">' + n + '</span>' : ''; }
+  // Sawmill: new orders still to accept or refuse
+  function newOrders() {
+    var s = FV.auth.current(), st = S();
+    var n = st.all('ordine').filter(function (o) { var off = st.byId('offerta', o.id_offerta); return o.stato === 'inviato' && off && off.id_azienda === s.azienda.id; }).length;
+    return n ? '<span class="count">' + n + '</span>' : '';
+  }
+  function badge(role, key) { return key === 'carrello' ? cartCount() : role === 'segheria' && key === 'ordini' ? newOrders() : ''; }
 
   function tabbar(role, active) {
     return '<nav class="tabbar" aria-label="Menu">' + NAV[role].tabs.map(function (x, i) {
       var cur = x[0] === active ? ' aria-current="page"' : '';
-      var badge = x[0] === 'carrello' ? cartCount() : '';
-      if (i === 2) return '<a class="plus" href="' + navHref(x) + '"' + cur + '><i><span class="ms" aria-hidden="true">' + x[2] + '</span>' + badge + '</i>' + x[3] + '</a>';
-      return '<a href="' + navHref(x) + '"' + cur + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + '</a>';
+      var b = badge(role, x[0]);
+      if (i === 2) return '<a class="plus" href="' + navHref(x) + '"' + cur + '><i><span class="ms" aria-hidden="true">' + x[2] + '</span>' + b + '</i>' + x[3] + '</a>';
+      return '<a href="' + navHref(x) + '"' + cur + '><i class="ic"><span class="ms" aria-hidden="true">' + x[2] + '</span>' + b + '</i>' + x[3] + '</a>';
     }).join('') + '</nav>';
   }
 
@@ -104,7 +111,7 @@
     var session = FV.auth.current();
     return '<aside class="sb"><div class="sb-in"><button type="button" class="logo" data-switch="' + HOT[role] + '" aria-label="ForValue">' + logoHTML().replace(/^<span class="logo">|<\/span>$/g, '') + '</button>' +
       '<nav aria-label="Menu">' + NAV[role].side.map(function (x) {
-        return '<a href="' + navHref(x) + '"' + (x[0] === active ? ' aria-current="page"' : '') + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + (x[0] === 'carrello' ? cartCount() : '') + '</a>';
+        return '<a href="' + navHref(x) + '"' + (x[0] === active ? ' aria-current="page"' : '') + '><span class="ms" aria-hidden="true">' + x[2] + '</span>' + x[3] + badge(role, x[0]) + '</a>';
       }).join('') + '</nav>' +
       '<div class="foot"><div class="who"><span class="ms" aria-hidden="true">account_circle</span>' + esc(session.azienda.ragione_sociale) + '</div>' +
       '<button type="button" class="lnk" data-reset><span class="ms" aria-hidden="true">restart_alt</span>Ripristina dati demo</button>' +

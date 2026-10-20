@@ -30,7 +30,6 @@
 </main>
 <script>
   var ui = FV.ui, st = FV.store, me = S.azienda.id;
-  ui.shell('ordini');
   document.getElementById('crumb').innerHTML = ui.esc(S.azienda.ragione_sociale) + ' <span class="ms" aria-hidden="true">chevron_right</span> Ordini ricevuti';
   function ords() {
     return st.all('ordine').filter(function (o) { var off = st.byId('offerta', o.id_offerta); return off && off.id_azienda === me; })
@@ -38,6 +37,9 @@
   }
   var filter = '';
   function draw() {
+    ui.shell('ordini');   // refreshes the "new orders" count in the menu
+    var n = ords().filter(function (o) { return o.stato === 'inviato'; }).length;
+    document.querySelector('#tabs [data-f="inviato"]').textContent = 'Da gestire' + (n ? ' (' + n + ')' : '');
     var q = document.getElementById('q').value.trim().toLowerCase();
     document.querySelectorAll('#tabs [role=tab]').forEach(function (t) { t.setAttribute('aria-selected', t.getAttribute('data-f') === filter); });
     var rows = ords().filter(function (o) {

@@ -91,7 +91,7 @@ Each user sees only their own functions (the menus are in `js/ui.js`, `NAV`). Op
 | Sawmill | Home, Lotti, + Vendi, Ordini, Altro | Dashboard, Lotti ricevuti, Le mie offerte, Circolarità, Ordini ricevuti |
 | Buyer | Mercato, Scarti, Carrello, Ordini, Altro | Marketplace, Circolarità, Carrello, I miei ordini |
 
-Every page works on a phone and on a laptop: under 900 px wide you get the phone look (green bar and tab bar), from 900 px the laptop look (green sidebar). The QR page stays phone-shaped because people open it by scanning.
+Every page works on a phone and on a laptop: under 900 px wide you get the phone look (green bar and tab bar), from 900 px the laptop look (green sidebar). The public QR page has no sidebar: on a laptop it uses the full width with the data card next to the batch code.
 
 ## How the QR works
 

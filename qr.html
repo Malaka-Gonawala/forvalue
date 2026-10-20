@@ -11,8 +11,33 @@
 <link rel="icon" href="img/favicon.svg">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/phone.css">
+<style>
+  /* Desktop (≥ 900 px): full-width bar and green band, content in a 1180 px container; the data card
+     overlaps the band on the right; map | Storico in 2 columns below. Under 900 px: the phone layout. */
+  .qd { display: none; }
+  .qleft { display: contents; }   /* phone: map, Storico, CO₂ in one column, in that order */
+  .qco2 { order: 1; }
+  @media (min-width: 900px) {
+    body.phone.qr { max-width: none; margin: 0; font-size: 16px; line-height: 24px; }
+    body.qr .bar, body.qr .qh, body.qr .qm { --gut: max(32px, (100% - 1180px) / 2); padding-left: var(--gut) !important; padding-right: var(--gut) !important; }
+    body.qr .qh { padding-top: 24px !important; padding-bottom: 0 !important; }
+    body.qr .qh .h1 { font-size: 40px; line-height: 48px; }
+    body.qr .qin { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 32px; align-items: start; }
+    body.qr .qtxt { display: flex; flex-direction: column; gap: 10px; padding: 24px 0 40px; }
+    body.qr .qd { display: block; margin-bottom: -88px; position: relative; z-index: 1; color: var(--ink); }
+    body.qr .qp { display: none !important; }
+    body.qr .qm { margin-top: 0 !important; padding-top: 112px !important; padding-bottom: 48px !important; }
+    body.qr .qgrid { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px !important; align-items: start; }
+    body.qr .qleft { display: flex; flex-direction: column; gap: 24px; }
+    body.qr .qco2 { order: 0; }
+    body.qr .qmap { height: 320px !important; border-radius: 8px !important; }
+    body.qr .box, body.qr .qco2 { border-radius: 8px !important; }
+    body.qr .nfh { padding-left: max(32px, (100% - 1180px) / 2) !important; }
+    body.qr .nfm { max-width: 560px; margin: -48px auto 0 !important; }
+  }
+</style>
 </head>
-<body class="phone">
+<body class="phone qr">
 <script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
 
 <div id="bar"></div>
@@ -35,8 +60,8 @@
   var page = document.getElementById('page');
   if (!view) {
     document.title = 'Lotto non trovato · ForValue';
-    page.innerHTML = '<div class="hero" style="padding:8px 16px 72px"><h1 class="h1">Lotto non trovato</h1></div>' +
-      '<main class="over" style="margin-top:-48px"><div class="box lift empty"><span class="ms" aria-hidden="true">qr_code_scanner</span>' +
+    page.innerHTML = '<div class="hero nfh" style="padding:8px 16px 72px"><h1 class="h1">Lotto non trovato</h1></div>' +
+      '<main class="over nfm" style="margin-top:-48px"><div class="box lift empty"><span class="ms" aria-hidden="true">qr_code_scanner</span>' +
       '<div style="color:var(--ink);font-weight:600">Questo QR non contiene un lotto valido.</div><div class="small">Prova a inquadrarlo di nuovo, oppure chiedi il codice del lotto al venditore.</div>' +
       '<a class="btn pri" href="index.html">Vai a ForValue</a></div></main>';
   } else {
@@ -50,26 +75,29 @@
         '<span class="ph small" style="position:absolute;left:12px;bottom:12px">Mappa segnaposto</span>' +
         '<span class="small" style="position:absolute;right:12px;bottom:12px;background:#fff;border-radius:6px;padding:2px 8px;font-weight:600;color:var(--g700)">Apri mappa</span></a>'
       : '';
-    page.innerHTML =
-      '<div style="background:var(--g700);color:#fff;padding:4px 16px 92px;display:flex;flex-direction:column;gap:8px">' +
-        (view.eudr ? '<span class="pill p-eudr" style="align-self:flex-start;font-size:15px;line-height:20px;padding:6px 12px 6px 10px"><span class="ms" style="font-size:20px" aria-hidden="true">check_circle</span>EUDR verificato</span>'
-                   : '<span class="pill p-st" style="align-self:flex-start">EUDR in attesa</span>') +
-        '<h1 class="h1">' + ui.esc(view.code) + '</h1><div>' + ui.esc(view.species) + ' · ' + ui.num(view.vol) + ' m³</div></div>' +
-      '<main style="padding:0 16px 32px;margin-top:-72px;display:flex;flex-direction:column;gap:24px">' +
-        '<div class="dl box lift">' +
+    var card =
           '<div class="dr"><span class="k">Data di taglio</span><span class="v">' + ui.date(view.cut) + '</span></div>' +
           '<div class="dr"><span class="k">Particella</span><span class="v">' + ui.t(view.parcel) + '</span></div>' +
           (view.lat != null ? '<div class="dr"><span class="k">GPS</span><span class="v">' + ui.gps(view.lat, view.lon) + '</span></div>' : '') +
           '<div class="dr"><span class="k">Certificato</span><span class="v">' + (view.cert ? ui.esc(view.cert) + (view.certYear ? ' · valido fino al ' + view.certYear : '') : 'Nessuno') + '</span></div>' +
-          '<div class="dr"><span class="k">Proprietario</span><span class="v">' + ui.esc(view.owner) + '</span></div>' +
-        '</div>' + map +
-        '<h2 class="h2">Storico del lotto</h2>' +
+          '<div class="dr"><span class="k">Proprietario</span><span class="v">' + ui.esc(view.owner) + '</span></div>';
+    page.innerHTML =
+      '<div class="qh" style="background:var(--g700);color:#fff;padding:4px 16px 92px"><div class="qin"><div class="qtxt" style="display:flex;flex-direction:column;gap:8px">' +
+        (view.eudr ? '<span class="pill p-eudr" style="align-self:flex-start;font-size:15px;line-height:20px;padding:6px 12px 6px 10px"><span class="ms" style="font-size:20px" aria-hidden="true">check_circle</span>EUDR verificato</span>'
+                   : '<span class="pill p-st" style="align-self:flex-start">EUDR in attesa</span>') +
+        '<h1 class="h1">' + ui.esc(view.code) + '</h1><div>' + ui.esc(view.species) + ' · ' + ui.num(view.vol) + ' m³</div></div>' +
+        '<div class="dl box lift qd">' + card + '</div></div></div>' +
+      '<main class="qm" style="padding:0 16px 32px;margin-top:-72px">' +
+        '<div class="qgrid" style="display:flex;flex-direction:column;gap:24px">' +
+        '<div class="dl box lift qp">' + card + '</div>' +
+        '<div class="qleft">' + map.replace('class="box"', 'class="box qmap"') +
+        '<div class="qco2 qd-co2" style="background:var(--au100);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:center"><span class="ms" style="font-size:32px;color:var(--au800)" aria-hidden="true">eco</span>' +
+          '<div><div class="small" style="color:var(--au800);font-weight:600">CO₂ stoccata in questo lotto</div><div class="h1">' + co2 + ' t</div></div></div></div>' +
+        '<section style="display:flex;flex-direction:column;gap:24px"><h2 class="h2">Storico del lotto</h2>' +
         '<ol class="tl" style="list-style:none">' + view.steps.map(function (e) {
           return '<li class="st"><div class="d">' + ui.date(e.data) + '</div><div style="font-weight:600">' + ui.t(e.titolo) + '</div><div class="small muted">' + ui.t(e.sotto) + '</div></li>';
-        }).join('') + '</ol>' +
-        '<div style="background:var(--au100);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:center"><span class="ms" style="font-size:32px;color:var(--au800)" aria-hidden="true">eco</span>' +
-          '<div><div class="small" style="color:var(--au800);font-weight:600">CO₂ stoccata in questo lotto</div><div class="h1">' + co2 + ' t</div></div></div>' +
-      '</main>';
+        }).join('') + '</ol></section>' +
+      '</div></main>';
   }
 </script>
 </body>

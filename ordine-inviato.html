@@ -29,7 +29,7 @@
     var off = st.byId('offerta', o.id_offerta), l = st.lottoOfOfferta(off), seller = st.byId('azienda', off.id_azienda);
     return '<section class="box" style="padding:32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;box-shadow:0 8px 24px rgba(31,77,44,.14);border:0">' +
       (i === 0 ? '<div style="width:56px;height:56px;border-radius:999px;background:var(--g100);display:grid;place-items:center"><span class="ms" style="font-size:32px;color:var(--g700)" aria-hidden="true">check</span></div><h1 class="h1">Ordine inviato</h1>' : '') +
-      '<div class="muted">Ordine n. <span class="ph">' + o.id + '</span></div>' +
+      '<div class="muted">Ordine n. ' + ui.v(o, 'id') + '</div>' +
       '<div style="font-weight:600">' + ui.esc(off.titolo) + '</div>' +
       '<div class="num" style="font-weight:600">' + ui.num(o.quantita) + ' ' + st.unitOf(off) + ' · ' + ui.euro(o.prezzo_totale) + ' · ' + ui.esc(seller.ragione_sociale) + '</div>' +
       (o.data_consegna ? '<div class="small muted">Consegna richiesta: ' + ui.date(o.data_consegna) + '</div>' : '') +

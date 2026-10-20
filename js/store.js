@@ -32,14 +32,14 @@
 
   function lottoByCode(code) { return all('lotto').find(function (l) { return l.codice_qr === code; }) || null; }
 
-  // Next code: FV-2027-00088, FV-2027-00089, …
+  // Next code after the highest one in storage: FV-2027-00087 → FV-2027-00088, …
   function nextLottoCode() {
-    var max = 0;
+    var max = 0, year = String(new Date().getFullYear());
     all('lotto').forEach(function (l) {
       var m = /^FV-(\d{4})-(\d+)$/.exec(l.codice_qr);
-      if (m) max = Math.max(max, Number(m[2]));
+      if (m && Number(m[2]) >= max) { max = Number(m[2]); year = m[1]; }
     });
-    return 'FV-2027-' + String(max + 1).padStart(5, '0');
+    return 'FV-' + year + '-' + String(max + 1).padStart(5, '0');
   }
 
   // Products made from a batch (via lavorazione)
