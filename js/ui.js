@@ -221,7 +221,8 @@
 
   // Real photos go in img/ (jpg, under 200 KB). Until a file exists the green tile under it shows:
   // the <img> removes itself when the file is missing.
-  var PHOTO = { tavole: 'tavole.jpg', cippato: 'cippato.jpg', segatura: 'segatura.jpg', tronchi: 'tronchi.jpg', mappa: 'mappa.jpg' };
+  var PHOTO = { tavole: 'tavole.jpg', cippato: 'cippato.jpg', segatura: 'segatura.jpg', tronchi: 'tronchi.jpg', mappa: 'mappa-fiemme.jpg' };
+  var OSM = '<div class="osm">© OpenStreetMap contributors</div>';
   function photoKey(prodotto) { var w = prodotto ? prodotto.descrizione.split(' ')[0].toLowerCase() : ''; return PHOTO[w] ? w : 'tronchi'; }
   function photo(key, alt) { return '<img class="photo-x" src="img/' + PHOTO[key] + '" alt="' + esc(alt || '') + '" onerror="this.remove()">'; }
 
@@ -250,7 +251,7 @@
   window.FV.ui = {
     num: num, num1: num1, parseNum: parseNum, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
     certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
-    phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, homeHref: homeHref, ordCode: ordCode, photo: photo, photoKey: photoKey, PHOTO: PHOTO, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, logoHTML: logoHTML, LANG: LANG,
+    phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, homeHref: homeHref, ordCode: ordCode, photo: photo, OSM: OSM, photoKey: photoKey, PHOTO: PHOTO, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, logoHTML: logoHTML, LANG: LANG,
     qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
   };
 })();

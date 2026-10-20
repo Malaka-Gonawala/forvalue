@@ -57,8 +57,8 @@
           }).join('') + '</div></section>' +
       '</div>' +
       '<div style="display:flex;flex-direction:column;gap:20px">' +
-        '<div class="map box" style="height:180px;border:0">' +
-          '<span class="ms" aria-hidden="true">location_on</span>' + ui.photo('mappa', 'Mappa della particella') + (part.lat != null ? '<span class="coords">' + ui.gps(part.lat, part.lon) + '</span>' : '') + '<span class="tag">Mappa segnaposto</span></div>' +
+        '<div><div class="map box" style="height:180px;border:0">' +
+          '<span class="ms" aria-hidden="true">location_on</span>' + ui.photo('mappa', 'Mappa della particella') + (part.lat != null ? '<span class="coords">' + ui.gps(part.lat, part.lon) + '</span>' : '') + '</div>' + ui.OSM + '</div>' +
         '<div class="box" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px"><div style="width:180px;height:180px">' + ui.qrSvg(url) + '</div>' +
           '<a class="dbtn sec full" href="' + ui.esc(url) + '" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">qr_code_2</span>Apri pagina QR</a></div>' +
       '</div></div>';

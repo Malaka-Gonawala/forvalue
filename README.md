@@ -85,7 +85,7 @@ Things that are **not** columns in the database are worked out the same way the 
 | `js/auth.js` | Login tokens (`fv_tokens_v1`), login, logout, role checks |
 | `js/ui.js` | Italian number/date format, badges, menus per role, QR link |
 | `js/lib/qrcode.js` | QR generator (qrcode-generator, MIT), works offline |
-| `DATA-NEEDED.md` | Values still missing from the database |
+| `DATA-NEEDED.md` | What was filled in (nothing is missing now) |
 
 Each page starts with a comment saying which Figma screen it is.
 
@@ -126,4 +126,4 @@ The empty `.nojekyll` file tells GitHub to publish the files exactly as they are
 
 - The IT · EN switch is shown but only Italian exists.
 - Data lives in one browser: the phone and the laptop each have their own copy. The QR page is the exception, because its data is in the link.
-- Photos of new batches are made small and saved in the browser. Product photos and the map come from files in `img/` (names in `DATA-NEEDED.md`); until a file is there the green tile shows.
+- Photos of new batches are made small and saved in the browser. Product photos and the map come from files in `img/` (names in `DATA-NEEDED.md`). The map is an OpenStreetMap picture, so its credit line stays under it.
