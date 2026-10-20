@@ -76,7 +76,7 @@ img { max-width: 100%; display: block; }
 .num { font-variant-numeric: tabular-nums; }
 
 /* Badges: icon + text pill */
-.pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px 4px 8px; border-radius: 999px; font-size: 13px; line-height: 16px; font-weight: 600; white-space: nowrap; }
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px 4px 7px; border-radius: 999px; font-size: 13px; line-height: 16px; font-weight: 600; white-space: nowrap; }
 .pill .ms { font-size: 16px; }
 .p-cert { background: var(--g100); color: var(--g900); }
 .p-eudr { background: var(--au500); color: var(--ink); }
@@ -97,3 +97,4 @@ img { max-width: 100%; display: block; }
 /* Toast */
 .toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); background: var(--g900); color: #fff; padding: 12px 18px; border-radius: 10px; font-weight: 600; display: flex; gap: 8px; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 100; }
 .toast .ms { color: var(--au500); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

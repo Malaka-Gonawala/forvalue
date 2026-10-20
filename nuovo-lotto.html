@@ -1,0 +1,135 @@
+<!doctype html>
+<!-- P2 · Nuovo lotto (Figma "P2 New batch" + "P2-error"). 6 fields; Save is blocked when the volume
+     is empty or not a number. Saving creates the next code and opens P3. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nuovo lotto · ForValue</title>
+<meta name="theme-color" content="#2E6B3F">
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/phone.css">
+</head>
+<body class="phone has-sticky">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['proprietario']);</script>
+
+<div id="bar"></div>
+<div class="hero" style="padding-bottom:64px;padding-top:8px">
+  <button type="button" class="gpill" id="rileva" title="Rileva posizione"><span class="ms" aria-hidden="true">my_location</span><span id="gps"></span><span class="sr">· Rileva posizione</span></button>
+  <div class="small sub"><span id="gpsNote"></span><br><button type="button" id="rileva2" style="color:#fff;text-decoration:underline;font-weight:600;min-height:32px">Rileva posizione</button></div>
+</div>
+
+<form id="f" novalidate>
+<main class="over" style="margin-top:-48px;padding-bottom:16px">
+  <div class="box lift" style="padding:16px;display:flex;flex-direction:column;gap:16px">
+    <div class="field">
+      <label for="specie">Specie</label>
+      <div class="input"><select id="specie"></select><span class="ms" aria-hidden="true">expand_more</span></div>
+    </div>
+    <div class="field">
+      <label for="vol">Volume</label>
+      <div class="input" id="volBox"><input id="vol" type="text" inputmode="decimal" autocomplete="off" aria-describedby="volErr" placeholder="es. 45"><span class="unit">m³</span></div>
+      <div class="errtxt" id="volErr" hidden><span class="ms" aria-hidden="true">error</span><span>Inserisci il volume in m³ per salvare il lotto.</span></div>
+    </div>
+    <div class="field">
+      <label for="data">Data di taglio</label>
+      <div class="input"><input id="data" type="date" required></div>
+    </div>
+    <div class="field">
+      <span class="lbl" id="certLbl">Certificazione</span>
+      <div class="chips" role="group" aria-labelledby="certLbl">
+        <button type="button" class="chip" data-cert="PEFC">PEFC</button>
+        <button type="button" class="chip" data-cert="FSC">FSC</button>
+        <button type="button" class="chip" data-cert="">Nessuna</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="foto">Foto <span class="muted" style="font-weight:400">(facoltativa)</span></label>
+      <label class="photo" for="foto" id="photoBox"><span class="ms" aria-hidden="true">photo_camera</span>Scatta una foto</label>
+      <input id="foto" type="file" accept="image/*" capture="environment" hidden>
+    </div>
+  </div>
+</main>
+<div class="sticky"><button class="btn pri" type="submit">Salva lotto</button></div>
+</form>
+
+<script>
+  var ui = FV.ui, st = FV.store;
+  document.getElementById('bar').innerHTML = ui.backBar('Nuovo lotto', 'home.html');
+
+  // Fields
+  var sel = document.getElementById('specie');
+  sel.innerHTML = st.all('specie').map(function (s) { return '<option value="' + s.id + '">' + ui.esc(s.nome_comune) + '</option>'; }).join('');
+  document.getElementById('data').value = st.todayISO();
+
+  // Certification chips: default = the owner's own certificate
+  var myCert = st.all('certificazione').find(function (c) { return c.id_azienda === S.azienda.id; });
+  var cert = myCert ? myCert.schema : '';
+  function paintChips() { document.querySelectorAll('.chip').forEach(function (c) {
+    var on = c.getAttribute('data-cert') === cert;
+    c.setAttribute('aria-pressed', on); c.innerHTML = (on ? '<span class="ms" aria-hidden="true">check</span>' : '') + (c.getAttribute('data-cert') || 'Nessuna');
+  }); }
+  document.querySelectorAll('.chip').forEach(function (c) { c.onclick = function () { cert = c.getAttribute('data-cert'); paintChips(); }; });
+  paintChips();
+
+  // GPS: the owner's main parcel by default; the phone's position when allowed
+  var parcel = st.all('particella').find(function (p) { return p.id_azienda === S.azienda.id; });
+  var pos = null; // {lat, lon} from the phone
+  function paintGps() {
+    if (pos) { document.getElementById('gps').textContent = ui.gps(pos.lat, pos.lon); document.getElementById('gpsNote').textContent = 'Posizione rilevata dal telefono'; }
+    else { document.getElementById('gps').textContent = ui.gps(parcel.lat, parcel.lon); document.getElementById('gpsNote').textContent = 'Posizione rilevata · ' + parcel.nome; }
+  }
+  function detect(btn) {
+    if (!navigator.geolocation) { if (btn) ui.toast('GPS non disponibile: uso la particella ' + parcel.nome); return; }
+    if (btn) btn.disabled = true;
+    navigator.geolocation.getCurrentPosition(function (p) {
+      pos = { lat: Math.round(p.coords.latitude * 1e4) / 1e4, lon: Math.round(p.coords.longitude * 1e4) / 1e4 };
+      paintGps(); if (btn) { btn.disabled = false; ui.toast('Posizione rilevata'); }
+    }, function () { if (btn) { btn.disabled = false; ui.toast('GPS non consentito: uso la particella ' + parcel.nome); } }, { timeout: 8000, maximumAge: 60000 });
+  }
+  document.getElementById('rileva').onclick = function () { detect(this); };
+  document.getElementById('rileva2').onclick = function () { detect(this); };
+  // Use the phone silently only if the permission was already given
+  if (navigator.permissions) navigator.permissions.query({ name: 'geolocation' }).then(function (r) { if (r.state === 'granted') detect(); }).catch(function () {});
+  paintGps();
+
+  // Optional photo, made small so it fits in the browser storage
+  var foto = null;
+  document.getElementById('foto').onchange = function () {
+    var file = this.files[0]; if (!file) return;
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function () {
+      var w = 480, h = Math.round(img.height * w / img.width), c = document.createElement('canvas');
+      c.width = w; c.height = h; c.getContext('2d').drawImage(img, 0, 0, w, h);
+      foto = c.toDataURL('image/jpeg', 0.7); URL.revokeObjectURL(url);
+      document.getElementById('photoBox').innerHTML = '<img src="' + foto + '" alt="Foto del lotto">';
+    };
+    img.src = url;
+  };
+
+  // Volume check (P2-error)
+  var vol = document.getElementById('vol'), volBox = document.getElementById('volBox'), volErr = document.getElementById('volErr');
+  function readVolume() { var raw = String(vol.value).trim(); var n = Number(raw.indexOf(',') >= 0 ? raw.replace(/\./g, '').replace(',', '.') : raw); return vol.value.trim() && isFinite(n) && n > 0 ? n : null; }
+  function showErr(on) { volErr.hidden = !on; volBox.classList.toggle('err', on); if (on) vol.setAttribute('aria-invalid', 'true'); else vol.removeAttribute('aria-invalid'); }
+  vol.oninput = function () { if (!volErr.hidden && readVolume()) showErr(false); };
+
+  document.getElementById('f').onsubmit = function (e) {
+    e.preventDefault();
+    var v = readVolume();
+    if (!v) { showErr(true); vol.focus(); return; }
+    var idPart = parcel.id;
+    if (pos) {
+      // A real phone position becomes its own parcel, so the QR shows where the batch was cut
+      var p = { id_azienda: S.azienda.id, nome: 'Posizione rilevata', comune: '[comune]', superficie_ha: null, lat: pos.lat, lon: pos.lon };
+      p.id = st.all('particella').reduce(function (m, r) { return Math.max(m, r.id); }, 0) + 1;
+      st.all('particella').push(p); st.save(); idPart = p.id;
+    }
+    var l = st.addLotto({ id_particella: idPart, id_specie: Number(sel.value), id_azienda: S.azienda.id, volume_m3: v,
+      data_taglio: document.getElementById('data').value || st.todayISO(), certificato: cert || null, foto_url: foto });
+    location.href = 'lotto-salvato.html?c=' + encodeURIComponent(l.codice_qr);
+  };
+</script>
+</body>
+</html>

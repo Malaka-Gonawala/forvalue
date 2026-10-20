@@ -1,0 +1,52 @@
+<!doctype html>
+<!-- P3 · Lotto salvato (Figma "P3 Batch saved"). The real QR for the batch: it opens Q1 on any phone. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lotto salvato · ForValue</title>
+<meta name="theme-color" content="#2E6B3F">
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/phone.css">
+</head>
+<body class="phone has-tabs">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script><script src="js/lib/qrcode.js"></script>
+<script>var S = FV.auth.require(['proprietario']);</script>
+
+<div id="bar"></div>
+<div class="hero" style="padding-bottom:116px;padding-top:8px;flex-direction:row;align-items:center;gap:12px">
+  <div style="width:48px;height:48px;border-radius:999px;background:var(--au500);color:var(--ink);display:grid;place-items:center;flex:none"><span class="ms" style="font-size:32px" aria-hidden="true">check</span></div>
+  <div><h1 class="h1">Lotto salvato</h1><div style="color:var(--au300);font-weight:600" id="code"></div></div>
+</div>
+<main class="over" style="margin-top:-96px;padding-bottom:16px">
+  <div class="box lift" style="padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px">
+    <div class="qrbox" id="qr"></div>
+    <div style="text-align:center"><div style="font-weight:600" id="what"></div><div class="small muted" id="cut"></div></div>
+    <div class="pills" id="pills" style="justify-content:center"></div>
+    <div class="xs muted" style="text-align:center">Stampa questo QR sul lotto: chiunque lo inquadra vede la storia.</div>
+  </div>
+  <a class="btn pri" id="storico"><span class="ms" aria-hidden="true">history</span>Vedi storico del lotto</a>
+  <a class="btn sec" href="home.html">Torna alla home</a>
+</main>
+<div id="tabs"></div>
+
+<script>
+  var ui = FV.ui, st = FV.store;
+  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: 'segheria' });
+  document.getElementById('tabs').innerHTML = ui.tabbar('');
+
+  var l = st.lottoByCode(ui.param('c') || '');
+  if (!l) { location.replace('home.html'); }
+  else {
+    var url = ui.qrUrl(l);
+    document.getElementById('code').textContent = l.codice_qr;
+    document.getElementById('qr').innerHTML = ui.qrSvg(url);
+    document.getElementById('what').textContent = ui.specieName(l) + ' · ' + ui.num(l.volume_m3) + ' m³';
+    document.getElementById('cut').textContent = 'Taglio ' + ui.date(l.data_taglio);
+    document.getElementById('pills').innerHTML = ui.certPill(l.certificato) + ui.eudrPill(st.eudrOk(l));
+    document.getElementById('storico').href = url;
+  }
+</script>
+</body>
+</html>

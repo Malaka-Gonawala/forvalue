@@ -99,21 +99,50 @@
     for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     return new TextDecoder().decode(bytes);
   }
-  // Short keys keep the QR small: c code, s species, v volume, t cut date, p parcel,
-  // g [lat,lon], ce cert, cx cert expiry year, o owner, f CO₂ factor, h history [[date,title,sub]]
-  function qrPayload(lotto) {
+  // The QR link carries the batch inside the URL (qr.html?d=…), so it opens on any phone.
+  // Short keys keep the QR small: c code, s species, v m³, t cut date, p parcel, g [lat,lon],
+  // ce cert, cx cert expiry year, o owner (index in n), n company names, m their towns,
+  // f CO₂ factor (only if not 0,7), h steps [type, yymmdd, ...names as indexes, detail]
+  function lottoView(lotto) {
     var st = S(), part = st.byId('particella', lotto.id_particella), sp = st.byId('specie', lotto.id_specie), own = st.byId('azienda', lotto.id_azienda);
     var cert = lotto.certificato ? st.all('certificazione').find(function (c) { return c.id_azienda === own.id && c.schema === lotto.certificato; }) : null;
-    return {
-      c: lotto.codice_qr, s: sp.nome_comune, v: lotto.volume_m3, t: lotto.data_taglio, p: part.nome,
-      g: part.lat != null ? [part.lat, part.lon] : null, ce: lotto.certificato, cx: cert ? cert.data_scadenza.slice(0, 4) : null,
-      o: own.ragione_sociale, f: sp.fattore_co2,
-      h: st.storico(lotto.id).map(function (e) { return [e.data, e.titolo, e.sotto]; })
-    };
+    return { code: lotto.codice_qr, species: sp.nome_comune, vol: lotto.volume_m3, cut: lotto.data_taglio, parcel: part.nome,
+      lat: part.lat, lon: part.lon, cert: lotto.certificato, certYear: cert ? cert.data_scadenza.slice(0, 4) : null,
+      owner: own.ragione_sociale, factor: sp.fattore_co2, eudr: st.eudrOk(lotto), stato: st.statoLotto(lotto.id),
+      steps: st.storico(lotto.id) };
+  }
+  function qrPayload(lotto) {
+    var st = S(), raw = st.storicoRaw(lotto.id), view = lottoView(lotto), names = [view.owner];
+    var ix = function (n) { var i = names.indexOf(n); if (i < 0) { names.push(n); i = names.length - 1; } return i; };
+    var d6 = function (iso) { return iso.slice(2, 4) + iso.slice(5, 7) + iso.slice(8, 10); };
+    var h = raw.filter(function (e) { return e.tipo !== 'T'; }).map(function (e) {
+      if (e.tipo === 'P') return ['P', d6(e.data), ix(e.da), ix(e.a)];
+      if (e.tipo === 'L') return ['L', d6(e.data), ix(e.chi), e.dett];
+      return ['V', d6(e.data), ix(e.da), ix(e.a), e.dett || ''];
+    });
+    var o = { c: view.code, s: view.species, v: view.vol, t: d6(view.cut), p: view.parcel, n: names, m: names.map(st.comuneByName), h: h };
+    if (view.lat != null) o.g = [view.lat, view.lon];
+    if (view.cert) { o.ce = view.cert; o.cx = view.certYear; }
+    if (view.factor !== 0.7) o.f = view.factor;
+    return o;
+  }
+  // Rebuilds the same view from the link, with no storage at all
+  function viewFromPayload(o) {
+    var iso = function (d) { return '20' + d.slice(0, 2) + '-' + d.slice(2, 4) + '-' + d.slice(4, 6); };
+    var comune = function (n) { var i = o.n.indexOf(n); return (o.m && o.m[i]) || '[comune]'; };
+    var raw = [{ tipo: 'T', data: iso(o.t), chi: o.n[0], dove: o.p }].concat((o.h || []).map(function (x) {
+      if (x[0] === 'P') return { tipo: 'P', data: iso(x[1]), da: o.n[x[2]], a: o.n[x[3]] };
+      if (x[0] === 'L') return { tipo: 'L', data: iso(x[1]), chi: o.n[x[2]], dett: x[3] };
+      return { tipo: 'V', data: iso(x[1]), da: o.n[x[2]], a: o.n[x[3]], dett: x[4] };
+    }));
+    var sold = raw.some(function (e) { return e.tipo === 'V'; });
+    return { code: o.c, species: o.s, vol: o.v, cut: iso(o.t), parcel: o.p, lat: o.g ? o.g[0] : null, lon: o.g ? o.g[1] : null,
+      cert: o.ce || null, certYear: o.cx || null, owner: o.n[0], factor: o.f || 0.7, eudr: !!(o.g && o.t), stato: sold ? 'Venduto' : 'Disponibile',
+      steps: raw.map(function (e) { var t = S().stepText(e, comune); t.data = e.data; t.tipo = e.tipo; return t; }) };
   }
   function qrUrl(lotto) { return new URL('qr.html?d=' + b64url(JSON.stringify(qrPayload(lotto))), location.href).href; }
   function qrSvg(text) {
-    var q = qrcode(0, 'M'); q.addData(unescape(encodeURIComponent(text))); q.make();
+    var q = qrcode(0, 'L'); q.addData(unescape(encodeURIComponent(text))); q.make();
     return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true, alt: 'Codice QR del lotto' });
   }
 
@@ -144,6 +173,6 @@
     num: num, num1: num1, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
     certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
     phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, logoHTML: logoHTML, LANG: LANG,
-    qrPayload: qrPayload, qrUrl: qrUrl, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
+    qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
   };
 })();

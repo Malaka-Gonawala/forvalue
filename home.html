@@ -1,0 +1,47 @@
+<!doctype html>
+<!-- P1 · Owner home (Figma "P1 Owner home v5"). Big + Nuovo lotto, then the owner's latest batches.
+     Hidden demo shortcut: the ForValue logo switches to the sawmill (D1). -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Home · ForValue</title>
+<meta name="theme-color" content="#2E6B3F">
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/phone.css">
+</head>
+<body class="phone has-tabs">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+<script>var S = FV.auth.require(['proprietario']);</script>
+
+<div id="bar"></div>
+<div class="hero" style="padding:8px 16px 28px"></div>
+<main class="over" style="margin-top:-28px">
+  <a class="btn gold lift" href="nuovo-lotto.html"><span class="ms" aria-hidden="true">add</span>Nuovo lotto</a>
+  <h2 class="h2" style="margin-top:8px">I miei lotti</h2>
+  <div id="list" style="display:flex;flex-direction:column;gap:12px"></div>
+</main>
+<div id="tabs"></div>
+
+<script>
+  var ui = FV.ui, st = FV.store;
+  document.getElementById('bar').innerHTML = ui.phoneBar({ hotspot: 'segheria' });
+  document.getElementById('tabs').innerHTML = ui.tabbar('home');
+
+  // Newest code first; the home shows the 3 most recent
+  var lotti = st.lottiOfOwner(S.azienda.id).sort(function (a, b) { return a.codice_qr < b.codice_qr ? 1 : -1; }).slice(0, 3);
+  var list = document.getElementById('list');
+  if (!lotti.length) {
+    list.innerHTML = '<div class="box empty"><span class="ms" aria-hidden="true">forest</span><div>Non hai ancora lotti.</div><a class="btn pri" href="nuovo-lotto.html">Registra il primo lotto</a></div>';
+  } else {
+    list.innerHTML = lotti.map(function (l) {
+      return '<a class="box lcard" href="' + ui.esc(ui.qrUrl(l)) + '">' +
+        '<div class="top">' + ui.v(l, 'codice_qr') + '<span class="ms chev" aria-hidden="true">chevron_right</span></div>' +
+        '<div class="meta">' + ui.esc(ui.specieName(l)) + ' · ' + ui.num(l.volume_m3) + ' m³</div>' +
+        '<div class="pills">' + ui.badges(l) + '</div></a>';
+    }).join('');
+  }
+</script>
+</body>
+</html>

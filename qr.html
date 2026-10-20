@@ -1,0 +1,76 @@
+<!doctype html>
+<!-- Q1 · Pagina pubblica del QR (Figma "Q1 QR page"). No login. Reads the batch from the link
+     (qr.html?d=…), so it works on a phone that never opened the site. Fallback: qr.html?c=CODE
+     from this browser's storage. Otherwise "Lotto non trovato". -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Storico del lotto · ForValue</title>
+<meta name="theme-color" content="#2E6B3F">
+<link rel="icon" href="img/favicon.svg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/phone.css">
+</head>
+<body class="phone">
+<script src="js/data.js"></script><script src="js/store.js"></script><script src="js/auth.js"></script><script src="js/ui.js"></script>
+
+<div id="bar"></div>
+<div id="page"></div>
+
+<script>
+  var ui = FV.ui, st = FV.store;
+  document.getElementById('bar').innerHTML = ui.phoneBar({ logoHref: 'index.html', right: '<a class="link" href="index.html">Accedi</a>' });
+
+  var view = null;
+  try {
+    var d = ui.param('d');
+    if (d) view = ui.viewFromPayload(JSON.parse(ui.unb64url(d)));
+  } catch (e) { view = null; }
+  if (!view) {
+    var l = st.lottoByCode(ui.param('c') || '');
+    if (l) view = ui.lottoView(l);
+  }
+
+  var page = document.getElementById('page');
+  if (!view) {
+    document.title = 'Lotto non trovato · ForValue';
+    page.innerHTML = '<div class="hero" style="padding:8px 16px 72px"><h1 class="h1">Lotto non trovato</h1></div>' +
+      '<main class="over" style="margin-top:-48px"><div class="box lift empty"><span class="ms" aria-hidden="true">qr_code_scanner</span>' +
+      '<div style="color:var(--ink);font-weight:600">Questo QR non contiene un lotto valido.</div><div class="small">Prova a inquadrarlo di nuovo, oppure chiedi il codice del lotto al venditore.</div>' +
+      '<a class="btn pri" href="index.html">Vai a ForValue</a></div></main>';
+  } else {
+    document.title = view.code + ' · ForValue';
+    var co2 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(view.vol * view.factor);
+    var map = view.lat != null
+      ? '<a class="box" style="display:block;height:160px;border:0;border-radius:12px;background:var(--g100);position:relative;overflow:hidden" target="_blank" rel="noopener" ' +
+        'href="https://www.openstreetmap.org/?mlat=' + view.lat + '&mlon=' + view.lon + '#map=14/' + view.lat + '/' + view.lon + '" aria-label="Apri la mappa della particella">' +
+        '<svg viewBox="0 0 358 160" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true"><path d="M0 120 C80 90 120 140 200 100 S320 60 358 80" stroke="#fff" stroke-width="6" fill="none" opacity=".7"/><path d="M0 40 C60 60 140 20 220 50 S300 30 358 20" stroke="#C9DFCE" stroke-width="10" fill="none"/></svg>' +
+        '<span class="ms" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-80%);font-size:44px;color:var(--g900)" aria-hidden="true">location_on</span>' +
+        '<span class="ph small" style="position:absolute;left:12px;bottom:12px">Mappa segnaposto</span>' +
+        '<span class="small" style="position:absolute;right:12px;bottom:12px;background:#fff;border-radius:6px;padding:2px 8px;font-weight:600;color:var(--g700)">Apri mappa</span></a>'
+      : '';
+    page.innerHTML =
+      '<div style="background:var(--g700);color:#fff;padding:4px 16px 92px;display:flex;flex-direction:column;gap:8px">' +
+        (view.eudr ? '<span class="pill p-eudr" style="align-self:flex-start;font-size:15px;line-height:20px;padding:6px 12px 6px 10px"><span class="ms" style="font-size:20px" aria-hidden="true">check_circle</span>EUDR verificato</span>'
+                   : '<span class="pill p-st" style="align-self:flex-start">EUDR in attesa</span>') +
+        '<h1 class="h1">' + ui.esc(view.code) + '</h1><div>' + ui.esc(view.species) + ' · ' + ui.num(view.vol) + ' m³</div></div>' +
+      '<main style="padding:0 16px 32px;margin-top:-72px;display:flex;flex-direction:column;gap:24px">' +
+        '<div class="dl box lift">' +
+          '<div class="dr"><span class="k">Data di taglio</span><span class="v">' + ui.date(view.cut) + '</span></div>' +
+          '<div class="dr"><span class="k">Particella</span><span class="v">' + ui.t(view.parcel) + '</span></div>' +
+          (view.lat != null ? '<div class="dr"><span class="k">GPS</span><span class="v">' + ui.gps(view.lat, view.lon) + '</span></div>' : '') +
+          '<div class="dr"><span class="k">Certificato</span><span class="v">' + (view.cert ? ui.esc(view.cert) + (view.certYear ? ' · valido fino al ' + view.certYear : '') : 'Nessuno') + '</span></div>' +
+          '<div class="dr"><span class="k">Proprietario</span><span class="v">' + ui.esc(view.owner) + '</span></div>' +
+        '</div>' + map +
+        '<h2 class="h2">Storico del lotto</h2>' +
+        '<ol class="tl" style="list-style:none">' + view.steps.map(function (e) {
+          return '<li class="st"><div class="d">' + ui.date(e.data) + '</div><div style="font-weight:600">' + ui.t(e.titolo) + '</div><div class="small muted">' + ui.t(e.sotto) + '</div></li>';
+        }).join('') + '</ol>' +
+        '<div style="background:var(--au100);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:center"><span class="ms" style="font-size:32px;color:var(--au800)" aria-hidden="true">eco</span>' +
+          '<div><div class="small" style="color:var(--au800);font-weight:600">CO₂ stoccata in questo lotto</div><div class="h1">' + co2 + ' t</div></div></div>' +
+      '</main>';
+  }
+</script>
+</body>
+</html>

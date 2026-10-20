@@ -92,32 +92,39 @@
     return p ? p.data_ora.slice(0, 10) : null;
   }
 
-  // History (like demo query 1): cut, transfers, sawing, sales – oldest first
-  function storico(idLotto) {
+  // History (like demo query 1): cut, transfers, sawing, sales – oldest first.
+  // Raw steps use company names, so the same steps can travel inside the QR link.
+  function storicoRaw(idLotto) {
     var l = byId('lotto', idLotto);
     if (!l) return [];
-    var owner = byId('azienda', l.id_azienda);
-    var part = byId('particella', l.id_particella);
-    var ev = [{ data: l.data_taglio, tipo: 'taglio', titolo: 'Taglio', sotto: owner.ragione_sociale + ' · ' + part.nome, icon: 'forest', ph: !!part._ph && part._ph.indexOf('nome') >= 0 }];
+    var name = function (id) { return byId('azienda', id).ragione_sociale; };
+    var ev = [{ tipo: 'T', data: l.data_taglio, chi: name(l.id_azienda), dove: byId('particella', l.id_particella).nome }];
     where('passaggio', 'id_lotto', idLotto).forEach(function (p) {
-      var da = byId('azienda', p.id_azienda_da), a = byId('azienda', p.id_azienda_a);
+      var e = { tipo: p.id_ordine ? 'V' : 'P', data: p.data_ora.slice(0, 10), da: name(p.id_azienda_da), a: name(p.id_azienda_a) };
       if (p.id_ordine) {
         var o = byId('ordine', p.id_ordine), off = o && byId('offerta', o.id_offerta);
-        var u = off ? unitOf(off) : 'm³';
-        ev.push({ data: p.data_ora.slice(0, 10), tipo: 'vendita', titolo: 'Venduto a' + (/^[AEIOU]/i.test(a.ragione_sociale) ? 'd ' : ' ') + a.ragione_sociale,
-          sotto: da.ragione_sociale + ' · ' + comuneOf(da), dett: o ? fmtNum(o.quantita) + ' ' + u + ' di ' + (off ? shortName(off.titolo) : '') : '', icon: 'sell', phPlace: true });
-      } else {
-        ev.push({ data: p.data_ora.slice(0, 10), tipo: 'passaggio', titolo: 'Trasferito a ' + a.ragione_sociale, sotto: 'Da ' + da.ragione_sociale + ' · ' + comuneOf(a), icon: 'local_shipping', phPlace: true });
+        if (o && off) e.dett = fmtNum(o.quantita) + ' ' + unitOf(off) + ' di ' + shortName(off.titolo);
       }
+      ev.push(e);
     });
     where('lavorazione', 'id_lotto', idLotto).forEach(function (lav) {
-      var az = byId('azienda', lav.id_azienda);
       var prods = all('prodotto').filter(function (p) { return p.id_lavorazione === lav.id; });
-      var parts = prods.map(function (p) { return fmtNum(p.quantita) + ' ' + unitLabel(p.unita) + ' ' + shortName(p.descrizione); });
-      ev.push({ data: lav.data, tipo: 'lavorazione', titolo: 'Segato: ' + parts.join(' + '), sotto: az.ragione_sociale + ' · ' + comuneOf(az), icon: 'carpenter', phPlace: true });
+      ev.push({ tipo: 'L', data: lav.data, chi: name(lav.id_azienda), dett: prods.map(function (p) { return fmtNum(p.quantita) + ' ' + unitLabel(p.unita) + ' ' + shortName(p.descrizione); }).join(' + ') });
     });
     ev.sort(function (a, b) { return a.data < b.data ? -1 : a.data > b.data ? 1 : 0; });
     return ev;
+  }
+  // Turns a raw step into the text shown on screen. comune(name) gives a company's town.
+  function stepText(e, comune) {
+    var ad = function (n) { return (/^[aeiou]/i.test(n) ? 'ad ' : 'a ') + n; };
+    if (e.tipo === 'T') return { titolo: 'Taglio', sotto: e.chi + ' · ' + e.dove, icon: 'forest' };
+    if (e.tipo === 'P') return { titolo: 'Trasferito ' + ad(e.a), sotto: 'Da ' + e.da + ' · ' + comune(e.a), icon: 'local_shipping' };
+    if (e.tipo === 'L') return { titolo: 'Segato: ' + e.dett, sotto: e.chi + ' · ' + comune(e.chi), icon: 'carpenter' };
+    return { titolo: 'Venduto ' + ad(e.a), sotto: (e.dett ? e.dett + ' · ' : '') + e.da + ' · ' + comune(e.da), icon: 'sell' };
+  }
+  function comuneByName(n) { var a = all('azienda').find(function (x) { return x.ragione_sociale === n; }); return a ? a.comune : '[comune]'; }
+  function storico(idLotto) {
+    return storicoRaw(idLotto).map(function (e) { var t = stepText(e, comuneByName); t.data = e.data; t.tipo = e.tipo; t.raw = e; return t; });
   }
 
   function comuneOf(az) { return az.comune; }
@@ -183,7 +190,7 @@
   window.FV.store = {
     all: all, byId: byId, where: where, save: function () { save(db); }, reset: reset,
     lottoByCode: lottoByCode, nextLottoCode: nextLottoCode, prodottiOfLotto: prodottiOfLotto, offerteOfLotto: offerteOfLotto,
-    ordiniOfLotto: ordiniOfLotto, lottoOfOfferta: lottoOfOfferta, statoLotto: statoLotto, eudrOk: eudrOk, holderOf: holderOf,
+    ordiniOfLotto: ordiniOfLotto, storicoRaw: storicoRaw, stepText: stepText, comuneByName: comuneByName, lottoOfOfferta: lottoOfOfferta, statoLotto: statoLotto, eudrOk: eudrOk, holderOf: holderOf,
     lottiOfOwner: lottiOfOwner, lottiOfSawmill: lottiOfSawmill, transferDate: transferDate, storico: storico, unitOf: unitOf, unitLabel: unitLabel,
     addLotto: addLotto, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
     getCart: getCart, setCart: setCart
