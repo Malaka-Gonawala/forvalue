@@ -48,7 +48,7 @@
     document.getElementById('cut').textContent = 'Taglio ' + ui.date(l.data_taglio);
     document.getElementById('pills').innerHTML = ui.certPill(l.certificato) + ui.eudrPill(st.eudrOk(l));
     document.getElementById('storico').href = url;
-    document.getElementById('trk').innerHTML = ui.tracker(st.trasporto(l));
+    document.getElementById('trk').innerHTML = ui.tracker(ui.tripNow(st.viaggi(l)));
   }
 </script>
 </body>

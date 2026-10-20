@@ -43,58 +43,78 @@
   function mmss(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function hhmm(ms) { var d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
   function townOf(c) { return String(c || '').replace(/\s*\([A-Z]{2}\)$/, ''); }
-  var TRK_KM = 18;
-  // Route on img/mappa-fiemme.jpg (1504×1046 px): Cavalese → SS48 → Piera di Tesero → towards Ziano. The SVG shows the
-  // image and the route in the same coordinates (slice = like background cover), so they always line up.
-  var TRK_D = 'M765 512 C 820 518, 880 514, 935 500 S 975 472, 1010 470 S 1150 466, 1190 476 S 1215 500, 1250 512 S 1340 534, 1392 540';
-  var TRK_VB = [602, 241, 902, 571];
-  function trkFrac(t) { return t.arrivato || Date.now() >= t.arrivo ? 1 : Math.min(1, Math.max(0, (Date.now() - t.ts) / (t.arrivo - t.ts))); }
-  // Compact variant for list rows: "In viaggio 0:38" + thin bar. href → links to the QR page (Q1)
-  function travelPill(lotto, href) {
-    var t = S().trasporto(lotto);
-    if (!t || t.arrivato) return '';
+  // Routes on img/mappa-fiemme.jpg (1504×1046 px). The SVG shows the image and the route in the same coordinates,
+  // so they always line up; trkLayout() zooms the view onto the route for the size of the card.
+  var ROUTES = {
+    bosco: 'M765 512 C 820 518, 880 514, 935 500 S 975 472, 1010 470 S 1150 466, 1190 476 S 1215 500, 1250 512 S 1340 534, 1392 540',   // Cavalese → SS48 → Tesero
+    ovest: 'M1392 540 C 1400 565, 1395 598, 1360 606 S 1260 608, 1215 610 S 1000 632, 900 645 S 760 690, 700 712 S 600 728, 540 735',   // SP232 down the valley, towards Trento / A22
+    est: 'M1392 540 C 1420 543, 1445 546, 1470 552 S 1495 560, 1500 562'   // towards Predazzo / Belluno
+  };
+  function routeOf(t) { return t.tipo !== 'V' ? 'bosco' : /\((BL|BZ)\)$/.test(t.a.comune || '') ? 'est' : 'ovest'; }
+  function trkFrac(t) { return t.arrivato || !t.ts || Date.now() >= t.arrivo ? 1 : Math.min(1, Math.max(0, (Date.now() - t.ts) / (t.arrivo - t.ts))); }
+  // The trip a page shows: the one on its way, else the last one
+  function tripNow(list) { list = list || []; return list.filter(function (t) { return !t.arrivato; })[0] || list[list.length - 1] || null; }
+  function pillHtml(t, href) {
+    if (!t || t.arrivato || !t.ts) return '';
     var p = trkFrac(t) * 100, tag = href ? 'a' : 'span';
     return '<' + tag + ' class="trkp"' + (href ? ' href="' + esc(href) + '"' : '') + ' data-trk-arr="' + t.arrivo + '" data-trk-dur="' + (t.arrivo - t.ts) + '">' +
       '<span class="pill p-trk"><span class="ms" aria-hidden="true">local_shipping</span><span>In viaggio</span> <span data-trk-left>' + mmss(t.arrivo - Date.now()) + '</span></span>' +
       '<span class="trkp-bar" aria-hidden="true"><i data-trk-fill style="width:' + p.toFixed(1) + '%"></i></span></' + tag + '>';
   }
-  // Map card: forest → sawmill on the Val di Fiemme map. t = { ts, arrivo, arrivato, da, a } (comuni)
+  // Compact variant for list rows: "In viaggio 0:38" + thin bar. href → links to the QR page (Q1)
+  function travelPill(lotto, href) { return pillHtml(S().trasporto(lotto), href); }
+  function orderTravelPill(ordine, href) { return pillHtml(S().viaggioOrdine(ordine), href); }
+  // Map card. t = a trip from store.viaggi(): { tipo P|V, ts, arrivo, arrivato, data, da: {nome, comune}, a: {nome, comune}, km }
   function tracker(t) {
     if (!t) return '';
-    var dur = t.arrivo - t.ts, done = t.arrivato || Date.now() >= t.arrivo, name = sawmillName();
-    var f = trkFrac(t), km = Math.round(TRK_KM * f);
-    var path = function (attrs) { return '<path d="' + TRK_D + '" pathLength="100" fill="none" stroke-linecap="round" ' + attrs + '/>'; };
-    return '<section class="trkm card' + (done ? ' done' : '') + '" role="group" aria-label="Viaggio del lotto verso la segheria"' + (done ? '' : ' data-trk-arr="' + t.arrivo + '" data-trk-dur="' + dur + '"') + '>' +
+    var live = !!t.ts, done = t.arrivato || !live || Date.now() >= t.arrivo, ord = t.tipo === 'V';
+    var f = trkFrac(t), K = t.km || 18, d = ROUTES[routeOf(t)];
+    var ad = function (n) { return (/^[aeiou]/i.test(n) ? 'ad ' : 'a ') + n; };
+    var path = function (attrs) { return '<path d="' + d + '" pathLength="100" fill="none" stroke-linecap="round" ' + attrs + '/>'; };
+    var dot = function (cls) { return '<circle class="' + cls + '" r="9" fill="#2E6B3F" stroke="#fff" stroke-width="4.5"/>'; };
+    var chip = function (cls, at, icon, label) { return '<span class="trkm-chip ' + cls + '" data-at="' + at + '"><span class="ms" aria-hidden="true">' + icon + '</span><span>' + esc(label) + '</span></span>'; };
+    var title = done ? (ord ? 'Consegnato ' + ad(t.a.nome) : 'Arrivato in ' + t.a.nome) : 'In viaggio';
+    return '<section class="trkm card' + (done ? ' done' : '') + '" role="group" aria-label="' + (ord ? 'Viaggio verso l\'acquirente' : 'Viaggio del lotto verso la segheria') + '"' +
+        (done ? '' : ' data-trk-arr="' + t.arrivo + '" data-trk-dur="' + (t.arrivo - t.ts) + '" data-trk-km-tot="' + K + '"') + '>' +
       '<div class="trkm-map">' +
-        '<svg viewBox="' + TRK_VB.join(' ') + '" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+        '<svg viewBox="0 0 1504 1046" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
           '<image href="img/mappa-fiemme.jpg" x="0" y="0" width="1504" height="1046"/>' + path('stroke="#fff" stroke-width="10.5" opacity=".9"') +
           path('stroke="#1F4D2C" stroke-width="4.5" stroke-dasharray="0.4 1.4"') +
-          path('class="trkm-done" stroke="#DBB743" stroke-width="7.5" stroke-dasharray="' + (f * 100).toFixed(2) + ' 100"') +
-          '<circle cx="765" cy="512" r="9" fill="#2E6B3F" stroke="#fff" stroke-width="4.5"/><circle cx="1392" cy="540" r="9" fill="#2E6B3F" stroke="#fff" stroke-width="4.5"/></svg>' +
-        '<span class="trkm-chip trkm-from" data-at="0"><span class="ms" aria-hidden="true">forest</span><span>Bosco Val Fiemme</span></span>' +
-        '<span class="trkm-chip trkm-to" data-at="1"><span class="ms" aria-hidden="true">carpenter</span><span>' + esc(name) + '</span></span>' +
+          path('class="trkm-done" stroke="#DBB743" stroke-width="7.5" stroke-dasharray="' + (f * 100).toFixed(2) + ' 100"') + dot('trkm-d0') + dot('trkm-d1') + '</svg>' +
+        (ord ? chip('trkm-from', 0, 'carpenter', t.da.nome) + chip('trkm-to', 1, 'storefront', t.a.nome)
+             : chip('trkm-from', 0, 'forest', 'Bosco Val Fiemme') + chip('trkm-to', 1, 'carpenter', t.a.nome || sawmillName())) +
         '<span class="trkm-truck" data-f="' + f.toFixed(4) + '"><span class="ms" aria-hidden="true">' + (done ? 'check' : 'local_shipping') + '</span></span>' +
-        '<div class="trkm-info"><div><b>' + (done ? 'Arrivato in ' + esc(name) : 'In viaggio') + '</b><span>' + esc(townOf(t.da) || 'Cavalese') + ' → ' + esc(townOf(t.a) || 'Ziano di Fiemme') + '</span></div>' +
+        '<div class="trkm-info"><div><b>' + esc(title) + '</b><span>' + esc(townOf(t.da.comune)) + ' → ' + esc(townOf(t.a.comune)) + '</span></div>' +
           (done ? '<div class="trkm-cd"><span class="ms" aria-hidden="true">check_circle</span></div>'
                 : '<div class="trkm-cd tnum"><b data-trk-left>' + mmss(t.arrivo - Date.now()) + '</b><span>all\'arrivo</span></div>') + '</div></div>' +
       '<div class="trkm-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(f * 100) + '" aria-label="Viaggio"><i data-trk-fill style="width:' + (f * 100).toFixed(1) + '%"></i></div>' +
-      '<div class="trkm-legend tnum"><span><b data-trk-km>' + km + '</b> di ' + TRK_KM + ' km</span><span>Taglio <b>fatto</b></span><span>Partito <b>' + hhmm(t.ts) + '</b></span>' +
-        (done ? '<span>Arrivato <b>' + hhmm(t.arrivo) + '</b></span>' : '') + '<span>© OpenStreetMap contributors</span></div></section>';
+      '<div class="trkm-legend tnum"><span><b data-trk-km>' + Math.round(K * f) + '</b> di ' + K + ' km</span>' + (ord ? '' : '<span>Taglio <b>fatto</b></span>') +
+        (live ? '<span>Partito <b>' + hhmm(t.ts) + '</b></span>' : '') +
+        (done ? '<span>' + (ord ? 'Consegnato' : 'Arrivato') + ' <b>' + (live ? hhmm(t.arrivo) : date(t.data)) + '</b></span>' : '') + '<span>© OpenStreetMap contributors</span></div></section>';
   }
-  // Places the chips and the truck on the route: SVG user units → px inside the map (same maths as preserveAspectRatio slice)
+  // Zooms each map onto its route (with room for the labels and the bottom text), then puts the end dots, labels
+  // and truck on the route: SVG user units → px inside the card.
   function trkLayout() {
     document.querySelectorAll('.trkm-map').forEach(function (m) {
-      var W = m.clientWidth, H = m.clientHeight, path = m.querySelector('.trkm-done');
+      var W = m.clientWidth, H = m.clientHeight, path = m.querySelector('.trkm-done'), svg = m.querySelector('svg');
       if (!W || !path) return;
-      var k = Math.max(W / TRK_VB[2], H / TRK_VB[3]), ox = (W - TRK_VB[2] * k) / 2, oy = (H - TRK_VB[3] * k) / 2, L = path.getTotalLength();
-      var at = function (f) { var p = path.getPointAtLength(L * Math.min(1, Math.max(0, f))); return [(p.x - TRK_VB[0]) * k + ox, (p.y - TRK_VB[1]) * k + oy]; };
+      var bb = path.getBBox(), T = 64, B = 96, X = 40;
+      var k = Math.min((W - 2 * X) / Math.max(bb.width, 1), (H - T - B) / Math.max(bb.height, 1));
+      k = Math.min(2.2, Math.max(k, W / 1504, H / 1046));
+      var vw = W / k, vh = H / k, clamp = function (v, lo, hi) { return Math.min(Math.max(v, lo), Math.max(lo, hi)); };
+      var vx = clamp(bb.x + bb.width / 2 - vw / 2, 0, 1504 - vw), vy = clamp(bb.y + bb.height / 2 + (B - T) / 2 / k - vh / 2, 0, 1046 - vh);
+      svg.setAttribute('viewBox', [vx, vy, vw, vh].map(function (n) { return n.toFixed(1); }).join(' '));
+      var L = path.getTotalLength(), pt = function (f) { return path.getPointAtLength(L * Math.min(1, Math.max(0, f))); };
+      [0, 1].forEach(function (i) { var c = m.querySelector('.trkm-d' + i), p = pt(i); if (c) { c.setAttribute('cx', p.x.toFixed(1)); c.setAttribute('cy', p.y.toFixed(1)); } });
       m.querySelectorAll('[data-at],[data-f]').forEach(function (el) {
-        var f = el.hasAttribute('data-at') ? Number(el.getAttribute('data-at')) : Number(el.getAttribute('data-f')), p = at(f);
-        el.style.left = p[0].toFixed(1) + 'px'; el.style.top = p[1].toFixed(1) + 'px';
+        var p = pt(Number(el.getAttribute(el.hasAttribute('data-at') ? 'data-at' : 'data-f'))), x = (p.x - vx) * k, y = (p.y - vy) * k;
+        el.style.left = x.toFixed(1) + 'px'; el.style.top = y.toFixed(1) + 'px';
         if (el.hasAttribute('data-at')) {   // keep the label inside the map on narrow screens
-          var r = el.getBoundingClientRect(), mr = m.getBoundingClientRect(), dx = 0;
+          var r = el.getBoundingClientRect(), mr = m.getBoundingClientRect(), dx = 0, dy = 0;
           if (r.right > mr.right - 8) dx = mr.right - 8 - r.right; else if (r.left < mr.left + 8) dx = mr.left + 8 - r.left;
-          if (dx) el.style.left = (p[0] + dx).toFixed(1) + 'px';
+          if (r.top < mr.top + 8) dy = mr.top + 8 - r.top;
+          if (dx) el.style.left = (x + dx).toFixed(1) + 'px';
+          if (dy) el.style.top = (y + dy).toFixed(1) + 'px';
         }
       });
       m.classList.add('ready');
@@ -117,7 +137,7 @@
         el.querySelectorAll('[data-trk-left]').forEach(function (x) { x.textContent = mmss(left); });
         el.querySelectorAll('[data-trk-fill]').forEach(function (x) { x.style.width = (f * 100).toFixed(1) + '%'; });
         var bar = el.querySelector('[role=progressbar]'); if (bar) bar.setAttribute('aria-valuenow', Math.round(f * 100));
-        var km = el.querySelector('[data-trk-km]'); if (km) km.textContent = Math.round(TRK_KM * f);
+        var km = el.querySelector('[data-trk-km]'); if (km) km.textContent = Math.round(Number(el.getAttribute('data-trk-km-tot') || 18) * f);
         var done = el.querySelector('.trkm-done'); if (done) done.setAttribute('stroke-dasharray', (f * 100).toFixed(2) + ' 100');
         var tr = el.querySelector('.trkm-truck'); if (tr) tr.setAttribute('data-f', f.toFixed(4));
         if (left <= 0) hit = true;
@@ -246,7 +266,12 @@
   // Owner news (P8 Notifiche, owner desktop Home): every step after the cut, newest first
   function ownerNews(idAzienda) {
     var st = S(), ev = [], rank = { P: 1, L: 2, V: 3 };
-    st.lottiOfOwner(idAzienda).forEach(function (l) { st.storico(l.id).forEach(function (e) { if (e.tipo !== 'T') ev.push({ e: e, l: l }); }); });
+    var ad = function (n) { return (/^[aeiou]/i.test(n) ? 'ad ' : 'a ') + n; };
+    rank.C = 4;
+    st.lottiOfOwner(idAzienda).forEach(function (l) {
+      st.storico(l.id).forEach(function (e) { if (e.tipo !== 'T') ev.push({ e: e, l: l }); });
+      st.viaggi(l).forEach(function (t) { if (t.tipo === 'V' && t.arrivato) ev.push({ e: { tipo: 'C', data: t.data, icon: 'local_shipping', titolo: 'Consegnato ' + ad(t.a.nome) }, l: l }); });
+    });
     ev.sort(function (a, b) { return (b.e.data > a.e.data ? 1 : b.e.data < a.e.data ? -1 : 0) || rank[b.e.tipo] - rank[a.e.tipo]; });
     return ev.map(function (x) {
       var e = x.e;
@@ -254,6 +279,39 @@
         detail: e.tipo === 'L' ? e.titolo.replace(/^(Segato|Tronchi selezionati): /, '') : e.tipo === 'V' ? (e.raw.dett || '') : '' };
     });
   }
+
+  // Notification dots: which news this company has opened (fv_read_v1 = { idAzienda: [keys] }). The first time,
+  // everything but the newest item counts as already read, like the mock-up.
+  var READ = 'fv_read_v1';
+  function newsKey(x) { return x.l.id + '|' + x.title + '|' + x.data; }
+  function readAll() { try { return JSON.parse(localStorage.getItem(READ)) || {}; } catch (e) { return {}; } }
+  function newsUnread(idAzienda, list) {
+    var all = readAll(), seen = all[idAzienda];
+    if (!seen) { seen = all[idAzienda] = list.slice(1).map(newsKey); try { localStorage.setItem(READ, JSON.stringify(all)); } catch (e) {} }
+    return function (x) { return seen.indexOf(newsKey(x)) < 0; };
+  }
+  function newsRead(idAzienda, key) {
+    var all = readAll(); all[idAzienda] = all[idAzienda] || [];
+    if (all[idAzienda].indexOf(key) < 0) all[idAzienda].push(key);
+    try { localStorage.setItem(READ, JSON.stringify(all)); } catch (e) {}
+  }
+  // A news row: the gold dot goes away once it is opened
+  function newsRow(idAzienda, x, unread, compact) {
+    return '<a class="row" data-nk="' + esc(newsKey(x)) + '" href="' + esc(qrUrl(x.l)) + '"' + (compact ? ' style="min-height:0;padding:10px 16px"' : '') + '>' +
+      '<span class="tile"' + (compact ? ' style="width:32px;height:32px;border-radius:8px"' : '') + '><span class="ms"' + (compact ? ' style="font-size:20px"' : '') + ' aria-hidden="true">' + x.icon + '</span></span>' +
+      '<span class="grow"><b style="font-weight:600' + (compact ? ';font-size:14px' : '') + '">' + t(x.title) + '</b><div class="' + (compact ? 'xs' : 'small') + ' muted">' + v(x.l, 'codice_qr') + ' · ' + (x.detail && !compact ? esc(x.detail) + ' · ' : '') + date(x.data) + '</div></span>' +
+      (unread ? '<span class="ndot" role="img" aria-label="Nuova"></span>' : '') + '</a>';
+  }
+  function newsList(idAzienda, n, compact) {
+    var list = ownerNews(idAzienda), isNew = newsUnread(idAzienda, list);
+    return list.slice(0, n).map(function (x) { return newsRow(idAzienda, x, isNew(x), compact); }).join('');
+  }
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('[data-nk]'), u = FV.auth && FV.auth.current && FV.auth.current();
+    if (!a || !u || !u.azienda) return;
+    newsRead(u.azienda.id, a.getAttribute('data-nk'));
+    var d = a.querySelector('.ndot'); if (d) d.remove();
+  });
 
   /* ---------- QR ---------- */
   function b64url(str) {
@@ -277,7 +335,7 @@
     return { code: lotto.codice_qr, species: sp.nome_comune, vol: lotto.volume_m3, cut: lotto.data_taglio, parcel: part.nome,
       lat: part.lat, lon: part.lon, cert: lotto.certificato, certYear: cert ? cert.data_scadenza.slice(0, 4) : null,
       owner: own.ragione_sociale, factor: sp.fattore_co2, eudr: st.eudrOk(lotto), stato: st.statoLotto(lotto.id),
-      steps: st.storico(lotto.id), trasporto: st.trasporto(lotto) };
+      steps: st.storico(lotto.id), trasporto: st.trasporto(lotto), viaggi: st.viaggi(lotto) };
   }
   function qrPayload(lotto) {
     var st = S(), raw = st.storicoRaw(lotto.id), view = lottoView(lotto), names = [view.owner];
@@ -288,7 +346,13 @@
       if (e.tipo === 'L') return ['L', d6(e.data), ix(e.chi), e.dett];
       return ['V', d6(e.data), ix(e.da), ix(e.a), e.dett || ''];
     });
+    // Deliveries to buyers: [from, to, left ms, trip s] while live, or [from, to, delivered date] (sample data)
+    var j = st.viaggi(lotto).filter(function (t) { return t.tipo === 'V'; }).map(function (t) {
+      var ord = st.ordiniOfLotto(lotto.id).find(function (o) { return o.spedito_ts === t.ts && t.ts; });
+      return t.ts ? [ix(t.da.nome), ix(t.a.nome), t.ts, ord ? ord.trasporto_s || 60 : Math.round((t.arrivo - t.ts) / 1000)] : [ix(t.da.nome), ix(t.a.nome), d6(t.data)];
+    });
     var o = { c: view.code, s: view.species, v: view.vol, t: d6(view.cut), p: view.parcel, n: names, m: names.map(st.comuneByName), h: h };
+    if (j.length) o.j = j;
     if (view.lat != null) o.g = [view.lat, view.lon];
     if (view.cert) { o.ce = view.cert; o.cx = view.certYear; }
     if (view.factor !== 0.7) o.f = view.factor;
@@ -318,10 +382,26 @@
       var smAz = (window.FV_SEED.azienda || []).find(function (x) { return x.id === S().sawmillId(); });
       trasporto = { ts: k[0], arrivo: arr, arrivato: there, da: (o.m && o.m[0]) || '', a: smAz ? smAz.comune : '' };
     }
+    // Trips for the map card (same shape as store.viaggi)
+    var seedAz = function (n) { return (window.FV_SEED.azienda || []).find(function (x) { return x.ragione_sociale === n; }) || {}; };
+    var pl = function (n) { return { nome: n, comune: comune(n) !== '[comune]' ? comune(n) : (seedAz(n).comune || ''), km: seedAz(n).km_segheria || 0 }; };
+    var viaggi = [];
+    raw.forEach(function (e) {
+      if (e.tipo === 'P' && !trasporto) viaggi.push({ tipo: 'P', ts: null, arrivo: null, arrivato: true, data: e.data, da: pl(e.da), a: pl(e.a), km: 18 });
+    });
+    (o.j || []).forEach(function (x) {
+      var to = pl(o.n[x[1]]), from = pl(o.n[x[0]]);
+      if (x.length > 3) {
+        var end = x[2] + x[3] * 1000, d = new Date(end);
+        viaggi.push({ tipo: 'V', ts: x[2], arrivo: end, arrivato: Date.now() >= end, data: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'), da: from, a: to, km: to.km });
+      } else viaggi.push({ tipo: 'V', ts: null, arrivo: null, arrivato: true, data: iso(x[2]), da: from, a: to, km: to.km });
+    });
+    viaggi.sort(function (a, b) { return a.data < b.data ? -1 : a.data > b.data ? 1 : 0; });
+    if (trasporto) viaggi.unshift({ tipo: 'P', ts: trasporto.ts, arrivo: trasporto.arrivo, arrivato: trasporto.arrivato, data: iso(o.t), da: pl(o.n[0]), a: pl(sawmillName()), km: 18 });
     var sold = raw.some(function (e) { return e.tipo === 'V'; });
     return { code: o.c, species: o.s, vol: o.v, cut: iso(o.t), parcel: o.p, lat: o.g ? o.g[0] : null, lon: o.g ? o.g[1] : null,
       cert: o.ce || null, certYear: o.cx || null, owner: o.n[0], factor: o.f || 0.7, eudr: !!(o.g && o.t), stato: sold ? 'Venduto' : 'Disponibile',
-      steps: raw.map(function (e) { var t = S().stepText(e, comune); t.data = e.data; t.tipo = e.tipo; return t; }), trasporto: trasporto };
+      steps: raw.map(function (e) { var t = S().stepText(e, comune); t.data = e.data; t.tipo = e.tipo; return t; }), trasporto: trasporto, viaggi: viaggi };
   }
   function qrUrl(lotto) { return new URL('qr.html?d=' + b64url(JSON.stringify(qrPayload(lotto))), location.href).href; }
   function qrSvg(text) {
@@ -366,6 +446,6 @@
     num: num, num1: num1, parseNum: parseNum, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
     certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, tracker: tracker, travelPill: travelPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
     phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, homeHref: homeHref, ordCode: ordCode, photo: photo, OSM: OSM, photoKey: photoKey, PHOTO: PHOTO, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, canSell: canSell, logoHTML: logoHTML, LANG: LANG,
-    qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, trkLayout: trkLayout, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
+    qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, newsList: newsList, trkLayout: trkLayout, tripNow: tripNow, orderTravelPill: orderTravelPill, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
   };
 })();

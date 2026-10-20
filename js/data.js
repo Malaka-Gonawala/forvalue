@@ -13,7 +13,7 @@
 
 window.FV_SEED = {
 
-  seed_version: 4,
+  seed_version: 5,
 
   /* Not a table: shown on the Aiuto page */
   contatti: { supporto: 'supporto@forvalue.demo' },
@@ -22,9 +22,9 @@ window.FV_SEED = {
   azienda: [
     { id: 1, ragione_sociale: 'Consorzio Val di Fiemme', partita_iva: '02487310225', tipo: 'proprietario', indirizzo: 'Via Roma 12', comune: 'Cavalese (TN)', regione: 'Trentino-Alto Adige', approvata: 1 },
     { id: 2, ragione_sociale: 'Segheria Alpina', partita_iva: '01935620227', tipo: 'segheria', indirizzo: 'Via dei Boscaioli 5', comune: 'Ziano di Fiemme (TN)', regione: 'Trentino-Alto Adige', approvata: 1 },
-    { id: 3, ragione_sociale: 'Arredi Bianchi Srl', partita_iva: '04712580267', tipo: 'acquirente', indirizzo: 'Via Brianza 40', comune: 'Cantù (CO)', regione: 'Lombardia', approvata: 1 },
-    { id: 4, ragione_sociale: 'BioEnergia Srl', partita_iva: '03629140140', tipo: 'acquirente', indirizzo: 'Via Feltre 18', comune: 'Belluno (BL)', regione: 'Veneto', approvata: 1 },
-    { id: 5, ragione_sociale: 'Legnami Rossi', partita_iva: '02874050301', tipo: 'acquirente', indirizzo: 'Via Emilia 77', comune: 'Modena (MO)', regione: 'Emilia-Romagna', approvata: 1 }
+    { id: 3, ragione_sociale: 'Arredi Bianchi Srl', partita_iva: '04712580267', tipo: 'acquirente', indirizzo: 'Via Brianza 40', comune: 'Cantù (CO)', regione: 'Lombardia', approvata: 1, km_segheria: 280 },
+    { id: 4, ragione_sociale: 'BioEnergia Srl', partita_iva: '03629140140', tipo: 'acquirente', indirizzo: 'Via Feltre 18', comune: 'Belluno (BL)', regione: 'Veneto', approvata: 1, km_segheria: 95 },
+    { id: 5, ragione_sociale: 'Legnami Rossi', partita_iva: '02874050301', tipo: 'acquirente', indirizzo: 'Via Emilia 77', comune: 'Modena (MO)', regione: 'Emilia-Romagna', approvata: 1, km_segheria: 260 }
   ],
 
   /* 2. specie – fattore_co2 in t of CO₂ per m³ */
@@ -111,6 +111,8 @@ window.FV_SEED = {
 
   /* Date given to orders placed live in the demo (the sale date in the database sample). */
   demo_data_ordine: '2026-04-15',
+
+  /* km_segheria (buyers above): road distance from Segheria Alpina, shown on the delivery map card (demo values). */
 
   /* 10. ordine – stato: inviato | accettato | consegnato | rifiutato | annullato.
      Shown as ORD-2026-0001 (year of the order + id with 4 digits). data_consegna: the buyer picks it,

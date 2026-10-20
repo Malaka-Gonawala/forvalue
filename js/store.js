@@ -122,7 +122,7 @@
     var ev = [{ tipo: 'T', data: l.data_taglio, chi: name(l.id_azienda), dove: byId('particella', l.id_particella).nome }];
     where('passaggio', 'id_lotto', idLotto).forEach(function (p) {
       if (p.id_ordine) { var ord = byId('ordine', p.id_ordine); if (ord && !ordineValido(ord)) return; }
-      var e = { tipo: p.id_ordine ? 'V' : 'P', data: p.data_ora.slice(0, 10), da: name(p.id_azienda_da), a: name(p.id_azienda_a) };
+      var e = { tipo: p.id_ordine ? 'V' : 'P', data: p.data_ora.slice(0, 10), da: name(p.id_azienda_da), a: name(p.id_azienda_a), idOrdine: p.id_ordine || null };
       if (p.id_ordine) {
         var o = byId('ordine', p.id_ordine), off = o && byId('offerta', o.id_offerta);
         if (o && off) e.dett = fmtNum(o.quantita) + ' ' + unitOf(off) + ' di ' + shortName(off.titolo);
@@ -173,7 +173,33 @@
     return { ts: lotto.creato_ts, arrivo: lotto.creato_ts + trasportoMs(lotto), arrivato: !!arrivo(lotto.id),
       da: az ? az.comune : '', a: sm ? sm.comune : '' };
   }
-  function nTransfers() { return all('passaggio').filter(function (p) { return !p.id_ordine; }).length; }
+  function nTransfers() { return all('passaggio').filter(function (p) { return !p.id_ordine; }).length + all('ordine').filter(function (o) { return o.stato === 'consegnato'; }).length; }
+  // Accepted orders travel from the sawmill to the buyer the same way (trip time picked on Accetta)
+  function viaggioOrdine(o) {
+    if (!o || !o.spedito_ts || (o.stato !== 'accettato' && o.stato !== 'consegnato')) return null;
+    return { ts: o.spedito_ts, arrivo: o.spedito_ts + (o.trasporto_s || 60) * 1000, arrivato: o.stato === 'consegnato' };
+  }
+  function place(id) { var a = byId('azienda', id); return a ? { nome: a.ragione_sociale, comune: a.comune, km: a.km_segheria || 0 } : { nome: '', comune: '', km: 0 }; }
+  // Every trip of a batch, oldest first: P = forest → sawmill, V = sawmill → buyer (accepted/delivered orders).
+  // Live trips have ts/arrivo (ms); seed trips only have the arrival date (data, iso).
+  function viaggi(lotto) {
+    if (!lotto) return [];
+    var out = [];
+    where('passaggio', 'id_lotto', lotto.id).forEach(function (p) {
+      if (!p.id_ordine && !lotto.creato_ts) out.push({ tipo: 'P', ts: null, arrivo: null, arrivato: true, data: p.data_ora.slice(0, 10), da: place(p.id_azienda_da), a: place(p.id_azienda_a), km: 18 });
+    });
+    ordiniOfLotto(lotto.id).forEach(function (o) {
+      var v = viaggioOrdine(o), off = byId('offerta', o.id_offerta);
+      if (!v && o.stato !== 'consegnato') return;   // not shipped yet (accepted in the sample data has no trip)
+      var to = place(o.id_azienda);
+      out.push({ tipo: 'V', ts: v ? v.ts : null, arrivo: v ? v.arrivo : null, arrivato: o.stato === 'consegnato',
+        data: o.consegnato_ora ? o.consegnato_ora.slice(0, 10) : o.data_consegna, da: place(off ? off.id_azienda : sawmillId()), a: to, km: to.km });
+    });
+    var t = trasporto(lotto);
+    if (t) out.unshift({ tipo: 'P', ts: t.ts, arrivo: t.arrivo, arrivato: t.arrivato, data: isoOf(new Date(t.arrivo)), da: place(lotto.id_azienda), a: place(sawmillId()), km: 18 });
+    out.sort(function (a, b) { return a.data < b.data ? -1 : a.data > b.data ? 1 : 0; });
+    return out;
+  }
   var lastTransfers = null;
   // Runs on every page load and every few seconds (ui.js). Adds the "Trasferito" step for batches
   // whose time is up. True when a batch arrived since the last call (here or in another tab).
@@ -185,6 +211,14 @@
       var d = new Date(l.creato_ts + trasportoMs(l));
       db.passaggio.push({ id: nextId('passaggio'), id_lotto: l.id, id_azienda_da: l.id_azienda, id_azienda_a: sawmillId(), id_ordine: null,
         data_ora: isoOf(d) + ' ' + hm(d), stato: 'consegnato' });
+      n++;
+    });
+    all('ordine').forEach(function (o) {
+      var v = viaggioOrdine(o);
+      if (!v || v.arrivato || now < v.arrivo) return;
+      var d = new Date(v.arrivo);
+      o.stato = 'consegnato'; o.consegnato_ora = isoOf(d) + ' ' + hm(d);
+      where('passaggio', 'id_ordine', o.id).forEach(function (p) { p.stato = 'consegnato'; });
       n++;
     });
     if (n) save(db);
@@ -254,6 +288,7 @@
     var o = byId('ordine', idOrdine);
     if (!o || o.stato !== 'inviato' || (stato !== 'accettato' && stato !== 'rifiutato')) return null;
     o.stato = stato;
+    if (stato === 'accettato') { o.spedito_ts = Date.now(); o.trasporto_s = trasportoS(); }   // the truck leaves now
     if (stato === 'rifiutato') {
       var off = byId('offerta', o.id_offerta);
       if (off) { off.quantita_disponibile = Math.round((off.quantita_disponibile + o.quantita) * 1000) / 1000; off.attiva = 1; }
@@ -277,7 +312,7 @@
 
   // "Ripristina dati demo": back to the seed
   function reset() {
-    try { localStorage.removeItem(KEY); localStorage.removeItem(CART); } catch (e) {}
+    try { localStorage.removeItem(KEY); localStorage.removeItem(CART); localStorage.removeItem('fv_read_v1'); } catch (e) {}
     db = clone(window.FV_SEED); save(db); lastTransfers = null;
   }
 
@@ -288,7 +323,7 @@
     ordiniOfLotto: ordiniOfLotto, storicoRaw: storicoRaw, stepText: stepText, comuneByName: comuneByName, lottoOfOfferta: lottoOfOfferta, statoLotto: statoLotto, eudrOk: eudrOk, holderOf: holderOf,
     lottiOfOwner: lottiOfOwner, lottiOfSawmill: lottiOfSawmill, transferDate: transferDate, storico: storico, unitOf: unitOf, unitLabel: unitLabel,
     addLotto: addLotto, eliminaUtente: eliminaUtente, utenteEliminato: utenteEliminato, addLavorazione: addLavorazione, demoDate: demoDate, addDays: addDays, setStatoOrdine: setStatoOrdine, ordineValido: ordineValido, publishOfferta: publishOfferta, placeOrdine: placeOrdine, todayISO: todayISO,
-    getCart: getCart, setCart: setCart, trasporto: trasporto, tick: tick, trasportoMs: trasportoMs, sawmillId: sawmillId
+    getCart: getCart, setCart: setCart, trasporto: trasporto, viaggi: viaggi, viaggioOrdine: viaggioOrdine, tick: tick, trasportoMs: trasportoMs, sawmillId: sawmillId
   };
   window.FV.store.tick();
 })();

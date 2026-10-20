@@ -63,7 +63,7 @@
     'Foto': 'Photo', '(facoltativa)': '(optional)', 'Carica una foto': 'Upload a photo', 'Scatta una foto': 'Take a photo',
     'Rileva posizione': 'Get position', 'Rileva di nuovo': 'Get again', 'Posizione rilevata': 'Position found', 'Posizione rilevata dal telefono': 'Position from the phone',
     'Inserisci il volume in m³ per salvare il lotto.': 'Enter the volume in m³ to save the batch.', 'es. 45': 'e.g. 45',
-    'In viaggio': 'On the way', "all'arrivo": 'to arrival', 'fatto': 'done', 'Partito': 'Left', 'Arrivato': 'Arrived', 'Bosco Val Fiemme': 'Val Fiemme forest', 'Arrivo in segheria tra': 'Arrives at the sawmill in', 'Viaggio': 'Journey', 'Viaggio del lotto verso la segheria': "The batch's journey to the sawmill",
+    'In viaggio': 'On the way', "all'arrivo": 'to arrival', 'fatto': 'done', 'Partito': 'Left', 'Arrivato': 'Arrived', 'Bosco Val Fiemme': 'Val Fiemme forest', 'Nuova': 'New', "Viaggio verso l'acquirente": 'Journey to the buyer', 'Arrivo in segheria tra': 'Arrives at the sawmill in', 'Viaggio': 'Journey', 'Viaggio del lotto verso la segheria': "The batch's journey to the sawmill",
     'Trasferito': 'Transferred', 'Segato in tavole e scarti': 'Sawn into boards and offcuts', 'Segato:': 'Sawn:',
     // owner home, profile, certificates, notifications
     'Lotti registrati': 'Registered batches', 'Volume registrato': 'Registered volume', '% certificato PEFC / FSC': '% PEFC / FSC certified',
@@ -136,6 +136,7 @@
     [/^Venduto ad? (.+)$/, 'Sold to $1'],
     [/^Arrivato in (.+?)(\.?)$/, 'Arrived at $1$2'],
     [/^di (\d+) km$/, 'of $1 km'],
+    [/^Consegnato ad? (.+)$/, 'Delivered to $1'],
     [/^Da (.+)$/, 'From $1'],
     [/^Dal lotto (.+)$/, 'From batch $1'],
     [/^Lotto di origine: (.+)$/, 'Source batch: $1'],

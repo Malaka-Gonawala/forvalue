@@ -52,6 +52,7 @@
           fact('Specie', ui.esc(ui.specieName(l))) + fact('Volume', ui.num(l.volume_m3) + ' m³') + fact('Particella', ui.v(part, 'nome')) + fact('Data di taglio', ui.date(l.data_taglio)) +
         '</div><div class="pills">' + ui.badges(l) + '</div>' +
         (prodotti.length ? '' : '<div class="small muted">Questo lotto non è ancora stato segato: con Metti in vendita registri prima la lavorazione.</div>') + '</section>' +
+        ui.tracker(ui.tripNow(st.viaggi(l))) +
         '<section class="box" style="padding:20px;display:flex;flex-direction:column;gap:16px"><h2 style="font-size:15px">Storico</h2><div class="dtl">' +
           st.storico(l.id).map(function (e) {
             return '<div class="step"><div class="rail"><div class="dot"></div><div class="line"></div></div><div class="body"><div class="muted xs" style="font-weight:600">' + ui.date(e.data) + '</div><div style="font-weight:600">' + ui.t(e.titolo) + '</div><div class="muted xs">' + ui.t(e.sotto) + '</div></div></div>';

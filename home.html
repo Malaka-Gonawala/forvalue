@@ -85,10 +85,7 @@
       '<td><div class="pills" style="flex-direction:column;align-items:flex-start;gap:4px">' + ui.statoPill(st.statoLotto(l.id)) + ui.travelPill(l, ui.qrUrl(l)) + '</div></td>' +
       '<td class="qr" style="text-align:right"><a class="dbtn sec" href="' + ui.esc(ui.qrUrl(l)) + '" aria-label="QR di ' + ui.esc(l.codice_qr) + '"><span class="ms" aria-hidden="true">qr_code_2</span>QR</a></td></tr>';
   }).join('') || '<tr><td colspan="7" class="muted">Non hai ancora lotti.</td></tr>';
-  document.getElementById('news').innerHTML = ui.ownerNews(S.azienda.id).slice(0, 5).map(function (x) {
-    return '<a class="row" href="' + ui.esc(ui.qrUrl(x.l)) + '" style="min-height:0;padding:10px 16px"><span class="tile" style="width:32px;height:32px;border-radius:8px"><span class="ms" style="font-size:20px" aria-hidden="true">' + x.icon + '</span></span>' +
-      '<span class="grow"><b style="font-weight:600;font-size:14px">' + ui.t(x.title) + '</b><div class="xs muted">' + ui.v(x.l, 'codice_qr') + ' · ' + ui.date(x.data) + '</div></span></a>';
-  }).join('') || '<div class="muted small" style="padding:0 16px 16px">Nessuna notifica.</div>';
+  document.getElementById('news').innerHTML = ui.newsList(S.azienda.id, 5, true) || '<div class="muted small" style="padding:0 16px 16px">Nessuna notifica.</div>';
 </script>
 </body>
 </html>

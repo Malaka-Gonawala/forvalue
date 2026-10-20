@@ -53,7 +53,7 @@
           '<button type="button" class="dbtn pri" data-act="accettato" data-id="' + o.id + '"><span class="ms" aria-hidden="true">check</span>Accetta</button></div>'
         : (l && o.stato !== 'rifiutato' ? '<a class="dbtn sec" href="' + ui.esc(ui.qrUrl(l)) + '"><span class="ms" aria-hidden="true">qr_code_2</span>Tracciabilità</a>' : '');
       return '<tr><td class="num" style="white-space:nowrap">' + ui.esc(ui.ordCode(o)) + '</td><td>' + ui.v(o, 'data', ui.date(o.data)) + '</td><td style="font-weight:600">' + ui.esc(buyer.ragione_sociale) + '</td><td>' + ui.esc(off.titolo) + '</td>' +
-        '<td class="num">' + ui.num(o.quantita) + ' ' + st.unitOf(off) + '</td><td class="num" style="font-weight:600">' + ui.euro(o.prezzo_totale) + '</td><td>' + ui.ordinePill(o.stato) + '</td>' +
+        '<td class="num">' + ui.num(o.quantita) + ' ' + st.unitOf(off) + '</td><td class="num" style="font-weight:600">' + ui.euro(o.prezzo_totale) + '</td><td><div class="pills" style="flex-direction:column;align-items:flex-start;gap:4px">' + ui.ordinePill(o.stato) + ui.orderTravelPill(o, l ? ui.qrUrl(l) : '') + '</div></td>' +
         '<td style="text-align:right">' + act + '</td></tr>';
     }).join('') || '<tr><td colspan="8"><div class="empty" style="padding:24px"><span class="ms" aria-hidden="true">move_to_inbox</span>Nessun ordine.</div></td></tr>';
   }
