@@ -62,7 +62,7 @@ Order numbers are shown as **ORD-2026-0001** (year of the order + id with 4 digi
 
 Orders placed live in the demo get the date **15/04/2026** (the sale date of the database sample), so the story stays in 2026.
 
-A batch registered live travels to Segheria Alpina by itself: after **60 seconds** it gets the step "Trasferito a Segheria Alpina" and shows in the sawmill's lists. Lotto salvato, the QR page and the owner's lists show the journey with a countdown. Change the time in `js/data.js` (`DEMO_TRASPORTO_S`). The QR link carries the creation time, so the QR page works this out on any phone. Seed batches are not affected; **Ripristina dati demo** clears it.
+A batch registered live travels to Segheria Alpina by itself: each batch picks a trip time between **45 and 120 seconds**, then gets the step "Trasferito a Segheria Alpina" and shows in the sawmill's lists. Lotto salvato and the QR page show the trip on a map card (truck, km, countdown); the owner's lists show a small "In viaggio" pill with a thin bar that opens the QR page. Change the range in `js/data.js` (`DEMO_TRASPORTO_MIN_S`, `DEMO_TRASPORTO_MAX_S`). The QR link carries the creation time and trip time, so every phone shows the same trip. Seed batches are not affected; **Ripristina dati demo** clears it.
 You can change it in `js/data.js` (`demo_data_ordine`).
 
 Things that are **not** columns in the database are worked out the same way the demo queries do:

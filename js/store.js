@@ -158,14 +158,20 @@
   function fmtNum(n) { return new Intl.NumberFormat(FV.i18n.loc, { maximumFractionDigits: 2 }).format(n); }
 
   /* ---------- demo transport: a new batch reaches the sawmill by itself ---------- */
-  // Seed batches have no creato_ts, so they are never moved.
-  function trasportoMs() { return ((window.FV_SEED && FV_SEED.DEMO_TRASPORTO_S) || 60) * 1000; }
+  // Seed batches have no creato_ts, so they are never moved. Trip time: lotto.trasporto_s (picked at creation).
+  function trasportoS() {
+    var a = (window.FV_SEED && FV_SEED.DEMO_TRASPORTO_MIN_S) || 45, b = (window.FV_SEED && FV_SEED.DEMO_TRASPORTO_MAX_S) || 120;
+    return a + Math.floor(Math.random() * (b - a + 1));
+  }
+  function trasportoMs(lotto) { return ((lotto && lotto.trasporto_s) || 60) * 1000; }
   function sawmillId() { return (window.FV_SEED && FV_SEED.demo_segheria) || 2; }
   function arrivo(idLotto) { return where('passaggio', 'id_lotto', idLotto).find(function (p) { return !p.id_ordine; }) || null; }
   // { ts: created, arrivo: arrival time (ms), arrivato } or null for seed batches
   function trasporto(lotto) {
     if (!lotto || !lotto.creato_ts) return null;
-    return { ts: lotto.creato_ts, arrivo: lotto.creato_ts + trasportoMs(), arrivato: !!arrivo(lotto.id) };
+    var az = byId('azienda', lotto.id_azienda), sm = byId('azienda', sawmillId());
+    return { ts: lotto.creato_ts, arrivo: lotto.creato_ts + trasportoMs(lotto), arrivato: !!arrivo(lotto.id),
+      da: az ? az.comune : '', a: sm ? sm.comune : '' };
   }
   function nTransfers() { return all('passaggio').filter(function (p) { return !p.id_ordine; }).length; }
   var lastTransfers = null;
@@ -175,8 +181,8 @@
     reloadDb();
     var now = Date.now(), n = 0;
     all('lotto').forEach(function (l) {
-      if (!l.creato_ts || now - l.creato_ts < trasportoMs() || arrivo(l.id)) return;
-      var d = new Date(l.creato_ts + trasportoMs());
+      if (!l.creato_ts || now - l.creato_ts < trasportoMs(l) || arrivo(l.id)) return;
+      var d = new Date(l.creato_ts + trasportoMs(l));
       db.passaggio.push({ id: nextId('passaggio'), id_lotto: l.id, id_azienda_da: l.id_azienda, id_azienda_a: sawmillId(), id_ordine: null,
         data_ora: isoOf(d) + ' ' + hm(d), stato: 'consegnato' });
       n++;
@@ -194,7 +200,7 @@
     var l = insert('lotto', {
       codice_qr: nextLottoCode(), id_particella: f.id_particella, id_specie: f.id_specie, id_azienda: f.id_azienda,
       volume_m3: f.volume_m3, data_taglio: f.data_taglio, certificato: f.certificato || null, foto_url: f.foto_url || null,
-      creato_ts: Date.now()
+      creato_ts: Date.now(), trasporto_s: trasportoS()
     });
     if (f.lat != null && f.id_particella) {
       var p = byId('particella', f.id_particella);

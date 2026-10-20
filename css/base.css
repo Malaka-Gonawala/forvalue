@@ -127,20 +127,41 @@ img { max-width: 100%; display: block; }
 
 @media (max-width: 380px) { .tabbar a { font-size: 12px; white-space: nowrap; letter-spacing: -.1px; } }
 
-/* Demo transport tracker (new batch → sawmill) */
-.trk { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-.trk-steps { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; font-size: 14px; line-height: 18px; font-weight: 600; color: var(--muted); }
-.trk-steps li { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; }
-.trk-steps .ms { font-size: 28px; color: var(--n300, #C8CCC4); }
-.trk-steps .ok { color: var(--ink); }
-.trk-steps .ok .ms { color: var(--g700); }
-.trk-steps .cur { color: var(--au800); }
-.trk-steps .cur .ms { color: var(--au800); animation: trk-move 1.2s ease-in-out infinite alternate; }
-@keyframes trk-move { from { transform: translateX(-3px); } to { transform: translateX(3px); } }
-@media (prefers-reduced-motion: reduce) { .trk-steps .cur .ms { animation: none; } }
-.trk-bar { height: 8px; border-radius: 99px; background: var(--g100); overflow: hidden; }
-.trk-bar i { display: block; height: 100%; background: var(--au500); border-radius: 99px; transition: width 1s linear; }
-.trk.done .trk-bar i { background: var(--g700); }
-.trk-txt { text-align: center; color: var(--muted); }
-.trk-txt b { color: var(--ink); font-variant-numeric: tabular-nums; }
+/* Demo transport tracker (new batch → sawmill): map card */
+.trkm { overflow: hidden; padding: 0; }
+.trkm-map { position: relative; height: 340px; background: var(--g100) url(../img/mappa-fiemme.jpg) center/cover; }
+.trkm-map::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(31,77,44,0) 45%, rgba(31,77,44,.6)); }
+.trkm-map svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+.trkm-chip, .trkm-truck { position: absolute; z-index: 2; background: #fff; border-radius: 999px; display: flex; gap: 6px; align-items: center; font-size: 13px; line-height: 18px; font-weight: 600; color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+.trkm-chip { padding: 6px 12px 6px 8px; }
+.trkm-chip .ms { color: var(--g700); font-size: 20px; }
+.trkm-from { left: calc(14% - 12px); top: calc(73.5% - 16px); }
+.trkm-to { right: 8%; top: calc(26.5% - 44px); }
+.trkm-truck { padding: 6px; background: var(--au500); transform: translate(-50%, -50%); transition: left 1s linear, top 1s linear; }
+.trkm-truck .ms { font-size: 22px; }
+.trkm.done .trkm-truck { background: var(--g700); color: #fff; }
+.trkm-info { position: absolute; z-index: 2; left: 20px; right: 20px; bottom: 18px; color: #fff; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; text-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.trkm-info b { font-size: 20px; line-height: 26px; display: block; }
+.trkm-info span { font-size: 14px; opacity: .92; }
+.trkm-cd { text-align: right; flex: none; }
+.trkm-cd b { font-size: 34px; line-height: 38px; }
+.trkm-cd .ms { font-size: 44px; opacity: 1; color: #fff; background: var(--g700); border-radius: 50%; text-shadow: none; }
+.trkm-bar { height: 6px; background: var(--g100); }
+.trkm-bar i { display: block; height: 100%; background: var(--au500); transition: width 1s linear; }
+.trkm.done .trkm-bar i { background: var(--g700); }
+.trkm-legend { padding: 12px 20px; display: flex; gap: 8px 20px; font-size: 13px; line-height: 18px; color: var(--muted); flex-wrap: wrap; }
+.trkm-legend b { color: var(--ink); }
+@media (max-width: 600px) {
+  .trkm-map { height: 260px; }
+  .trkm-from { left: calc(14% - 18px); top: calc(73.5% - 44px); padding: 6px; }
+  .trkm-from > span:last-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .trkm-info b { font-size: 16px; line-height: 22px; } .trkm-info span { font-size: 12px; } .trkm-cd b { font-size: 26px; line-height: 30px; }
+  .trkm-legend { padding: 12px 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .trkm-truck, .trkm-bar i, .trkp-bar i { transition: none; } }
+/* compact variant for list rows */
+.trkp { display: inline-flex; flex-direction: column; gap: 4px; text-decoration: none; color: inherit; }
+.trkp-bar { display: block; height: 3px; border-radius: 99px; background: var(--au100); overflow: hidden; }
+.trkp-bar i { display: block; height: 100%; background: var(--au500); transition: width 1s linear; }
+a.trkp:hover .pill { text-decoration: underline; }
 .p-trk { background: var(--au100); color: var(--au800); font-variant-numeric: tabular-nums; }

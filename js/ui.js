@@ -38,29 +38,52 @@
     return certPill(lotto.certificato) + eudrPill(S().eudrOk(lotto), short) + statoPill(S().statoLotto(lotto.id)) + travelPill(lotto);
   }
 
-  /* ---------- demo transport (DEMO_TRASPORTO_S in data.js) ---------- */
+  /* ---------- demo transport (DEMO_TRASPORTO_MIN_S / MAX_S in data.js) ---------- */
   function sawmillName() { var a = (window.FV_SEED.azienda || []).find(function (x) { return x.id === S().sawmillId(); }); return a ? a.ragione_sociale : 'Segheria'; }
   function mmss(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
-  // Small chip for list rows while the batch is on its way
-  function travelPill(lotto) {
+  function hhmm(ms) { var d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  function townOf(c) { return String(c || '').replace(/\s*\([A-Z]{2}\)$/, ''); }
+  var TRK_KM = 18;
+  var TRK_D = 'M140 250 C 260 200, 330 260, 450 190 S 650 120, 760 150 S 860 110, 880 90';
+  // Points along the route every 5% (x %, y %), so the truck sits on the line without measuring the SVG
+  var TRK_PTS = [14, 73.5, 17.7, 69.8, 21.7, 67.6, 25.6, 66.9, 29.6, 66.9, 33.7, 66.5, 37.5, 64.8, 41.4, 61.2, 44.9, 56, 48.4, 50.4, 52.1, 45.5,
+    55.9, 41.7, 59.8, 39.4, 63.7, 38.5, 67.8, 39.2, 71.7, 41.1, 75.6, 43.8, 79.5, 46.1, 83.4, 45, 86.2, 37, 88, 26.5];
+  function trkPoint(p) {
+    var f = Math.min(1, Math.max(0, p)) * 20, i = Math.min(19, Math.floor(f)), r = f - i;
+    return [TRK_PTS[2 * i] + (TRK_PTS[2 * i + 2] - TRK_PTS[2 * i]) * r, TRK_PTS[2 * i + 1] + (TRK_PTS[2 * i + 3] - TRK_PTS[2 * i + 1]) * r];
+  }
+  function trkFrac(t) { return t.arrivato || Date.now() >= t.arrivo ? 1 : Math.min(1, Math.max(0, (Date.now() - t.ts) / (t.arrivo - t.ts))); }
+  // Compact variant for list rows: "In viaggio 0:38" + thin bar. href → links to the QR page (Q1)
+  function travelPill(lotto, href) {
     var t = S().trasporto(lotto);
     if (!t || t.arrivato) return '';
-    return '<span class="pill p-trk" data-trk-arr="' + t.arrivo + '"><span class="ms" aria-hidden="true">local_shipping</span>In viaggio · <span data-trk-left>' + mmss(t.arrivo - Date.now()) + '</span></span>';
+    var p = trkFrac(t) * 100, tag = href ? 'a' : 'span';
+    return '<' + tag + ' class="trkp"' + (href ? ' href="' + esc(href) + '"' : '') + ' data-trk-arr="' + t.arrivo + '" data-trk-dur="' + (t.arrivo - t.ts) + '">' +
+      '<span class="pill p-trk"><span class="ms" aria-hidden="true">local_shipping</span><span>In viaggio</span> <span data-trk-left>' + mmss(t.arrivo - Date.now()) + '</span></span>' +
+      '<span class="trkp-bar" aria-hidden="true"><i data-trk-fill style="width:' + p.toFixed(1) + '%"></i></span></' + tag + '>';
   }
-  // 3-step tracker: Taglio ✓ → In viaggio → Arrivato in segheria. t = { ts, arrivo, arrivato }
+  // Map card: forest → sawmill on the Val di Fiemme map. t = { ts, arrivo, arrivato, da, a } (comuni)
   function tracker(t) {
     if (!t) return '';
     var dur = t.arrivo - t.ts, done = t.arrivato || Date.now() >= t.arrivo, name = sawmillName();
-    var pct = done ? 100 : Math.min(100, Math.max(0, (Date.now() - t.ts) / dur * 100));
-    return '<div class="trk box' + (done ? ' done' : '') + '" role="group" aria-label="Viaggio del lotto verso la segheria"' + (done ? '' : ' data-trk-arr="' + t.arrivo + '" data-trk-dur="' + dur + '"') + '>' +
-      '<ol class="trk-steps">' +
-        '<li class="ok"><span class="ms" aria-hidden="true">check_circle</span>Taglio</li>' +
-        '<li class="' + (done ? 'ok' : 'cur') + '"><span class="ms" aria-hidden="true">' + (done ? 'check_circle' : 'local_shipping') + '</span>In viaggio</li>' +
-        '<li class="' + (done ? 'ok' : '') + '"><span class="ms" aria-hidden="true">' + (done ? 'check_circle' : 'warehouse') + '</span>Arrivato in ' + esc(name) + '</li></ol>' +
-      '<div class="trk-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(pct) + '" aria-label="Viaggio"><i style="width:' + pct.toFixed(1) + '%"></i></div>' +
-      '<div class="trk-txt small">' + (done ? 'Arrivato in ' + esc(name) + '.' : 'Arrivo in segheria tra <b data-trk-left>' + mmss(t.arrivo - Date.now()) + '</b>') + '</div></div>';
+    var f = trkFrac(t), pt = trkPoint(f), km = Math.round(TRK_KM * f);
+    var path = function (attrs) { return '<path d="' + TRK_D + '" pathLength="100" fill="none" stroke-linecap="round" ' + attrs + '/>'; };
+    return '<section class="trkm card' + (done ? ' done' : '') + '" role="group" aria-label="Viaggio del lotto verso la segheria"' + (done ? '' : ' data-trk-arr="' + t.arrivo + '" data-trk-dur="' + dur + '"') + '>' +
+      '<div class="trkm-map">' +
+        '<svg viewBox="0 0 1000 340" preserveAspectRatio="none" aria-hidden="true">' + path('stroke="#fff" stroke-width="9" opacity=".85"') +
+          path('stroke="#1F4D2C" stroke-width="4" stroke-dasharray="0.3 1.2"') +
+          path('class="trkm-done" stroke="#DBB743" stroke-width="6" stroke-dasharray="' + (f * 100).toFixed(2) + ' 100"') + '</svg>' +
+        '<span class="trkm-chip trkm-from"><span class="ms" aria-hidden="true">forest</span><span>Bosco Val Fiemme</span></span>' +
+        '<span class="trkm-chip trkm-to"><span class="ms" aria-hidden="true">carpenter</span><span>' + esc(name) + '</span></span>' +
+        '<span class="trkm-truck" style="left:' + pt[0].toFixed(2) + '%;top:' + pt[1].toFixed(2) + '%"><span class="ms" aria-hidden="true">' + (done ? 'check' : 'local_shipping') + '</span></span>' +
+        '<div class="trkm-info"><div><b>' + (done ? 'Arrivato in ' + esc(name) : 'In viaggio') + '</b><span>' + esc(townOf(t.da) || 'Cavalese') + ' → ' + esc(townOf(t.a) || 'Ziano di Fiemme') + '</span></div>' +
+          (done ? '<div class="trkm-cd"><span class="ms" aria-hidden="true">check_circle</span></div>'
+                : '<div class="trkm-cd tnum"><b data-trk-left>' + mmss(t.arrivo - Date.now()) + '</b><span>all\'arrivo</span></div>') + '</div></div>' +
+      '<div class="trkm-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(f * 100) + '" aria-label="Viaggio"><i data-trk-fill style="width:' + (f * 100).toFixed(1) + '%"></i></div>' +
+      '<div class="trkm-legend tnum"><span><b data-trk-km>' + km + '</b> di ' + TRK_KM + ' km</span><span>Taglio <b>fatto</b></span><span>Partito <b>' + hhmm(t.ts) + '</b></span>' +
+        (done ? '<span>Arrivato <b>' + hhmm(t.arrivo) + '</b></span>' : '') + '<span>© OpenStreetMap contributors</span></div></section>';
   }
-  // Live: countdowns every second; every 5 s (and when a countdown ends) check for arrivals.
+  // Live: countdowns, bars, km and truck every second; every 5 s (and when a countdown ends) check for arrivals.
   // On arrival the page redraws itself (kept simple: a quick reload, unless you are typing).
   (function live() {
     var ended = false;
@@ -69,10 +92,14 @@
     setInterval(function () {
       var now = Date.now(), hit = false;
       document.querySelectorAll('[data-trk-arr]').forEach(function (el) {
-        var arr = Number(el.getAttribute('data-trk-arr')), left = arr - now;
+        var arr = Number(el.getAttribute('data-trk-arr')), left = arr - now, dur = Number(el.getAttribute('data-trk-dur'));
+        var f = dur ? Math.min(1, Math.max(0, 1 - left / dur)) : 1;
         el.querySelectorAll('[data-trk-left]').forEach(function (x) { x.textContent = mmss(left); });
-        var dur = Number(el.getAttribute('data-trk-dur')), bar = el.querySelector('.trk-bar');
-        if (dur && bar) { var p = Math.min(100, Math.max(0, 100 - left / dur * 100)); bar.firstChild.style.width = p.toFixed(1) + '%'; bar.setAttribute('aria-valuenow', Math.round(p)); }
+        el.querySelectorAll('[data-trk-fill]').forEach(function (x) { x.style.width = (f * 100).toFixed(1) + '%'; });
+        var bar = el.querySelector('[role=progressbar]'); if (bar) bar.setAttribute('aria-valuenow', Math.round(f * 100));
+        var km = el.querySelector('[data-trk-km]'); if (km) km.textContent = Math.round(TRK_KM * f);
+        var done = el.querySelector('.trkm-done'); if (done) done.setAttribute('stroke-dasharray', (f * 100).toFixed(2) + ' 100');
+        var tr = el.querySelector('.trkm-truck'); if (tr) { var pt = trkPoint(f); tr.style.left = pt[0].toFixed(2) + '%'; tr.style.top = pt[1].toFixed(2) + '%'; }
         if (left <= 0) hit = true;
       });
       if (hit && !ended) { ended = true; S().tick(); arrived(); }
@@ -244,7 +271,7 @@
     if (view.lat != null) o.g = [view.lat, view.lon];
     if (view.cert) { o.ce = view.cert; o.cx = view.certYear; }
     if (view.factor !== 0.7) o.f = view.factor;
-    if (lotto.creato_ts) o.k = lotto.creato_ts;   // demo transport: the QR page works it out on any phone
+    if (lotto.creato_ts) o.k = [lotto.creato_ts, lotto.trasporto_s || 60];   // demo transport [created ms, trip s]: same trip on any phone
     return o;
   }
   // Rebuilds the same view from the link, with no storage at all
@@ -259,7 +286,7 @@
     // Demo transport (k = created ms): before arrival show the tracker, after it add the "Trasferito" step
     var trasporto = null;
     if (o.k) {
-      var arr = o.k + S().trasportoMs(), there = raw.some(function (e) { return e.tipo === 'P'; });
+      var k = Array.isArray(o.k) ? o.k : [o.k, 60], arr = k[0] + k[1] * 1000, there = raw.some(function (e) { return e.tipo === 'P'; });
       if (!there && Date.now() >= arr) {
         var a = new Date(arr), sm = sawmillName();
         raw.push({ tipo: 'P', data: a.getFullYear() + '-' + String(a.getMonth() + 1).padStart(2, '0') + '-' + String(a.getDate()).padStart(2, '0'), da: o.n[0], a: sm });
@@ -267,7 +294,8 @@
         if (o.n.indexOf(sm) < 0) { o.n.push(sm); o.m = (o.m || []).concat(az ? az.comune : ''); }
         there = true;
       }
-      trasporto = { ts: o.k, arrivo: arr, arrivato: there };
+      var smAz = (window.FV_SEED.azienda || []).find(function (x) { return x.id === S().sawmillId(); });
+      trasporto = { ts: k[0], arrivo: arr, arrivato: there, da: (o.m && o.m[0]) || '', a: smAz ? smAz.comune : '' };
     }
     var sold = raw.some(function (e) { return e.tipo === 'V'; });
     return { code: o.c, species: o.s, vol: o.v, cut: iso(o.t), parcel: o.p, lat: o.g ? o.g[0] : null, lon: o.g ? o.g[1] : null,

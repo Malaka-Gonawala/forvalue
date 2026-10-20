@@ -103,9 +103,10 @@ window.FV_SEED = {
     { id_prodotto: 2, prezzo_unitario: 95 }
   ],
 
-  /* DEMO_TRASPORTO_S: a batch registered live in the demo travels to the sawmill (demo_segheria,
-     Segheria Alpina) by itself after this many seconds: "In viaggio" → "Trasferito a Segheria Alpina". */
-  DEMO_TRASPORTO_S: 60,
+  /* A batch registered live in the demo travels to the sawmill (demo_segheria, Segheria Alpina) by itself:
+     "In viaggio" → "Trasferito a Segheria Alpina". Each batch picks a trip time between these (seconds). */
+  DEMO_TRASPORTO_MIN_S: 45,
+  DEMO_TRASPORTO_MAX_S: 120,
   demo_segheria: 2,
 
   /* Date given to orders placed live in the demo (the sale date in the database sample). */
