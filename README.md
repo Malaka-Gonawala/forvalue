@@ -4,6 +4,8 @@ School project (GPOI) by Malaka and Alessandro. A working website with **no back
 logins, wood batches, offers and orders are saved in the browser (localStorage).
 It copies the Figma file "ForValue Mock-up".
 
+**Live site:** https://malaka-gonawala.github.io/forvalue/ (once GitHub Pages is switched on, see below). Code: https://github.com/Malaka-Gonawala/forvalue
+
 > **Demo only.** The passwords are stored in the browser. This is not real security.
 
 ## Demo accounts
@@ -28,10 +30,11 @@ Every protected page reads these tokens: no token → login page; another role's
 
 1. On the phone, log in as the owner → **+ Nuovo lotto** → fill the volume → **Salva lotto**. The QR appears.
 2. **Vedi storico del lotto** opens the public QR page (no login needed). When you are logged in, its top bar shows **La mia home** instead of **Accedi**.
-3. **Esci**, log in as the sawmill → Dashboard → **Vendi** on FV-2026-00087 → **Pubblica offerta** (28 m³ at 310,00 €/m³), then **Pubblica scarti** (6 t at 95,00 €/t). They appear in **Le mie offerte**.
+3. **Esci**, log in as the sawmill → Dashboard → **Vendi** on FV-2026-00087 → **Pubblica offerta** (28 m³ at 310,00 €/m³), then **Pubblica scarti** (6 t at 95,00 €/t). They appear in **Le mie offerte** and the batch shows **In vendita**.
+   **Vendi** works on every batch the sawmill holds that is not sold and has arrived. A batch that is not sawn yet first asks for the sawing (boards + wood chips), then publishes both offers.
 4. **Esci**, log in as the buyer → Marketplace → tick **PEFC** → *Tavole di abete rosso* (310,00 €) → quantity 10 → **Ordina ora**.
 5. The confirmation shows 10 m³ · 3.100,00 €. **Vedi tracciabilità** shows the new step "Venduto ad Arredi Bianchi Srl".
-6. FV-2026-00087 is now **Venduto** everywhere (owner's list, sawmill's lists, QR page). Optional: as the sawmill, open **Ordini ricevuti** and press **Accetta** (or **Rifiuta**, which gives the quantity back).
+6. FV-2026-00087 is now **Venduto** everywhere (owner's list, sawmill's lists, QR page). Optional: as the sawmill, open **Ordini ricevuti** and press **Accetta** (or **Rifiuta**, which gives the quantity back). After Accetta the truck drives to the buyer on the map card; the order turns **Consegnato** by itself and the owner gets a notification.
 
 Before presenting, press **Ripristina dati demo** (phone: Altro; desktop: bottom of the sidebar) to start clean. It also logs you out.
 
@@ -76,7 +79,7 @@ Things that are **not** columns in the database are worked out the same way the 
 |---|---|
 | `index.html` | P0 Login |
 | `home.html`, `nuovo-lotto.html`, `lotto-salvato.html` | P1 Home, P2 New batch, P3 Batch saved + QR |
-| `altro.html`, `lotti.html`, `profilo.html`, `certificati.html`, `notifiche.html`, `aiuto.html` | P4–P9 phone menu pages |
+| `altro.html`, `lotti.html`, `profilo.html`, `certificati.html`, `notifiche.html`, `aiuto.html` | P4–P9 menu pages. `profilo.html` works for all 3 users (with a demo **Elimina account** button); `notifiche.html` has unread dots and **Segna tutte come lette** |
 | `qr.html` | Q1 public QR page |
 | `scan.html` | Phone: QR scanner (camera, photo, or type the code). Laptop: type a batch code or order number |
 | `dashboard.html`, `lotto.html`, `segheria-lotti.html` | D1 Dashboard, D2 Batch detail + sell panel, D7 Lotti ricevuti |
@@ -87,9 +90,10 @@ Things that are **not** columns in the database are worked out the same way the 
 | `js/store.js` | Every read and write to localStorage |
 | `js/auth.js` | Login tokens (`fv_tokens_v1`), login, logout, role checks |
 | `js/ui.js` | Italian number/date format, badges, menus per role, QR link |
-| `js/lib/qrcode.js` | QR generator (qrcode-generator, MIT), works offline |
 | `js/i18n.js` | IT · EN switch: English texts for every screen (list at the top of the file) |
+| `js/lib/qrcode.js` | QR generator (qrcode-generator, MIT), works offline |
 | `js/lib/jsqr.js` | QR reader for the scanner (jsQR 1.4.0, Apache-2.0), works offline |
+| `img/` | Product photos (`tavole`, `cippato`, `segatura`, `tronchi`), the Val di Fiemme map (`mappa-fiemme.jpg`), favicon |
 | `DATA-NEEDED.md` | What was filled in (nothing is missing now) |
 
 Each page starts with a comment saying which Figma screen it is.
@@ -100,9 +104,11 @@ Each user sees only their own functions (the menus are in `js/ui.js`, `NAV`). Op
 
 | User | Phone tab bar (centre = gold) | Laptop sidebar |
 |---|---|---|
-| Owner | Home, Lotti, + Nuovo lotto, Profilo, Altro | Home, I miei lotti, Nuovo lotto, Certificati, Notifiche, Profilo |
+| Owner | Home, Lotti, + Nuovo lotto, Profilo, Altro | Home, I miei lotti, Nuovo lotto, Certificati, Notifiche |
 | Sawmill | Home, Lotti, + Vendi, Ordini, Altro | Dashboard, Lotti ricevuti, Le mie offerte, Circolarità, Ordini ricevuti |
 | Buyer | Mercato, Scarti, Carrello, Ordini, Altro | Marketplace, Circolarità, Carrello, I miei ordini |
+
+On the laptop, the company name at the bottom of the sidebar opens **Profilo**; below it are **Ripristina dati demo**, **Esci** and the **IT · EN** switch. Badges on Notifiche (laptop) or Altro (phone) count unread news.
 
 Every page works on a phone and on a laptop: under 900 px wide you get the phone look (green bar and tab bar), from 900 px the laptop look (green sidebar). The public QR page has no sidebar: on a laptop it uses the full width with the data card next to the batch code.
 
@@ -118,20 +124,24 @@ if that fails too, the page says "Lotto non trovato".
 
 ## Publish on GitHub Pages
 
-1. Go to https://github.com and sign in. Click **New repository**, name it `forvalue`, make it **Public**, click **Create repository**.
-2. Click **uploading an existing file**, drag **everything inside this folder** (so `index.html` is at the top level, next to `css/` and `js/`), then **Commit changes**.
-3. Open **Settings → Pages**. Under *Build and deployment* choose **Deploy from a branch**, branch **main**, folder **/ (root)**, then **Save**.
-4. Wait 1–2 minutes. The address appears at the top of the Pages settings, like `https://<your-username>.github.io/forvalue/`.
-5. Open that address, log in as the owner, open the QR of FV-2026-00087 (Lotti → the batch, or create a new batch) and print that QR.
-6. Test it with 2 phones **on mobile data** (not the school Wi-Fi).
+The code is already on GitHub: https://github.com/Malaka-Gonawala/forvalue (branch **main**).
+
+1. Open the repository → **Settings → Pages**.
+2. Under *Build and deployment* choose **Deploy from a branch**, branch **main**, folder **/ (root)**, then **Save**.
+3. Wait 1–2 minutes. The site is at https://malaka-gonawala.github.io/forvalue/
+4. Open that address, log in as the owner, open the QR of FV-2026-00087 (Lotti → the batch, or create a new batch) and print that QR.
+5. Test it with 2 phones **on mobile data** (not the school Wi-Fi). The QR scanner needs https, which GitHub Pages has.
+
+To change the site later, edit the files on GitHub (pencil icon) or push new commits to **main**; Pages updates by itself in 1–2 minutes.
 
 The empty `.nojekyll` file tells GitHub to publish the files exactly as they are.
 
 ## Known limits (it's a prototype)
 
-- The IT · EN switch is shown but only Italian exists.
+- Trips (batch to the sawmill, order to the buyer) are timers in the browser, not real GPS.
+- **Elimina account** only hides the user in this browser; **Ripristina dati demo** brings it back.
 - Data lives in one browser: the phone and the laptop each have their own copy. The QR page is the exception, because its data is in the link.
-- Photos of new batches are made small and saved in the browser. Product photos and the map come from files in `img/` (names in `DATA-NEEDED.md`). The map is an OpenStreetMap picture, so its credit line stays under it.
+- Photos of new batches are made small and saved in the browser. Product photos and the map come from files in `img/`. The map is an OpenStreetMap picture, so its credit line stays under it.
 
 ## Language (IT · EN)
 
@@ -139,3 +149,7 @@ The **IT · EN** switch is in the phone bar, the sidebar, the login page and the
 Pages are written in Italian; `js/i18n.js` swaps each text for its English version, also texts drawn later (messages, toasts, confirm dialogs).
 Species and product names are translated (Abete rosso → Norway spruce, Tavole → boards); codes, company names, places and people stay as they are.
 Numbers: 3.100,00 € in Italian, 3,100.00 € in English. **To add or change a translation**, edit the `EN` list in `js/i18n.js` (Italian text → English text).
+
+## Tests
+
+Every feature was tested on a phone (390 px) and a laptop (1440 px). The last full run, with all 3 users from login to delivery, passed **114 of 114** checks with no browser errors. The full list (checks #1–47) is in `TEST-REPORT.md` in the project files; the test scripts are not part of the website.
