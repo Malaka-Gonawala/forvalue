@@ -1,6 +1,8 @@
 # ForValue – Smart Forestry & Value Chain Network
 
-School project (GPOI) by Malaka and Alessandro. A working website with **no back end**:
+> © 2026 Malaka Gonawala. **All rights reserved.** This code is not open source. You may view the live site and this repository, but you may not copy, download for reuse, modify, publish or use any part of it without written permission. See [`LICENSE`](LICENSE).
+
+School project (GPOI). Website and code by Malaka Gonawala. A working website with **no back end**:
 logins, wood batches, offers and orders are saved in the browser (localStorage).
 It copies the Figma file "ForValue Mock-up".
 
@@ -37,6 +39,10 @@ Every protected page reads these tokens: no token → login page; another role's
 6. FV-2026-00087 is now **Venduto** everywhere (owner's list, sawmill's lists, QR page). Optional: as the sawmill, open **Ordini ricevuti** and press **Accetta** (or **Rifiuta**, which gives the quantity back). After Accetta the truck drives to the buyer on the map card; the order turns **Consegnato** by itself and the owner gets a notification.
 
 Before presenting, press **Ripristina dati demo** (phone: Altro; desktop: bottom of the sidebar) to start clean. It also logs you out.
+
+## Owner's notes
+
+The sections below (running locally, changing data, publishing) are maintenance notes **for the copyright owner only**. They do not give anyone else permission to copy, run, change or publish the code.
 
 ## Open it on your computer
 
@@ -132,7 +138,7 @@ The code is already on GitHub: https://github.com/Malaka-Gonawala/forvalue (bran
 4. Open that address, log in as the owner, open the QR of FV-2026-00087 (Lotti → the batch, or create a new batch) and print that QR.
 5. Test it with 2 phones **on mobile data** (not the school Wi-Fi). The QR scanner needs https, which GitHub Pages has.
 
-To change the site later, edit the files on GitHub (pencil icon) or push new commits to **main**; Pages updates by itself in 1–2 minutes.
+To change the site later, the owner edits the files on GitHub (pencil icon) or pushes new commits to **main**; Pages updates by itself in 1–2 minutes.
 
 The empty `.nojekyll` file tells GitHub to publish the files exactly as they are.
 
@@ -156,4 +162,6 @@ Every feature was tested on a phone (390 px) and a laptop (1440 px). The last fu
 
 ## Licence
 
-© 2026 Malaka Gonawala. **All rights reserved.** The code is not open source: you may not copy, change, publish or reuse it without written permission. See [`LICENSE`](LICENSE). The QR libraries in `js/lib/`, the fonts and the OpenStreetMap map keep their own licences (listed in `LICENSE`).
+© 2026 Malaka Gonawala. **All rights reserved.** No licence is granted: you may not copy, modify, publish, distribute or reuse this code, in whole or in part, without written permission. Forks, copies and pull requests from others are not allowed. To ask for permission, contact [Malaka-Gonawala](https://github.com/Malaka-Gonawala) on GitHub. Full terms in [`LICENSE`](LICENSE).
+
+Third-party parts keep their own licences (listed in `LICENSE`): the QR libraries in `js/lib/`, the fonts in `css/fonts/` and the OpenStreetMap map data.
