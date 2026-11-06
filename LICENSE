@@ -1,0 +1,37 @@
+Copyright (c) 2026 Malaka Gonawala. All rights reserved.
+
+This repository and everything in it (source code, HTML, CSS, JavaScript,
+text, design, data and images), except the third-party parts listed below,
+belong to Malaka Gonawala.
+
+No licence is granted. Without prior written permission from Malaka Gonawala
+you may NOT:
+
+  - copy, reproduce or download the code for reuse;
+  - modify, adapt, translate or build other works from it;
+  - publish, distribute, sublicense, sell or host it, in whole or in part;
+  - use it, in whole or in part, in any other project, product or service,
+    whether commercial or not.
+
+You may only view the published website and this repository on GitHub, as
+allowed by GitHub's Terms of Service. Any other use infringes copyright.
+
+To ask for permission, contact Malaka Gonawala through GitHub:
+https://github.com/Malaka-Gonawala
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+
+-------------------------------------------------------------------------------
+Third-party parts (NOT covered by the notice above; they keep their own
+licences, which remain in force):
+
+  - js/lib/qrcode.js   QR Code Generator, Copyright (c) 2009 Kazuhiko Arase,
+                       MIT License
+  - js/lib/jsqr.js     jsQR 1.4.0 (https://github.com/cozmo/jsQR),
+                       Apache License 2.0
+  - css/fonts/         Inter (SIL Open Font License 1.1) and Material Symbols
+                       (Apache License 2.0)
+  - img/mappa-fiemme.jpg  map data (c) OpenStreetMap contributors,
+                       Open Database License (ODbL)

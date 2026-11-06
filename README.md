@@ -153,3 +153,7 @@ Numbers: 3.100,00 € in Italian, 3,100.00 € in English. **To add or change a 
 ## Tests
 
 Every feature was tested on a phone (390 px) and a laptop (1440 px). The last full run, with all 3 users from login to delivery, passed **114 of 114** checks with no browser errors. The full list (checks #1–47) is in `TEST-REPORT.md` in the project files; the test scripts are not part of the website.
+
+## Licence
+
+© 2026 Malaka Gonawala. **All rights reserved.** The code is not open source: you may not copy, change, publish or reuse it without written permission. See [`LICENSE`](LICENSE). The QR libraries in `js/lib/`, the fonts and the OpenStreetMap map keep their own licences (listed in `LICENSE`).
