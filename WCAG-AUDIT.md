@@ -4,6 +4,8 @@
 
 **Update 8 Nov 2026: all 6 fails fixed** (see TEST-REPORT #48).
 
+**Retest 8 Nov 2026 (commit a6c7fa9): PASS.** axe-core: 0 violations on 50 page checks (25 pages × 390/1440 px). Keyboard: no focused item hidden at 320/390/1440 px; side panel keeps Tab inside and returns focus to the button on Esc. Focus ring Green 900 on light areas, gold on green areas.
+
 How it was checked: axe-core 4.10 (WCAG 2.0/2.1/2.2 A+AA rules) on 25 pages × 3 roles at 390 px and 1440 px, plus keyboard Tab walks, a 320 px reflow test, a modal focus test and manual contrast maths.
 
 ## Fails
