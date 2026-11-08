@@ -98,9 +98,9 @@
       '<div class="dfield"><label for="ep">Prezzo</label><div class="dinput"><input id="ep" inputmode="decimal" value="' + ui.euro(cur.prezzo_unitario).replace(' €', '') + '"><span class="unit">€/' + u + '</span></div></div></div>' +
       '<div class="derr" hidden></div><div class="xs muted">Massimo ' + ui.num(max) + ' ' + u + ' (prodotto meno già ordinato)</div>' +
       '<button class="dbtn pri full" type="submit">Salva modifiche</button>';
-    wrap.hidden = false; form.querySelector('input').focus();
+    ui.panelOpen(wrap); form.querySelector('input').focus();
   };
-  function closePanel() { wrap.hidden = true; }
+  function closePanel() { ui.panelClose(wrap); }
   wrap.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closePanel(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !wrap.hidden) closePanel(); });
   form.onsubmit = function (e) {

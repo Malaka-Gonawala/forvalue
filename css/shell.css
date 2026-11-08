@@ -48,7 +48,7 @@
   body.phone.app .dhead .crumb .ms { font-size: 16px; }
   body.phone.app .hero { background: none; color: var(--ink); padding: 8px 32px 0 !important; }
   body.phone.app .hero .sub { color: var(--muted); }
-  body.phone.app .hero [style*="color:var(--au300)"] { color: var(--au800) !important; }
+  body.phone.app .hero [style*="color:var(--au100)"], body.phone.app .hero [style*="color:var(--au300)"] { color: var(--au800) !important; }
   body.phone.app:has(.dhead) .hero .h1, body.phone.app:has(.dhead) .hero > .sub { display: none; }
   body.phone.app .hero:not(:has(> :not(.h1):not(.sub))) { display: none; }   /* nothing left but title/subtitle */
   body.phone.app .over { margin-top: 16px !important; padding: 0 32px 24px; max-width: 1180px; }
@@ -77,6 +77,10 @@
   /* Page title in a green band under the top bar, like Q1 */
   body.desk .main > .pg { background: var(--g700); color: #fff; margin: 0 -16px; padding: 4px 16px 20px; }
   body.desk .main > .pg .crumb, body.desk .main > .pg .crumb a { color: var(--g100); }
+  body.desk .main > .pg .muted { color: #fff; }
+  body.desk .main > .pg :focus-visible { outline-color: var(--au500); }
+  /* Keyboard focus never hides under the fixed tab bar / sticky bar */
+  html { scroll-padding-bottom: 110px; }
   body.desk .main > .pg .backbtn { background: none; border: 0; color: #fff; margin-left: -10px; }
   body.desk .main > .pg .dinput { color: var(--ink); border-color: #fff; }
   body.desk .main > .pg .dbtn.pri { background: var(--au500); color: var(--ink); }

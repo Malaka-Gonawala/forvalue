@@ -431,6 +431,41 @@
 
   /* ---------- small helpers ---------- */
   function flash(msg) { try { sessionStorage.setItem('fv_flash', msg); } catch (e) {} }
+  /* ---------- side panel (dialog) ---------- */
+  // Opening: the page behind becomes inert, Tab stays inside the panel. Closing: focus goes back to the button that opened it.
+  var panelBack = null;
+  function panelTabs(e) {
+    if (e.key !== 'Tab') return;
+    var f = [].filter.call(e.currentTarget.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])'), function (x) { return x.offsetParent !== null; });
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+  function panelOpen(wrap) {
+    if (wrap.hidden) panelBack = document.activeElement;
+    wrap.hidden = false;
+    [].forEach.call(document.body.children, function (el) { if (el !== wrap && el.tagName !== 'SCRIPT' && !el.classList.contains('toast')) el.inert = true; });
+    wrap.removeEventListener('keydown', panelTabs); wrap.addEventListener('keydown', panelTabs);
+  }
+  function panelClose(wrap) {
+    wrap.hidden = true;
+    [].forEach.call(document.body.children, function (el) { el.inert = false; });
+    if (panelBack && document.contains(panelBack)) panelBack.focus();
+    panelBack = null;
+  }
+  // Boxes that scroll sideways (wide tables, the chart on a phone) can be reached and scrolled with the keyboard
+  function scrollBoxes() {
+    document.querySelectorAll('.box').forEach(function (b) {
+      var wide = b.scrollWidth > b.clientWidth + 1 && getComputedStyle(b).overflowX !== 'visible';
+      if (wide && !b.hasAttribute('tabindex')) {
+        var h = b.querySelector('h2'); b.tabIndex = 0; b.setAttribute('role', 'region');
+        b.setAttribute('aria-label', (h ? h.textContent + ' – ' : '') + 'scorri di lato'); b.setAttribute('data-sbox', '');
+      } else if (!wide && b.hasAttribute('data-sbox')) { b.removeAttribute('tabindex'); b.removeAttribute('role'); b.removeAttribute('aria-label'); b.removeAttribute('data-sbox'); }
+    });
+  }
+  addEventListener('load', scrollBoxes); addEventListener('resize', scrollBoxes);
+
   function toast(msg) {
     var el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status');
     el.innerHTML = '<span class="ms" aria-hidden="true">check_circle</span>' + esc(msg);
@@ -455,6 +490,6 @@
     num: num, num1: num1, parseNum: parseNum, euro: euro, date: date, gps: gps, MESI: MESI, esc: esc, t: t, v: v, isPh: isPh,
     certPill: certPill, eudrPill: eudrPill, statoPill: statoPill, tracker: tracker, travelPill: travelPill, badges: badges, ordinePill: ordinePill, scartiPill: scartiPill, specieName: specieName,
     phoneBar: phoneBar, backBar: backBar, tabbar: tabbar, sidebar: sidebar, shell: shell, homeHref: homeHref, ordCode: ordCode, photo: photo, OSM: OSM, photoKey: photoKey, PHOTO: PHOTO, ownerNews: ownerNews, NAV: NAV, vendiHref: vendiHref, canSell: canSell, logoHTML: logoHTML, LANG: LANG,
-    qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, newsList: newsList, newsUnreadCount: newsUnreadCount, newsReadAll: newsReadAll, trkLayout: trkLayout, tripNow: tripNow, orderTravelPill: orderTravelPill, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
+    qrPayload: qrPayload, qrUrl: qrUrl, lottoView: lottoView, panelOpen: panelOpen, panelClose: panelClose, scrollBoxes: scrollBoxes, newsList: newsList, newsUnreadCount: newsUnreadCount, newsReadAll: newsReadAll, trkLayout: trkLayout, tripNow: tripNow, orderTravelPill: orderTravelPill, viewFromPayload: viewFromPayload, b64url: b64url, qrSvg: qrSvg, unb64url: unb64url, flash: flash, toast: toast, param: param
   };
 })();

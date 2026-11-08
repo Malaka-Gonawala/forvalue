@@ -107,7 +107,7 @@
   function openPanel() {
     document.getElementById('pSub').textContent = 'Dal lotto ' + l.codice_qr;
     document.getElementById('pTitle').textContent = editing ? 'Modifica offerta' : 'Metti in vendita';
-    if (!prodotti.length) { document.getElementById('prows').innerHTML = sawForm(); wrap.hidden = false; document.getElementById('sawT').focus(); return; }
+    if (!prodotti.length) { document.getElementById('prows').innerHTML = sawForm(); ui.panelOpen(wrap); document.getElementById('sawT').focus(); return; }
     document.getElementById('prows').innerHTML = prodotti.map(function (p) {
       var off = st.all('offerta').find(function (o) { return o.id_prodotto === p.id && o.id_azienda === me; });
       var demo = (st.all('demo_offerta') || []).find(function (d) { return d.id_prodotto === p.id; });
@@ -120,10 +120,10 @@
         '<div class="derr" hidden></div><div class="xs muted">Disponibili: ' + ui.num(max) + ' ' + u + (off ? ' · offerta già pubblicata, la aggiorni' : '') + '</div>' +
         '<button class="dbtn ' + (sc ? 'sec' : 'pri') + ' full" type="submit">' + (off ? 'Salva modifiche' : sc ? 'Pubblica scarti' : 'Pubblica offerta') + '</button></form>';
     }).join('');
-    wrap.hidden = false;
+    ui.panelOpen(wrap);
     var first = wrap.querySelector('input'); if (first) first.focus();
   }
-  function closePanel() { wrap.hidden = true; }
+  function closePanel() { ui.panelClose(wrap); }
   wrap.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closePanel(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !wrap.hidden) closePanel(); });
   wrap.addEventListener('submit', function (e) {

@@ -44,7 +44,10 @@ button { cursor: pointer; background: none; border: 0; }
 img { max-width: 100%; display: block; }
 [hidden] { display: none !important; }
 
-:focus-visible { outline: 3px solid var(--au500); outline-offset: 2px; border-radius: 6px; }
+:focus-visible { outline: 3px solid var(--g900); outline-offset: 2px; border-radius: 6px; }
+/* On green areas the ring stays gold so it can be seen */
+.sb :focus-visible, .bar :focus-visible, .hero :focus-visible, .brand :focus-visible, .qh :focus-visible, .dhero :focus-visible, .toast :focus-visible { outline-color: var(--au500); }
+.lang :focus-visible { outline-color: var(--au500); outline-offset: 0; }   /* inside the green IT·EN pill */
 
 /* Material Symbols icon: <span class="ms">forest</span> */
 .ms {
